@@ -33,7 +33,8 @@ from django.db.models import ImageField
 from django.utils.translation import ugettext_lazy as _
 
 from mezzanine.conf import settings
-from mezzanine.core.admin import DisplayableAdmin, TabularDynamicInlineAdmin
+from mezzanine.core.admin import (TranslationAdmin, DisplayableAdmin,
+                                  TabularDynamicInlineAdmin)
 from mezzanine.pages.admin import PageAdmin
 
 from cartridge.shop.fields import MoneyField
@@ -230,7 +231,7 @@ class ProductAdmin(DisplayableAdmin):
             self._product.copy_default_variation()
 
 
-class ProductOptionAdmin(admin.ModelAdmin):
+class ProductOptionAdmin(TranslationAdmin):
     ordering = ("type", "name")
     list_display = ("type", "name")
     list_display_links = ("type",)
@@ -269,7 +270,7 @@ class OrderAdmin(admin.ModelAdmin):
     )
 
 
-class SaleAdmin(admin.ModelAdmin):
+class SaleAdmin(TranslationAdmin):
     list_display = ("title", "active", "discount_deduct", "discount_percent",
         "discount_exact", "valid_from", "valid_to")
     list_editable = ("active", "discount_deduct", "discount_percent",
@@ -288,7 +289,7 @@ class SaleAdmin(admin.ModelAdmin):
     )
 
 
-class DiscountCodeAdmin(admin.ModelAdmin):
+class DiscountCodeAdmin(TranslationAdmin):
     list_display = ("title", "active", "code", "discount_deduct",
         "discount_percent", "min_purchase", "free_shipping", "valid_from",
         "valid_to")
