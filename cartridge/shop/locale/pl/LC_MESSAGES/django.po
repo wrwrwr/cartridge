@@ -114,10 +114,13 @@ msgid ""
 "form. Each model should be in the format ``app_label.model_name``. Only "
 "models that subclass ``mezzanine.core.models.Displayable`` should be used."
 msgstr ""
+"Ciąg modeli dostępnych jako domyślne wybory w formularzu wyszukiwania. "
+"Każdy model powinien być w formacie ``aplikacja.model``. Powinny to być tylko "
+"modele, które dziedziczą po ``mezzanine.core.models.Displayable``."
 
 #: defaults.py:58
 msgid "Sequence of setting names available within templates."
-msgstr "Sekwencja ustawień dostępnych w szablonach."
+msgstr "Ciąg ustawień dostępnych w szablonach."
 
 #: defaults.py:87
 msgid "Enable featured images in shop categories"
@@ -150,7 +153,7 @@ msgstr "Domyślne koszty wysyłki"
 #: defaults.py:146
 msgid "Default cost of shipping when no custom shipping is implemented."
 msgstr ""
-"Domyślne koszty wysyłki, gdy nie są zainstalowane własne moduły wysyłkowe."
+"Domyślny koszt wysyłki, gdy nie są zainstalowane własne moduły wysyłkowe."
 
 #: defaults.py:154
 msgid "Discount in Cart"
@@ -208,7 +211,7 @@ msgstr "E-mail 'Od'"
 #: defaults.py:222
 msgid "Email address from which order receipts should be emailed."
 msgstr ""
-"Adres, z którego będą wysyłane adresy informujące o przyjęciu zamówienia."
+"Adres, z którego będą wysyłane listy informujące o przyjęciu zamówienia."
 
 #: defaults.py:233
 msgid "Unprocessed"
@@ -287,18 +290,16 @@ msgid "Cardholder name"
 msgstr "Nazwa posiadacza karty"
 
 #: forms.py:261
-#, fuzzy
 msgid "Card type"
-msgstr "Data ważności karty"
+msgstr "Rodzaj karty"
 
 #: forms.py:264
-#, fuzzy
 msgid "Card number"
-msgstr "Nazwa posiadacza karty"
+msgstr "Numer karty"
 
 #: forms.py:269
 msgid "CCV"
-msgstr ""
+msgstr "Kod karty"
 
 #: forms.py:269
 msgid ""
@@ -586,7 +587,7 @@ msgid ""
 "It will be decremented upon each use."
 msgstr ""
 "Wpisz wartość jeśli chcesz ograniczyć ilość razy, jaką kod może zostać "
-"użyty. Po każdym użyciu wartość będzię zmniejszana."
+"wykorzystany. Po każdym użyciu wartość będzię zmniejszana."
 
 #: models.py:841
 msgid "Discount codes"
