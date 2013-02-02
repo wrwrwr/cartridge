@@ -434,7 +434,7 @@ msgstr ""
 
 #: models.py:332
 msgid "Product category"
-msgstr "Kategoria produktu"
+msgstr "Kategoria produktów"
 
 #: models.py:386 models.py:395
 msgid "First name"
