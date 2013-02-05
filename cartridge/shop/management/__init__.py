@@ -26,6 +26,8 @@ def create_initial_product(app, created_models, verbosity, **kwargs):
             print
         call_command("loaddata", "cartridge.json")
         copy_test_to_media("cartridge.shop", "product")
+        if settings.USE_MODELTRANSLATION:
+            call_command("update_generated_fields", verbosity=0)
 
 
 if not settings.TESTING:
