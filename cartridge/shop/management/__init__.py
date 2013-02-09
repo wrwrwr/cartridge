@@ -11,21 +11,32 @@ from cartridge.shop import models as shop_app
 
 def create_initial_product(app, created_models, verbosity, **kwargs):
     if Product in created_models:
-        if kwargs.get("interactive"):
+        call_command("loaddata", "cartridge_required.json")
+        optional = True
+        if interactive:
             confirm = raw_input("\nWould you like to install an initial "
-                                "Category and Product? (yes/no): ")
-            while True:
-                if confirm == "yes":
-                    break
-                elif confirm == "no":
-                    return
+                                "demo product and sale? (yes/no): ")
+            while confirm not in ("yes", "no"):
                 confirm = raw_input("Please enter either 'yes' or 'no': ")
-        if verbosity >= 1:
-            print
-            print "Creating initial Category and Product ..."
-            print
-        call_command("loaddata", "cartridge.json")
-        copy_test_to_media("cartridge.shop", "product")
+            optional = (confirm == "yes")
+        # This is a hack. Ideally to split fixtures between optional
+        # and required, we'd use the same approach Mezzanine does,
+        # within a ``createdb`` management command. Ideally to do this,
+        # we'd subclass Mezzanine's createdb command and shadow it,
+        # but to do that, the cartridge.shop app would need to appear
+        # *after* mezzanine.core in the INSTALLED_APPS setting, but the
+        # reverse is needed for template overriding (and probably other
+        # bits) to work correctly.
+        # SO........... we just cheat, and check sys.argv here. Namaste.
+        elif "--nodata" in sys.argv:
+            optional = False
+        if optional:
+            if verbosity >= 1:
+                print
+                print "Creating demo product and sale ..."
+                print
+            call_command("loaddata", "cartridge_optional.json")
+            copy_test_to_media("cartridge.shop", "product")
         if settings.USE_MODELTRANSLATION:
             call_command("update_generated_fields", verbosity=0)
 
