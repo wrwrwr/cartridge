@@ -98,6 +98,9 @@ class Product(Displayable, Priced, RichText, AdminThumbMixin):
     image = CharField(_("Image"), max_length=100, blank=True, null=True)
     categories = models.ManyToManyField("Category", blank=True,
                                         verbose_name=_("Product categories"))
+    option_types = models.ManyToManyField("ProductOptionType", blank=True,
+                                          verbose_name=_("Product option types"),
+                                          related_name="product_options_types")
     date_added = models.DateTimeField(_("Date added"), auto_now_add=True,
                                       null=True)
     related_products = models.ManyToManyField("self",
@@ -170,12 +173,22 @@ class ProductImage(Orderable):
         return value
 
 
-class ProductOption(models.Model):
+class ProductOptionType(models.Model):
     """
     A selectable option for a product such as size or colour.
     """
-    type = models.IntegerField(_("Type"),
-                               choices=settings.SHOP_OPTION_TYPE_CHOICES)
+    name = fields.OptionField(_("Name"))
+
+    class Meta:
+        verbose_name = _("Product option type")
+        verbose_name_plural = _("Product option types")
+
+
+class ProductOption(models.Model):
+    """
+    A potential option value such as small or red.
+    """
+    type = models.ForeignKey("ProductOptionType", verbose_name=_("Type"))
     name = fields.OptionField(_("Name"))
 
     objects = managers.ProductOptionManager()
@@ -188,35 +201,20 @@ class ProductOption(models.Model):
         verbose_name_plural = _("Product options")
 
 
-class ProductVariationMetaclass(ModelBase):
-    """
-    Metaclass for the ``ProductVariation`` model that dynamcally
-    assigns an ``fields.OptionField`` for each option in the
-    ``SHOP_PRODUCT_OPTIONS`` setting.
-    """
-    def __new__(cls, name, bases, attrs):
-        # Only assign new attrs if not a proxy model.
-        if not ("Meta" in attrs and getattr(attrs["Meta"], "proxy", False)):
-            for option in settings.SHOP_OPTION_TYPE_CHOICES:
-                attrs["option%s" % option[0]] = fields.OptionField(option[1])
-        args = (cls, name, bases, attrs)
-        return super(ProductVariationMetaclass, cls).__new__(*args)
-
-
 class ProductVariation(Priced):
     """
-    A combination of selected options from
-    ``SHOP_OPTION_TYPE_CHOICES`` for a ``Product`` instance.
+    Default or special product option (unavailable or with an image).
     """
 
     product = models.ForeignKey("Product", related_name="variations")
     default = models.BooleanField(_("Default"))
     image = models.ForeignKey("ProductImage", verbose_name=_("Image"),
                               null=True, blank=True)
+    options = models.ManyToManyField("ProductOption", blank=True,
+                                     verbose_name=_("Product option"),
+                                     related_name="product_options")
 
     objects = managers.ProductVariationManager()
-
-    __metaclass__ = ProductVariationMetaclass
 
     class Meta:
         ordering = ("-default",)
@@ -244,16 +242,6 @@ class ProductVariation(Priced):
 
     def get_absolute_url(self):
         return self.product.get_absolute_url()
-
-    @classmethod
-    def option_fields(cls):
-        """
-        Returns each of the model fields that are dynamically created
-        from ``SHOP_OPTION_TYPE_CHOICES`` in
-        ``ProductVariationMetaclass``.
-        """
-        all_fields = cls._meta.fields
-        return [f for f in all_fields if isinstance(f, fields.OptionField)]
 
     def options(self):
         """
@@ -316,9 +304,6 @@ class Category(Page, RichText):
     products = models.ManyToManyField("Product", blank=True,
                                      verbose_name=_("Products"),
                                      through=Product.categories.through)
-    options = models.ManyToManyField("ProductOption", blank=True,
-                                     verbose_name=_("Product options"),
-                                     related_name="product_options")
     sale = models.ForeignKey("Sale", verbose_name=_("Sale"),
                              blank=True, null=True)
     price_min = fields.MoneyField(_("Minimum price"), blank=True, null=True)

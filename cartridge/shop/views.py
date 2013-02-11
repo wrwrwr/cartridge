@@ -80,6 +80,7 @@ def product(request, slug, template="shop/product.html"):
                                                       for_user=request.user),
         "add_product_form": add_product_form
     }
+    print add_product_form
     return render(request, template, context)
 
 

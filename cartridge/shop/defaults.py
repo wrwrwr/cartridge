@@ -210,17 +210,6 @@ register_setting(
 )
 
 register_setting(
-    name="SHOP_OPTION_TYPE_CHOICES",
-    description="Sequence of value/name pairs for types of product options "
-        "(e.g. Size, Colour).",
-    editable=False,
-    default=(
-        (1, _("Size")),
-        (2, _("Colour")),
-    ),
-)
-
-register_setting(
     name="SHOP_ORDER_EMAIL_SUBJECT",
     label=_("Order Email Subject"),
     description=_("Subject to be used when sending the order receipt email."),
