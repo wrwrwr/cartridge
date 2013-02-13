@@ -358,7 +358,7 @@ msgstr "Obraz"
 
 #: models.py:100 models.py:333
 msgid "Product categories"
-msgstr "Kategorie produktu"
+msgstr "Kategorie"
 
 #: models.py:101
 msgid "Date added"
@@ -442,7 +442,7 @@ msgstr ""
 
 #: models.py:332
 msgid "Product category"
-msgstr "Kategoria produktów"
+msgstr "Kategoria"
 
 #: models.py:386 models.py:395
 msgid "First name"
