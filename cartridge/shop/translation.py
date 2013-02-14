@@ -37,4 +37,3 @@ translator.register(SelectedProduct, SelectedProductTranslationOptions)
 translator.register(CartItem, CartItemTranslationOptions)
 translator.register(Discount, DiscountTranslationOptions)
 translator.register((Category, OrderItem, Sale, DiscountCode))
-
