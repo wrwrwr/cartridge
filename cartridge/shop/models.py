@@ -460,10 +460,13 @@ class Order(models.Model):
         if self.tax_total is not None:
             self.total += self.tax_total
         self.save()  # We need an ID before we can add related items.
-        for item in request.cart:
-            product_fields = [f.name for f in SelectedProduct._meta.fields]
-            item = dict([(f, getattr(item, f)) for f in product_fields])
-            self.items.create(**item)
+        for cart_item in request.cart:
+            field_values = dict((f.name, getattr(cart_item, f.name)) for f in
+                                SelectedProduct._meta.fields)
+            order_item = self.items.create(**field_values)
+            # Copy attributes from cart item to the new order item.
+            for value in cart_item.attribute_values.all():
+                order_item.attribute_values.create(value=value.value)
 
     def complete(self, request):
         """
@@ -535,20 +538,32 @@ class Cart(models.Model):
             self._cached_items = self.items.all()
         return iter(self._cached_items)
 
-    def add_item(self, variation, quantity):
+    def add_item(self, variation, quantity, attribute_values):
         """
-        Increase quantity of existing item if SKU matches, otherwise create
-        new.
+        Increase quantity of existing item if SKU and attributes match,
+        otherwise create new.
         """
-        kwargs = {"sku": variation.sku, "unit_price": variation.price()}
+
+        # Apply attributes price modifications.
+        price = variation.price()
+        for attribute, value in attribute_values.iteritems():
+            price += value.price(variation)
+
+        kwargs = {"sku": variation.sku, "unit_price": price}
+        kwargs["attributes_hash"] = attributes_hash(attribute_values)
         item, created = self.items.get_or_create(**kwargs)
+
         if created:
             item.description = unicode(variation)
-            item.unit_price = variation.price()
+            item.unit_price = price
             item.url = variation.product.get_absolute_url()
             image = variation.image
             if image is not None:
                 item.image = unicode(image.file)
+            # Save values and assign them to the item.
+            for attribute, value in attribute_values.iteritems():
+                value.save()
+                CartItemAttributeValue.objects.create(item=item, value=value)
             variation.product.actions.added_to_cart()
         item.quantity += quantity
         item.save()
@@ -615,6 +630,7 @@ class SelectedProduct(models.Model):
     """
 
     sku = fields.SKUField()
+    attributes_hash = models.CharField(max_length=32, editable=False)
     description = CharField(_("Description"), max_length=200)
     quantity = models.IntegerField(_("Quantity"), default=0)
     unit_price = fields.MoneyField(_("Unit price"), default=Decimal("0"))
@@ -843,3 +859,7 @@ class DiscountCode(Discount):
     class Meta:
         verbose_name = _("Discount code")
         verbose_name_plural = _("Discount codes")
+
+
+from cartridge.attributes.models import (CartItemAttributeValue,
+                                         attributes_hash)

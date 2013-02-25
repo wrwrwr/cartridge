@@ -45,6 +45,9 @@
 .wishlist .btn {margin-left:5px;}
 .wishlist .btn-primary {margin-left:20px;}
 
+/* Attributes */
+.attribute-values {list-style:none; margin-left:0px; padding-left:10px; font-size:0.9em; color:#666;}
+
 /* Cart panel in checkout */
 #checkout .checkout-panel {float:right; margin:0px 30px 0 0;}
 #checkout .checkout-panel li {border-bottom:1px dashed #eee; padding:10px 0; color:#999; line-height:15px;}
