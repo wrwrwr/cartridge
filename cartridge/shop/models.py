@@ -8,7 +8,8 @@ from django.db.models import CharField, F, Q
 from django.db.models.base import ModelBase
 from django.db.utils import DatabaseError
 from django.dispatch import receiver
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import (ugettext, ugettext_lazy as _,
+                                      pgettext_lazy)
 
 from mezzanine.conf import settings
 from mezzanine.core.fields import FileField
@@ -428,8 +429,8 @@ class Order(models.Model):
                       "discount_code", "tax_type", "tax_total")
 
     class Meta:
-        verbose_name = _("Order")
-        verbose_name_plural = _("Orders")
+        verbose_name = pgettext_lazy("shop", "Order")
+        verbose_name_plural = pgettext_lazy("shop", "Orders")
         ordering = ("-id",)
 
     def __unicode__(self):
