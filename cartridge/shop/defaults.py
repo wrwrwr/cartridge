@@ -1,7 +1,7 @@
 
 from socket import gethostname
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
 
 from mezzanine.conf import register_setting
 
@@ -59,7 +59,8 @@ register_setting(
     description=_("Sequence of setting names available within templates."),
     editable=False,
     default=("SHOP_CARD_TYPES", "SHOP_CATEGORY_USE_FEATURED_IMAGE",
-             "SHOP_CHECKOUT_STEPS_SPLIT", "SHOP_PRODUCT_SORT_OPTIONS",),
+             "SHOP_CHECKOUT_STEPS_SPLIT", "SHOP_PAYMENT_STEP_ENABLED",
+             "SHOP_PRODUCT_SORT_OPTIONS",),
     append=True,
 )
 
@@ -175,6 +176,17 @@ register_setting(
         "function ``cartridge.shop.utils.set_shipping``.",
     editable=False,
     default="cartridge.shop.checkout.default_billship_handler",
+)
+
+register_setting(
+    name="SHOP_HANDLER_TAX",
+    label=_("Tax Handler"),
+    description="Dotted package path and class name of the function "
+        "called upon submission of the billing/shipping checkout step. This "
+        "is where tax calculations can be performed and set using the "
+        "function ``cartridge.shop.utils.set_tax``.",
+    editable=False,
+    default="cartridge.shop.checkout.default_tax_handler",
 )
 
 register_setting(
