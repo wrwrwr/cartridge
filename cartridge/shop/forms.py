@@ -20,6 +20,7 @@ from cartridge.shop import checkout
 from cartridge.shop.models import Product, ProductOption, ProductVariation
 from cartridge.shop.models import Cart, CartItem, Order, DiscountCode
 from cartridge.shop.utils import make_choices, set_locale, set_shipping
+from cartridge.attributes.models import ProductAttribute
 
 
 ADD_PRODUCT_ERRORS = {
@@ -57,15 +58,26 @@ class AddProductForm(forms.Form):
         given for the variation, so the creation of choice fields
         is skipped.
         """
-        self._product = kwargs.pop("product", None)
+        self._product = kwargs.pop("product")
         self._to_cart = kwargs.pop("to_cart")
         super(AddProductForm, self).__init__(*args, **kwargs)
+
+        # Add fields for product's attributes.
+        self._attributes = []
+        product_attributes = ProductAttribute.objects.filter(
+            product=self._product)
+        for product_attribute in product_attributes:
+            attribute = product_attribute.attribute
+            self.fields[attribute.field_name()] = attribute.field()
+            self._attributes.append(attribute)
+
         # Adding from the wishlist with a sku, bail out.
         if args[0] is not None and args[0].get("sku", None):
             return
         # Adding from the product page, remove the sku field
         # and build the choice fields for the variations.
         del self.fields["sku"]
+
         option_fields = ProductVariation.option_fields()
         if not option_fields:
             return
@@ -92,6 +104,15 @@ class AddProductForm(forms.Form):
         # a variation.
         data = self.cleaned_data.copy()
         quantity = data.pop("quantity")
+
+        # Collect all attribute values under one key in cleaned_data.
+        attribute_values = {}
+        for attribute in self._attributes:
+            value = attribute.make_value(data.pop(attribute.field_name()))
+            if value:
+                attribute_values[attribute] = value
+        self.cleaned_data['attribute_values'] = attribute_values
+
         # Ensure the product has a price if adding to cart.
         if self._to_cart:
             data["unit_price__isnull"] = False
@@ -117,6 +138,7 @@ class AddProductForm(forms.Form):
         if error is not None:
             raise forms.ValidationError(ADD_PRODUCT_ERRORS[error])
         self.variation = variation
+
         return self.cleaned_data
 
 

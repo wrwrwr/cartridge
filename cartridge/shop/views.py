@@ -56,7 +56,9 @@ def product(request, slug, template="shop/product.html"):
         if add_product_form.is_valid():
             if to_cart:
                 quantity = add_product_form.cleaned_data["quantity"]
-                request.cart.add_item(add_product_form.variation, quantity)
+                attributes = add_product_form.cleaned_data["attribute_values"]
+                request.cart.add_item(add_product_form.variation, quantity,
+                                      attribute_values=attributes)
                 recalculate_discount(request)
                 info(request, _("Item added to cart"))
                 return redirect("shop_cart")
@@ -92,22 +94,30 @@ def wishlist(request, template="shop/wishlist.html"):
 
     skus = request.wishlist
     error = None
+    published_products = Product.objects.published(for_user=request.user)
+
     if request.method == "POST":
         to_cart = request.POST.get("add_cart")
-        add_product_form = AddProductForm(request.POST or None,
-                                          to_cart=to_cart)
+        sku = request.POST.get("sku")
         if to_cart:
+            variation = get_object_or_404(ProductVariation,
+                product__in=published_products, sku=sku)
+            add_product_form = AddProductForm(request.POST,
+                product=variation.product, to_cart=to_cart)
             if add_product_form.is_valid():
-                request.cart.add_item(add_product_form.variation, 1)
+                # TODO: Attributes should be stored for wishlist items (once
+                # there are wishlist items :-)
+                request.cart.add_item(add_product_form.variation, 1,
+                                      attribute_values={})
                 recalculate_discount(request)
                 message = _("Item added to cart")
                 url = "shop_cart"
             else:
-                error = add_product_form.errors.values()[0]
+                message = _("Please choose attributes")
+                url = variation.product.get_absolute_url()
         else:
             message = _("Item removed from wishlist")
             url = "shop_wishlist"
-        sku = request.POST.get("sku")
         if sku in skus:
             skus.remove(sku)
         if not error:
@@ -117,14 +127,13 @@ def wishlist(request, template="shop/wishlist.html"):
             return response
 
     # Remove skus from the cookie that no longer exist.
-    published_products = Product.objects.published(for_user=request.user)
     f = {"product__in": published_products, "sku__in": skus}
     wishlist = ProductVariation.objects.filter(**f).select_related(depth=1)
     wishlist = sorted(wishlist, key=lambda v: skus.index(v.sku))
     context = {"wishlist_items": wishlist, "error": error}
     response = render(request, template, context)
     if len(wishlist) < len(skus):
-        skus = [variation.sku for variation in wishlist]
+        skus = [v.sku for v in wishlist]
         set_cookie(response, "wishlist", ",".join(skus))
     return response
 
