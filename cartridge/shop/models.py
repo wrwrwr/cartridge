@@ -18,6 +18,7 @@ from mezzanine.generic.fields import RatingField
 from mezzanine.pages.models import Page
 from mezzanine.utils.models import AdminThumbMixin, upload_to
 from mezzanine.utils.timezone import now
+from mezzanine.utils.translation import for_all_languages
 
 from cartridge.shop import fields, managers
 
@@ -543,9 +544,11 @@ class Cart(models.Model):
         kwargs = {"sku": variation.sku, "unit_price": variation.price()}
         item, created = self.items.get_or_create(**kwargs)
         if created:
-            item.description = unicode(variation)
+            def set_description_and_url():
+                item.description = unicode(variation)
+                item.url = variation.product.get_absolute_url()
+            for_all_languages(set_description_and_url)
             item.unit_price = variation.price()
-            item.url = variation.product.get_absolute_url()
             image = variation.image
             if image is not None:
                 item.image = unicode(image.file)
