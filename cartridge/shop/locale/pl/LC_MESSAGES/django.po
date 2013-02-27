@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cartridge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-27 11:52+0100\n"
+"POT-Creation-Date: 2013-02-27 12:06+0100\n"
 "PO-Revision-Date: 2012-11-17 22:31+0000\n"
 "Last-Translator: Sebastián Ramírez Magrí <sebasmagri@gmail.com>\n"
 "Language-Team: Polish (http://www.transifex.com/projects/p/cartridge/"
@@ -273,7 +273,7 @@ msgstr "Wybranego wariantu nie ma w tej chwili na stanie."
 msgid "The selected quantity is currently unavailable."
 msgstr "Wybrana ilość jest chwilowo niedostepna."
 
-#: forms.py:39 models.py:639 templates/shop/order_history.html:20
+#: forms.py:39 models.py:640 templates/shop/order_history.html:20
 msgid "Quantity"
 msgstr "Ilość"
 
@@ -281,7 +281,7 @@ msgstr "Ilość"
 msgid "The discount code entered is invalid."
 msgstr "Wpisany kod rabatowy jest nieprawidłowy."
 
-#: forms.py:292 models.py:842
+#: forms.py:292 models.py:843
 msgid "Free shipping"
 msgstr "Darmowa wysyłka"
 
@@ -327,7 +327,7 @@ msgstr "Tylko jeden wariant może zostać zaznaczony jako domyślny."
 msgid "Please enter a value for only one type of reduction."
 msgstr "Proszę wpisać wartość tylko dla jednego rodzaju zniżki."
 
-#: models.py:42 models.py:640
+#: models.py:42 models.py:641
 msgid "Unit price"
 msgstr "Cena"
 
@@ -380,11 +380,11 @@ msgstr "Ocena"
 msgid "Product"
 msgstr "Produkt"
 
-#: models.py:117 models.py:319 models.py:709
+#: models.py:117 models.py:319 models.py:710
 msgid "Products"
 msgstr "Produkty"
 
-#: models.py:158 models.py:638 management/commands/product_db.py:32
+#: models.py:158 models.py:639 management/commands/product_db.py:32
 msgid "Description"
 msgstr "Opis"
 
@@ -416,7 +416,7 @@ msgstr "Domyślne"
 msgid "Featured Image"
 msgstr "Wybrany obraz"
 
-#: models.py:324 models.py:745
+#: models.py:324 models.py:746
 msgid "Sale"
 msgstr "Wyprzedaż"
 
@@ -508,7 +508,7 @@ msgstr "Podatki łącznie"
 msgid "Item total"
 msgstr "Produkty łącznie"
 
-#: models.py:415 models.py:864
+#: models.py:415 models.py:865
 msgid "Discount code"
 msgstr "Kod rabatowy"
 
@@ -538,68 +538,72 @@ msgctxt "shop"
 msgid "Orders"
 msgstr "Zamówienia"
 
-#: models.py:522 templates/admin/shop/order/change_form.html:14
+#: models.py:443
+msgid "Billing name"
+msgstr "Płatnik"
+
+#: models.py:523 templates/admin/shop/order/change_form.html:14
 #: templates/shop/complete.html:80
 msgid "Download PDF invoice"
 msgstr "Pobierz fakturę w formacie PDF"
 
-#: models.py:530
+#: models.py:531
 msgid "Last updated"
 msgstr "Ostatnio zmienione"
 
-#: models.py:641
+#: models.py:642
 msgid "Total price"
 msgstr "Łączna cena"
 
-#: models.py:706 management/commands/product_db.py:30
+#: models.py:707 management/commands/product_db.py:30
 msgid "Title"
 msgstr "Tytuł"
 
-#: models.py:707
+#: models.py:708
 msgid "Active"
 msgstr "Aktywny"
 
-#: models.py:712
+#: models.py:713
 msgid "Categories"
 msgstr "Kategorie"
 
-#: models.py:713
+#: models.py:714
 msgid "Reduce by amount"
 msgstr "Obniż o kwotę"
 
-#: models.py:714
+#: models.py:715
 msgid "Reduce by percent"
 msgstr "Obniż o procent"
 
-#: models.py:717
+#: models.py:718
 msgid "Reduce to amount"
 msgstr "Obniż do kwoty"
 
-#: models.py:718
+#: models.py:719
 msgid "Valid from"
 msgstr "Ważne od"
 
-#: models.py:719
+#: models.py:720
 msgid "Valid to"
 msgstr "Ważne do"
 
-#: models.py:746
+#: models.py:747
 msgid "Sales"
 msgstr "Wyprzedaże"
 
-#: models.py:840
+#: models.py:841
 msgid "Code"
 msgstr "Kod"
 
-#: models.py:841
+#: models.py:842
 msgid "Minimum total purchase"
 msgstr "Minimalna łączna kwota zakupów"
 
-#: models.py:843
+#: models.py:844
 msgid "Uses remaining"
 msgstr "Pozostałe użycia"
 
-#: models.py:844
+#: models.py:845
 msgid ""
 "If you wish to limit the number of times a code may be used, set this value. "
 "It will be decremented upon each use."
@@ -607,7 +611,7 @@ msgstr ""
 "Wpisz wartość jeśli chcesz ograniczyć ilość razy, jaką kod może zostać "
 "wykorzystany. Po każdym użyciu wartość będzię zmniejszana."
 
-#: models.py:865
+#: models.py:866
 msgid "Discount codes"
 msgstr "Kody rabatowe"
 
