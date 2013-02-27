@@ -438,6 +438,7 @@ class Order(models.Model):
     def billing_name(self):
         return "%s %s" % (self.billing_detail_first_name,
                           self.billing_detail_last_name)
+    billing_name.short_description = _("Billing name")
 
     def setup(self, request):
         """
