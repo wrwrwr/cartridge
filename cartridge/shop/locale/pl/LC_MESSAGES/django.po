@@ -652,6 +652,10 @@ msgstr "Produkt został dodany do koszyka"
 msgid "Item added to wishlist"
 msgstr "Produkt został dodany do listy życzeń"
 
+#: views.py:116
+msgid "Please choose attributes"
+msgstr "Wybierz atrybuty"
+
 #: views.py:119
 msgid "Item removed from wishlist"
 msgstr "Produkt został usunięty z listy życzeń"
