@@ -430,8 +430,8 @@ class Order(models.Model):
                       "discount_code", "tax_type", "tax_total")
 
     class Meta:
-        verbose_name = pgettext_lazy("shop", "Order")
-        verbose_name_plural = pgettext_lazy("shop", "Orders")
+        verbose_name = pgettext_lazy("shop", u"Order")
+        verbose_name_plural = pgettext_lazy("shop", u"Orders")
         ordering = ("-id",)
 
     def __unicode__(self):
