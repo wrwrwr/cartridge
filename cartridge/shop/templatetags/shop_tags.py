@@ -11,23 +11,25 @@ register = template.Library()
 
 
 @register.filter
-def currency(value):
+def currency(value, frac_digits=None):
     """
-    Format a value as currency according to locale.
+    Formats a value as currency according to locale, allowing to override
+    the locale precision.
     """
     set_locale()
     if not value:
         value = 0
-    if hasattr(locale, "currency"):
+    if hasattr(locale, "currency") and frac_digits is None:
         value = locale.currency(value, grouping=True)
         if platform.system() == 'Windows':
             value = unicode(value, encoding='iso_8859_1')
     else:
         # based on locale.currency() in python >= 2.5
         conv = locale.localeconv()
+        if frac_digits is None:
+            frac_digits = conv["frac_digits"]
         value = [conv["currency_symbol"], conv["p_sep_by_space"] and " " or "",
-            (("%%.%sf" % conv["frac_digits"]) % value).replace(".",
-            conv["mon_decimal_point"])]
+            (("%%.%sf" % frac_digits) % value).replace(".", conv["mon_decimal_point"])]
         if not conv["p_cs_precedes"]:
             value.reverse()
         value = "".join(value)
