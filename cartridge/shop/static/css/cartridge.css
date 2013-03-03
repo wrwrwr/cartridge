@@ -38,8 +38,6 @@
 .btn-order-history {float:right; margin:-75px 20px 0 0;}
 .discount-form {float:right;}
 .discount-form .btn {float:right; margin:-5px 7px 0 0;}
-.form-cart .order-totals label {width: 87%; float: left; clear: both;}
-.form-cart .order-totals span {width: 10%; float: right; display: block;}
 
 /* Wishlist */
 .wishlist img {vertical-align:middle; margin-right:5px;}
@@ -47,16 +45,17 @@
 .wishlist .btn {margin-left:5px;}
 .wishlist .btn-primary {margin-left:20px;}
 
+/* Order totals */
+.order-totals > div {clear:both; float:right;}
+.order-totals label {float:left; text-align:right;}
+.order-totals span {display:block; float:left; width:80px;}
+
 /* Cart panel in checkout */
 #checkout .checkout-panel {float:right; margin:0px 30px 0 0;}
 #checkout .checkout-panel li {border-bottom:1px dashed #eee; padding:10px 0; color:#999; line-height:15px;}
 #checkout .checkout-panel img {float:left; margin-right:10px;}
 #checkout .checkout-panel .price {float:right; line-height:20px;}
 #checkout .checkout-panel .btn {float:right; margin-top:15px;}
-#checkout .checkout-panel .order-totals {text-align:right;}
-.order-totals label {margin-right:10px; display:inline;}
-.order-totals {float:right; margin:10px 0;}
-
 
 /* Checkout forms */
 #checkout .left, #checkout .right {display:none !important;}
