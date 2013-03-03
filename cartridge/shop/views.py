@@ -192,6 +192,8 @@ def checkout_steps(request):
         # Back button in the form was pressed - load the order form
         # for the previous step and maintain the field values entered.
         step -= 1
+        if step < 1:
+            return redirect("shop_cart")
         form = form_class(request, step, initial=initial)
     elif request.method == "POST" and request.cart.has_items():
         form = form_class(request, step, initial=initial, data=data)
