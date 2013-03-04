@@ -257,7 +257,7 @@ register_setting(
     editable=False,
     default=(
         ("shipping_total", "shipping_type", _("Shipping")),
-        ("discount_total", None, _("Discount")),
+        ("discount_total", "discount_code", _("Discount")),
         ("tax_total", "tax_type", _("Tax")),
     ),
 )

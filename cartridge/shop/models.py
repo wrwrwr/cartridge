@@ -425,7 +425,7 @@ class Order(models.Model):
 
     # These are fields that are stored in the session. They're copied to
     # the order in setup() and removed from the session in complete().
-    session_fields = order_totals_fields() + ["discount_code"]
+    session_fields = order_totals_fields()
 
     class Meta:
         verbose_name = _("Order")
