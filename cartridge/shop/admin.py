@@ -43,6 +43,7 @@ from cartridge.shop.forms import DiscountAdminForm, ImageWidget, MoneyWidget
 from cartridge.shop.models import Category, Product, ProductImage
 from cartridge.shop.models import ProductVariation, ProductOption, Order
 from cartridge.shop.models import OrderItem, Sale, DiscountCode
+from cartridge.shop.utils import order_totals_fields
 
 
 # Lists of field names.
@@ -263,10 +264,11 @@ class OrderAdmin(admin.ModelAdmin):
     fieldsets = (
         (_("Billing details"), {"fields": (tuple(billing_fields),)}),
         (_("Shipping details"), {"fields": (tuple(shipping_fields),)}),
-        (None, {"fields": ("additional_instructions", ("shipping_total",
-            "shipping_type"), ('tax_total', 'tax_type'),
-             ("discount_total", "discount_code"), "item_total",
-            ("total", "status"), "transaction_id")}),
+        (_("Order totals"), {"fields": ["item_total"] +
+                                       order_totals_fields(flat=False) +
+                                       ["total"]}),
+        (None, {"fields": ("additional_instructions", "transaction_id",
+                           "status")}),
     )
 
 

@@ -115,13 +115,17 @@ def set_locale():
         raise ImproperlyConfigured(msg % currency_locale)
 
 
-def order_totals_fields():
+def order_totals_fields(flat=True):
     """
     Returns flattened list of all field names in ``SHOP_ORDER_TOTALS``.
     """
     fields = []
     for total_field, type_field, _ in settings.SHOP_ORDER_TOTALS:
-        fields.append(total_field)
+        total_fields = [total_field]
         if type_field is not None:
-            fields.append(type_field)
+            total_fields.append(type_field)
+        if flat:
+            fields.extend(total_fields)
+        else:
+            fields.append(tuple(total_fields))
     return fields
