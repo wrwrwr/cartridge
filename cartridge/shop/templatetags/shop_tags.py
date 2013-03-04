@@ -29,7 +29,8 @@ def currency(value, frac_digits=None):
         if frac_digits is None:
             frac_digits = conv["frac_digits"]
         value = [conv["currency_symbol"], conv["p_sep_by_space"] and " " or "",
-            (("%%.%sf" % frac_digits) % value).replace(".", conv["mon_decimal_point"])]
+            (("%%.%sf" % frac_digits) % value).replace(".",
+            conv["mon_decimal_point"])]
         if not conv["p_cs_precedes"]:
             value.reverse()
         value = "".join(value)
