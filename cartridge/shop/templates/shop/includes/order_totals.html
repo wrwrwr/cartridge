@@ -4,7 +4,7 @@
     <div>
         <label>{% trans "Subtotal" %}:</label> <span>{{ item_total|currency }}</span>
     </div>
-    {% for label, total in totals.iteritems %}
+    {% for label, total in totals %}
     <div>
         <label>{{ label }}:</label> <span>{{ total|currency }}</span>
     </div>
