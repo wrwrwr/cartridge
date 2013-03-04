@@ -37,11 +37,11 @@ def currency(value):
 
 def _order_totals(context):
     """
-    Adds ``item_total``, ``order_total``, and a ``totals`` dict with labels
-    and values of other totals to the template context. Uses the order object
-    for email receipts, or the cart object for checkout.
+    Adds ``item_total``, ``order_total``, and a ``totals`` list with
+    (label, value) tuples for other nonzero totals to the template context.
+    Uses the order object for email receipts, or the cart object for checkout.
     """
-    totals = {}
+    totals = []
     if "order" in context:
         order = context["order"]
         order_total = item_total = order.item_total
@@ -50,7 +50,7 @@ def _order_totals(context):
                 label = getattr(order, type_field)
             total = getattr(order, total_field)
             if total:
-                totals[label] = total
+                totals.append((label, total))
                 order_total += total
     else:
         request = context["request"]
@@ -64,8 +64,8 @@ def _order_totals(context):
                     label = session.get(type_field, None)
                 total = session.get(total_field, None)
                 if total:
-                   totals[label] = total
-                   order_total += total
+                    totals.append((label, total))
+                    order_total += total
     context["item_total"] = item_total
     context["totals"] = totals
     context["order_total"] = order_total

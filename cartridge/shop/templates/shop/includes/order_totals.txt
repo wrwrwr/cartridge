@@ -1,5 +1,5 @@
 {% load i18n shop_tags %}{% if totals %}
-{% trans "Subtotal" %}: {{ item_total|currency }}{% for label, total in totals.iteritems %}
+{% trans "Subtotal" %}: {{ item_total|currency }}{% for label, total in totals %}
 {{ label }}: {{ total|currency }}{% endfor %}{% endif %}
 {% trans "Total" %}: {{ order_total|currency }}
 
