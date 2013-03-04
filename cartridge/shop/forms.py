@@ -292,7 +292,7 @@ class DiscountForm(forms.ModelForm):
                 set_shipping(self._request, _("Free shipping"), 0)
             self._request.session["free_shipping"] = discount.free_shipping
             self._request.session["discount_code"] = discount.code
-            self._request.session["discount_total"] = total
+            self._request.session["discount_total"] = -total
 
 
 class OrderForm(FormsetForm, DiscountForm):
