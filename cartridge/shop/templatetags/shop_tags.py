@@ -1,8 +1,9 @@
-from decimal import Decimal
 import locale
 import platform
 
 from django import template
+
+from mezzanine.conf import settings
 
 from cartridge.shop.utils import set_locale
 
@@ -36,32 +37,38 @@ def currency(value):
 
 def _order_totals(context):
     """
-    Add ``item_total``, ``shipping_total``, ``discount_total``, ``tax_total``,
-    and ``order_total`` to the template context. Use the order object for
-    email receipts, or the cart object for checkout.
+    Adds ``item_total``, ``order_total``, and a ``totals`` dict with labels
+    and values of other totals to the template context. Uses the order object
+    for email receipts, or the cart object for checkout.
     """
+    totals = {}
     if "order" in context:
-        for f in ("item_total", "shipping_total", "discount_total",
-                  "tax_total"):
-            context[f] = getattr(context["order"], f)
+        order = context["order"]
+        order_total = item_total = order.item_total
+        for total_field, type_field, label in settings.SHOP_ORDER_TOTALS:
+            if type_field:
+                label = getattr(order, type_field)
+            total = getattr(order, total_field)
+            if total:
+                totals[label] = total
+                order_total += total
     else:
-        context["item_total"] = context["request"].cart.total_price()
-        if context["item_total"] == 0:
+        request = context["request"]
+        order_total = item_total = request.cart.total_price()
+        if item_total > 0:
             # Ignore session if cart has no items, as cart may have
             # expired sooner than the session.
-            context["tax_total"] = context["discount_total"] = \
-                context["shipping_total"] = 0
-        else:
-            for f in ("shipping_type", "shipping_total", "discount_total",
-                      "tax_type", "tax_total"):
-                context[f] = context["request"].session.get(f, None)
-    context["order_total"] = context.get("item_total", None)
-    if context.get("shipping_total", None) is not None:
-        context["order_total"] += Decimal(str(context["shipping_total"]))
-    if context.get("discount_total", None) is not None:
-        context["order_total"] -= context["discount_total"]
-    if context.get("tax_total", None) is not None:
-        context["order_total"] += Decimal(str(context["tax_total"]))
+            session = request.session
+            for total_field, type_field, label in settings.SHOP_ORDER_TOTALS:
+                if type_field:
+                    label = session.get(type_field, None)
+                total = session.get(total_field, None)
+                if total:
+                   totals[label] = total
+                   order_total += total
+    context["item_total"] = item_total
+    context["totals"] = totals
+    context["order_total"] = order_total
     return context
 
 

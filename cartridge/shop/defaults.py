@@ -248,6 +248,21 @@ register_setting(
 )
 
 register_setting(
+    name="SHOP_ORDER_TOTALS",
+    label=_("Order Totals"),
+    description="Sequence of totals, each consisting of three elements: "
+        "total field name (a property of the ``Order`` model), total type "
+        "field (possibly ``None``), and a string to use as the total title "
+        "when type is not available.",
+    editable=False,
+    default=(
+        ("shipping_total", "shipping_type", _("Shipping")),
+        ("discount_total", None, _("Discount")),
+        ("tax_total", "tax_type", _("Tax")),
+    ),
+)
+
+register_setting(
     name="SHOP_PER_PAGE_CATEGORY",
     label=_("Products Per Category Page"),
     description=_("Number of products to display per category page."),
