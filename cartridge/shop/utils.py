@@ -113,3 +113,15 @@ def set_locale():
                 "configure the SHOP_CURRENCY_LOCALE setting in your settings "
                 "module.")
         raise ImproperlyConfigured(msg % currency_locale)
+
+
+def order_totals_fields():
+    """
+    Returns flattened list of all field names in ``SHOP_ORDER_TOTALS``.
+    """
+    fields = []
+    for total_field, type_field, _ in settings.SHOP_ORDER_TOTALS:
+        fields.append(total_field)
+        if type_field is not None:
+            fields.append(type_field)
+    return fields

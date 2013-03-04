@@ -20,6 +20,7 @@ from mezzanine.utils.models import AdminThumbMixin, upload_to
 from mezzanine.utils.timezone import now
 
 from cartridge.shop import fields, managers
+from cartridge.shop.utils import order_totals_fields
 
 try:
     from _mysql_exceptions import OperationalError
@@ -424,8 +425,7 @@ class Order(models.Model):
 
     # These are fields that are stored in the session. They're copied to
     # the order in setup() and removed from the session in complete().
-    session_fields = ("shipping_type", "shipping_total", "discount_total",
-                      "discount_code", "tax_type", "tax_total")
+    session_fields = order_totals_fields() + ["discount_code"]
 
     class Meta:
         verbose_name = _("Order")
