@@ -1,13 +1,10 @@
-from django import forms
 from django.contrib import admin
-from django.db.models.fields import BLANK_CHOICE_DASH
-from django.utils.translation import ugettext_lazy as _
 
 from mezzanine.core.admin import TranslationAdmin, TabularDynamicInlineAdmin
-from mezzanine.core.forms import DynamicInlineAdminForm
 
 from .models import (ProductAttribute, ChoiceAttribute, ChoiceAttributeOption,
                      StringAttribute, LettersAttribute, ListAttribute)
+from .forms import AttributeSelectionForm, ProductAttributeForm
 
 
 class AttributeAdmin(TranslationAdmin):
@@ -37,60 +34,38 @@ class LettersAttributeAdmin(StringAttributeAdmin):
     list_editable = list(StringAttributeAdmin.list_editable) + letters_fields
 
 
-class ProductAttributeForm(DynamicInlineAdminForm):
-    # Display attributes as type / name in a single list.
+def attribute_fieldsets(fieldsets):
+    # Hide type / id fields, but keep the processing they provide.
+    fields = fieldsets[0][1]['fields']
+    index = fields.index('attribute_type')
+    fields.remove('attribute_type')
+    fields.remove('attribute_id')
+    # Workaround for https://code.djangoproject.com/ticket/12238.
+    fields.insert(index, 'attribute')
+    return fieldsets
 
-    def __init__(self, *args, **kwargs):
-        # Create a fake "attribute" field and populate its choices with all
-        # objects having content type allowable for the attribute_type field.
-        # Note: this assumes that attribute_type uses limit_choices_to.
-        attributes = BLANK_CHOICE_DASH[:]
-        for attribute_type in self.base_fields['attribute_type'].queryset:
-            attributes_group = []
-            for attribute in attribute_type.model_class().objects.all():
-                attributes_group.append(
-                    ('{}-{}'.format(attribute_type.pk, attribute.pk),
-                     attribute))
-            attributes.append((attribute_type, attributes_group))
-        self.base_fields['attribute'] = forms.ChoiceField(label=_("Attribute"),
-                                                          choices=attributes)
 
-        super(ProductAttributeForm, self).__init__(*args, **kwargs)
+class ListAttributeAdmin(AttributeAdmin):
+    model = ListAttribute
+    form = AttributeSelectionForm
+    list_fields = ['attribute']
+    list_display = list(AttributeAdmin.list_display) + list_fields
 
-        if self.prefix.startswith('attributes-'):
-            # Split attribute_type-attribute_id values in data, so they can
-            # be saved using separate fields.
-            data = self.data
-            attribute = self.add_prefix('attribute')
-            type_id = data.get(attribute, '').split('-', 1)
-            if len(type_id) == 2:
-                data[attribute + '_type'], data[attribute + '_id'] = type_id
-            # Make an initial value for the fake "attribute" field equal to
-            # the current attribute_type-attribute_id.
-            try:
-                initial = self.initial
-                initial['attribute'] = '{}-{}'.format(
-                    initial['attribute_type'], initial['attribute_id'])
-            except KeyError:
-                pass
+    def get_fieldsets(self, request, obj=None):
+        return attribute_fieldsets(
+            super(ListAttributeAdmin, self).get_fieldsets(request, obj))
 
 
 class ProductAttributeAdmin(TabularDynamicInlineAdmin):
     model = ProductAttribute
     form = ProductAttributeForm
 
-    def get_fieldsets(self, req, obj=None):
-        fieldsets = super(ProductAttributeAdmin, self).get_fieldsets(req, obj)
-        fields = fieldsets[0][1]['fields']
-        # Hide type / id fields, but keep the processing they provide.
-        fields.remove('attribute_type')
-        fields.remove('attribute_id')
-        # Workaround for https://code.djangoproject.com/ticket/12238.
-        fields.insert(0, 'attribute')
-        return fieldsets
+    def get_fieldsets(self, request, obj=None):
+        return attribute_fieldsets(
+            super(ProductAttributeAdmin, self).get_fieldsets(request, obj))
 
 
 admin.site.register(ChoiceAttribute, ChoiceAttributeAdmin)
 admin.site.register(StringAttribute, StringAttributeAdmin)
 admin.site.register(LettersAttribute, LettersAttributeAdmin)
-admin.site.register(ListAttribute)
+admin.site.register(ListAttribute, ListAttributeAdmin)
