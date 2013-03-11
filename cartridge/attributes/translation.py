@@ -1,5 +1,5 @@
 from .models import (Attribute, ChoiceAttribute, ChoiceAttributeOption,
-                     StringAttribute)
+                     StringAttribute, LettersAttribute)
 
 from modeltranslation.translator import TranslationOptions, translator
 
@@ -13,6 +13,6 @@ class ChoiceAttributeOptionTranslationOptions(TranslationOptions):
 
 
 translator.register(Attribute, AttributeTranslationOptions)
-translator.register((ChoiceAttribute, StringAttribute))
+translator.register((ChoiceAttribute, StringAttribute, LettersAttribute))
 translator.register(ChoiceAttributeOption,
                     ChoiceAttributeOptionTranslationOptions)

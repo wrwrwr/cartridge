@@ -26,9 +26,15 @@ class ChoiceAttributeAdmin(AttributeAdmin):
 
 
 class StringAttributeAdmin(AttributeAdmin):
-    string_fields = ['max_length', 'length_based_price', 'free_characters']
+    string_fields = ['max_length']
     list_display = list(AttributeAdmin.list_display) + string_fields
     list_editable = list(AttributeAdmin.list_editable) + string_fields
+
+
+class LettersAttributeAdmin(StringAttributeAdmin):
+    letters_fields = ['free_characters']
+    list_display = list(StringAttributeAdmin.list_display) + letters_fields
+    list_editable = list(StringAttributeAdmin.list_editable) + letters_fields
 
 
 class ProductAttributeForm(DynamicInlineAdminForm):
