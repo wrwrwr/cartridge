@@ -6,8 +6,8 @@ from django.utils.translation import ugettext_lazy as _
 from mezzanine.core.admin import TranslationAdmin, TabularDynamicInlineAdmin
 from mezzanine.core.forms import DynamicInlineAdminForm
 
-from .models import (ProductAttribute, StringAttribute, ChoiceAttribute,
-                     ChoiceAttributeOption)
+from .models import (ProductAttribute, ChoiceAttribute, ChoiceAttributeOption,
+                     StringAttribute, LettersAttribute, ListAttribute)
 
 
 class AttributeAdmin(TranslationAdmin):
@@ -92,3 +92,5 @@ class ProductAttributeAdmin(TabularDynamicInlineAdmin):
 
 admin.site.register(ChoiceAttribute, ChoiceAttributeAdmin)
 admin.site.register(StringAttribute, StringAttributeAdmin)
+admin.site.register(LettersAttribute, LettersAttributeAdmin)
+admin.site.register(ListAttribute)
