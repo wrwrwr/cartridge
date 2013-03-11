@@ -27,7 +27,6 @@ VALUE_TYPES = Q(
 
 
 class Attribute(models.Model):
-
     name = models.CharField(_("Name"), max_length=255,
         help_text=_("Attribute kind such as colour, size etc."))
     visible = models.BooleanField(_("Visible"), default=True,
@@ -54,7 +53,6 @@ class Attribute(models.Model):
 
 class ProductAttribute(Orderable):
     # Attribute assigned to a product.
-
     product = models.ForeignKey(Product, related_name='attributes')
     attribute_type = models.ForeignKey(ContentType,
                                        limit_choices_to=ATTRIBUTE_TYPES)
@@ -72,7 +70,6 @@ class ProductAttribute(Orderable):
 class AttributeValue(models.Model):
     # Attribute value assigned to a cart or order item
     # (or a product variation?).
-
     value_type = models.ForeignKey(ContentType,
                                    limit_choices_to=VALUE_TYPES)
     value_id = models.IntegerField()
@@ -106,7 +103,6 @@ class OrderItemAttributeValue(AttributeValue):
 
 
 class ChoiceAttribute(Attribute):
-
     class Meta:
         verbose_name = _("choice attribute")
         verbose_name_plural = _("choice attributes")
@@ -123,7 +119,6 @@ class ChoiceAttribute(Attribute):
 
 
 class ChoiceAttributeOption(Orderable):
-
     attribute = models.ForeignKey(ChoiceAttribute,
         help_text=_("What attribute is this value for?"))
     option = models.CharField(_("Option"), max_length=255,
@@ -147,12 +142,7 @@ class ChoiceAttributeOption(Orderable):
 
 
 class ChoiceAttributeValue(models.Model):
-
     option = models.ForeignKey(ChoiceAttributeOption, verbose_name=_("Option"))
-
-    class Meta:
-        verbose_name = _("choice value")
-        verbose_name_plural = _("choice values")
 
     def __getattr__(self, name):
         # We don't know the attribute, but the option does.
@@ -194,13 +184,8 @@ class StringAttribute(Attribute):
 
 
 class StringAttributeValue(models.Model):
-
     attribute = models.ForeignKey(StringAttribute)
     string = models.TextField(_("String"))
-
-    class Meta:
-        verbose_name = _("string value")
-        verbose_name_plural = _("string values")
 
     def __nonzero__(self):
         return bool(self.string)
@@ -217,7 +202,6 @@ class StringAttributeValue(models.Model):
 
 class LettersAttribute(StringAttribute):
     # Product unit price based on length.
-
     free_characters = models.CharField(_("Free characters"), max_length=50,
         blank=True,
         help_text=_("Characters excluded from the price calculation "
@@ -232,11 +216,6 @@ class LettersAttribute(StringAttribute):
 
 
 class LettersAttributeValue(StringAttributeValue):
-
-    class Meta:
-        verbose_name = _("letters value")
-        verbose_name_plural = _("letters values")
-
     def price(self, variation):
         string = self.string
         if self.attribute.free_characters:
@@ -246,7 +225,6 @@ class LettersAttributeValue(StringAttributeValue):
 
 class ListAttribute(Attribute):
     # Multiple values for a single attribute.
-
     attribute_type = models.ForeignKey(ContentType,
                                        limit_choices_to=ATTRIBUTE_TYPES)
     attribute_id = models.IntegerField()
