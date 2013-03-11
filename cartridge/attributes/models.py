@@ -18,11 +18,12 @@ from cartridge.shop.models import (Product, CartItem, OrderItem)
 # Used to limit choices in generic relations.
 ATTRIBUTE_TYPES = Q(
     app_label='attributes', model__in=('choiceattribute', 'stringattribute',
-                                       'lettersattribute'))
+                                       'lettersattribute', 'listattribute'))
 VALUE_TYPES = Q(
     app_label='attributes', model__in=('choiceattributevalue',
                                        'stringattributevalue',
-                                       'lettersattributevalue'))
+                                       'lettersattributevalue',
+                                       'listattributevalue'))
 
 
 class Attribute(models.Model):
@@ -73,7 +74,7 @@ class AttributeValue(models.Model):
     # (or a product variation?).
 
     value_type = models.ForeignKey(ContentType,
-                                   limit_choices_to=ATTRIBUTE_TYPES)
+                                   limit_choices_to=VALUE_TYPES)
     value_id = models.IntegerField()
     value = generic.GenericForeignKey('value_type', 'value_id')
 
@@ -127,7 +128,7 @@ class ChoiceAttributeOption(Orderable):
         help_text=_("What attribute is this value for?"))
     option = models.CharField(_("Option"), max_length=255,
         help_text=_("Potential value of the attribute."))
-    price = fields.MoneyField(_("Price change"), blank=True, null=True,
+    price = fields.MoneyField(_("Price change"), null=True, blank=True,
         help_text=_("Unit price will be modified by this amount, "
                     "if the option is chosen."))
 
@@ -178,7 +179,7 @@ class StringAttribute(Attribute):
     max_length = models.PositiveIntegerField(_("Max length"),
         null=True, blank=True,
         help_text=_("Maximum number of characters a client can enter. "
-                    "Leave blank if you don't want to limit text length."))
+                    "Leave blank if you don't want to limit the text length."))
 
     class Meta:
         verbose_name = _("string attribute")
@@ -218,13 +219,16 @@ class LettersAttribute(StringAttribute):
     # Product unit price based on length.
 
     free_characters = models.CharField(_("Free characters"), max_length=50,
-        null=True, blank=True,
+        blank=True,
         help_text=_("Characters excluded from the price calculation "
                     "(regular expression)."))
 
     class Meta:
         verbose_name = _("letters attribute")
         verbose_name_plural = _("letters attributes")
+
+    def make_value(self, value):
+        return LettersAttributeValue(attribute=self, string=value)
 
 
 class LettersAttributeValue(StringAttributeValue):
@@ -240,11 +244,87 @@ class LettersAttributeValue(StringAttributeValue):
         return (len(string) - 1) * variation.price()
 
 
+class ListAttribute(Attribute):
+    # Multiple values for a single attribute.
+
+    attribute_type = models.ForeignKey(ContentType,
+                                       limit_choices_to=ATTRIBUTE_TYPES)
+    attribute_id = models.IntegerField()
+    attribute = generic.GenericForeignKey('attribute_type', 'attribute_id')
+    separator = models.CharField(_("Values separator"),
+        max_length=10, default=', ',
+        help_text=_("Character or string used to separate values when "
+                    "parsing posted string. Must be guaranteed not to "
+                    "appear in string representation of any single value."))
+
+    class Meta:
+        verbose_name = _("list attribute")
+        verbose_name_plural = _("list attributes")
+
+    def make_value(self, value):
+        tokens = value.split(self.separator)
+        values = [self.attribute.make_value(t) for t in tokens]
+        return ListAttributeValue(attribute=self, values=values)
+
+
+class ListAttributeValue(models.Model):
+    # Combines a set of other attribute values into a list behaving as
+    # a single value.
+    attribute = models.ForeignKey(ListAttribute)
+
+    # Placeholder for unsaved subvalues.
+    _values = None
+
+    def __init__(self, *args, **kwargs):
+        # Temporarily stores values on an instance variable, so we
+        # can save the list and its element together.
+        self._values = kwargs.pop('values')
+        super(ListAttributeValue, self).__init__(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        # Saves list elements, after saving the list model.
+        super(ListAttributeValue, self).save(*args, **kwargs)
+        if self._values:
+            for value in self._values[:]:
+                try:
+                    value.save(*args, **kwargs)
+                except:
+                    raise
+                else:
+                    self._values = self._values[1:]
+
+    def __nonzero__(self):
+        return any(self.values.all())
+
+    def __unicode__(self):
+        return self.attribute.separator.join(self.values.all())
+
+    def price(self, variation):
+        return sum(v.price(variation) for v in self.values.all())
+
+    def digest(self):
+        return self.attribute.separator.join(
+            v.digest() for v in self.values.all())
+
+
+class ListAttributeValueValue(models.Model):
+    # One of values on the list.
+
+    list = models.ForeignKey(ListAttributeValue, related_name='values')
+    value_type = models.ForeignKey(ContentType,
+                                   limit_choices_to=VALUE_TYPES)
+    value_id = models.IntegerField()
+    value = generic.GenericForeignKey('value_type', 'value_id')
+
+    class Meta:
+        order_with_respect_to = 'list'
+
+
 def attributes_hash(attribute_values):
     """
-    Returns a string that can be used to uniquely identify the attribute values
-    set (hashes are used to quickly decide if cart contains an item with the
-    same attributes).
+    Returns a string that can be used to uniquely identify the given attribute
+    values set (hashes are used to quickly decide if cart contains an item with
+    the same attributes).
     """
     if not attribute_values:
         return ''
