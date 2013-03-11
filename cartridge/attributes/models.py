@@ -17,10 +17,12 @@ from cartridge.shop.models import (Product, CartItem, OrderItem)
 
 # Used to limit choices in generic relations.
 ATTRIBUTE_TYPES = Q(
-    app_label='attributes', model__in=('choiceattribute', 'stringattribute'))
+    app_label='attributes', model__in=('choiceattribute', 'stringattribute',
+                                       'lettersattribute'))
 VALUE_TYPES = Q(
     app_label='attributes', model__in=('choiceattributevalue',
-                                       'stringattributevalue'))
+                                       'stringattributevalue',
+                                       'lettersattributevalue'))
 
 
 class Attribute(models.Model):
@@ -173,19 +175,10 @@ class ChoiceAttributeValue(models.Model):
 
 
 class StringAttribute(Attribute):
-
     max_length = models.PositiveIntegerField(_("Max length"),
         null=True, blank=True,
-        help_text=_("Maximum number of characters a client can enter."
-                    " Leave blank if you don't want to limit text length."))
-    length_based_price = models.BooleanField(_("Length based price"),
-        default=True,
-        help_text=_("Product's unit price will be multiplied by length of "
-                    "the string entered by the client."))
-    free_characters = models.CharField(_("Free characters"), max_length=50,
-        null=True, blank=True,
-        help_text=_("Characters excluded from the price calculation"
-                    " (regular expression)."))
+        help_text=_("Maximum number of characters a client can enter. "
+                    "Leave blank if you don't want to limit text length."))
 
     class Meta:
         verbose_name = _("string attribute")
@@ -215,13 +208,36 @@ class StringAttributeValue(models.Model):
         return self.string
 
     def price(self, variation):
+        return 0
+
+    def digest(self):
+        return self.string.encode('unicode_escape')
+
+
+class LettersAttribute(StringAttribute):
+    # Product unit price based on length.
+
+    free_characters = models.CharField(_("Free characters"), max_length=50,
+        null=True, blank=True,
+        help_text=_("Characters excluded from the price calculation "
+                    "(regular expression)."))
+
+    class Meta:
+        verbose_name = _("letters attribute")
+        verbose_name_plural = _("letters attributes")
+
+
+class LettersAttributeValue(StringAttributeValue):
+
+    class Meta:
+        verbose_name = _("letters value")
+        verbose_name_plural = _("letters values")
+
+    def price(self, variation):
         string = self.string
         if self.attribute.free_characters:
             string = re.sub(self.attribute.free_characters, '', string)
         return (len(string) - 1) * variation.price()
-
-    def digest(self):
-        return self.string.encode('unicode_escape')
 
 
 def attributes_hash(attribute_values):
