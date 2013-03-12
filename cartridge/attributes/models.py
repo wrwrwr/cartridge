@@ -327,6 +327,10 @@ class ListAttributeSubvalue(models.Model):
 
 
 class ImageAttribute(Attribute):
+    max_size = models.IntegerField(_("Maximum file size"), default=1,
+        help_text=_("Maximum size of file users are allowed to upload, "
+                    "in megabytes. Zero means no limit."))
+
     class Meta:
         verbose_name = _("image attribute")
         verbose_name_plural = _("image attributes")
@@ -335,6 +339,11 @@ class ImageAttribute(Attribute):
         return forms.ImageField(label=self.name, required=self.required)
 
     def make_value(self, value):
+        print self.max_size, value, value._size
+        if (self.max_size > 0 and value and
+                value._size > self.max_size * 1024 * 1024):
+            raise forms.ValidationError(_("Uploaded image can't be larger "
+                                          "than {} MB.").format(self.max_size))
         return ImageAttributeValue(attribute=self, image=value)
 
 
