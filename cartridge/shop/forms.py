@@ -108,9 +108,18 @@ class AddProductForm(forms.Form):
         # Collect all attribute values under one key in cleaned_data.
         attribute_values = {}
         for attribute in self._attributes:
-            value = attribute.make_value(data.pop(attribute.field_name()))
-            if value:
-                attribute_values[attribute] = value
+            field = attribute.field_name()
+            try:
+                value = attribute.make_value(data.pop(field))
+            except forms.ValidationError, e:
+                # Assign validation errors from make_value to attribute field.
+                # We're past standard field validation, so there are no field
+                # errors to start with, and the exception will have just non-
+                # field errors.
+                self._errors[field] = self.error_class(e.messages)
+            else:
+                if value:
+                    attribute_values[attribute] = value
         self.cleaned_data['attribute_values'] = attribute_values
 
         # Ensure the product has a price if adding to cart.
