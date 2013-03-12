@@ -3,7 +3,8 @@ from django.contrib import admin
 from mezzanine.core.admin import TranslationAdmin, TabularDynamicInlineAdmin
 
 from .models import (ProductAttribute, ChoiceAttribute, ChoiceAttributeOption,
-                     StringAttribute, LettersAttribute, ListAttribute)
+                     StringAttribute, LettersAttribute, ListAttribute,
+                     ImageAttribute)
 from .forms import AttributeSelectionForm, ProductAttributeForm
 
 
@@ -69,3 +70,4 @@ admin.site.register(ChoiceAttribute, ChoiceAttributeAdmin)
 admin.site.register(StringAttribute, StringAttributeAdmin)
 admin.site.register(LettersAttribute, LettersAttributeAdmin)
 admin.site.register(ListAttribute, ListAttributeAdmin)
+admin.site.register(ImageAttribute, AttributeAdmin)

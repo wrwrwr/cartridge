@@ -11,6 +11,7 @@ from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 
 from mezzanine.core.models import Orderable
+from mezzanine.utils.models import upload_to
 
 from cartridge.shop import fields
 from cartridge.shop.models import (Product, CartItem, OrderItem)
@@ -18,21 +19,23 @@ from cartridge.shop.models import (Product, CartItem, OrderItem)
 # Used to limit choices in generic relations.
 ATTRIBUTE_TYPES = Q(
     app_label='attributes', model__in=('choiceattribute', 'stringattribute',
-                                       'lettersattribute', 'listattribute'))
+                                       'lettersattribute', 'listattribute',
+                                       'imageattribute'))
 VALUE_TYPES = Q(
     app_label='attributes', model__in=('choiceattributevalue',
                                        'stringattributevalue',
                                        'lettersattributevalue',
-                                       'listattributevalue'))
+                                       'listattributevalue',
+                                       'imageattributevalue'))
 
 
 class Attribute(models.Model):
     name = models.CharField(_("Name"), max_length=255,
         help_text=_("Attribute kind such as colour, size etc."))
-    visible = models.BooleanField(_("Visible"), default=True,
-        help_text=_("Should this attribute be visible in cart?"))
     required = models.BooleanField(_("Required"), default=True,
         help_text=_("Can the client leave this attribute unspecified?"))
+    visible = models.BooleanField(_("Visible"), default=True,
+        help_text=_("Should this attribute be visible in cart?"))
 
     class Meta:
         abstract = True
@@ -46,7 +49,7 @@ class Attribute(models.Model):
         return self.name.encode('unicode_escape')
 
     def digest(self):
-        # Digest are used to generate attribute hashes, to easily check
+        # Digests are used to generate attribute hashes, to easily check
         # if attribute sets match.
         return self.field_name()
 
@@ -68,6 +71,25 @@ class ProductAttribute(Orderable):
 
 
 class AttributeValue(models.Model):
+    # Common interface of all values.
+    class Meta:
+        abstract = True
+
+    def __nonzero__(self):
+        # If bool(value) is False it's considered undefined and not saved.
+        return super(AttributeValue, self).__nonzero__()
+
+    def price(self, variation):
+        # Added to unit price.
+        return 0
+
+    def digest(self):
+        # Used to check if a product with the same attributes / values is
+        # in the cart.
+        return unicode(self).encode('unicode_escape')
+
+
+class ItemAttributeValue(models.Model):
     # Attribute value assigned to a cart or order item
     # (or a product variation?).
     value_type = models.ForeignKey(ContentType,
@@ -89,16 +111,16 @@ class AttributeValue(models.Model):
 #        related_name='attribute_values')
 
 
-class CartItemAttributeValue(AttributeValue):
+class CartItemAttributeValue(ItemAttributeValue):
     item = models.ForeignKey(CartItem, related_name='attribute_values')
 
 
 # TODO: Hopefully wishlists will become storable some day.
-#class WishlistItemAttributeValue(AttributeValue):
+#class WishlistItemAttributeValue(ItemAttributeValue):
 #    item = models.ForeignKey(WishlistItem, related_name='attribute_values')
 
 
-class OrderItemAttributeValue(AttributeValue):
+class OrderItemAttributeValue(ItemAttributeValue):
     item = models.ForeignKey(OrderItem, related_name='attribute_values')
 
 
@@ -141,7 +163,7 @@ class ChoiceAttributeOption(Orderable):
         return (self.id, render_to_string(template, context))
 
 
-class ChoiceAttributeValue(models.Model):
+class ChoiceAttributeValue(AttributeValue):
     option = models.ForeignKey(ChoiceAttributeOption, verbose_name=_("Option"))
 
     def __getattr__(self, name):
@@ -160,9 +182,6 @@ class ChoiceAttributeValue(models.Model):
 
     def price(self, variation):
         return self.option.price
-
-    def digest(self):
-        return self.option.option.encode('unicode_escape')
 
 
 class StringAttribute(Attribute):
@@ -183,7 +202,7 @@ class StringAttribute(Attribute):
         return StringAttributeValue(attribute=self, string=value)
 
 
-class StringAttributeValue(models.Model):
+class StringAttributeValue(AttributeValue):
     attribute = models.ForeignKey(StringAttribute)
     string = models.TextField(_("String"))
 
@@ -192,12 +211,6 @@ class StringAttributeValue(models.Model):
 
     def __unicode__(self):
         return self.string
-
-    def price(self, variation):
-        return 0
-
-    def digest(self):
-        return self.string.encode('unicode_escape')
 
 
 class LettersAttribute(StringAttribute):
@@ -239,13 +252,16 @@ class ListAttribute(Attribute):
         verbose_name = _("list attribute")
         verbose_name_plural = _("list attributes")
 
+    def field(self):
+        return forms.CharField(label=self.name, required=self.required)
+
     def make_value(self, value):
         tokens = value.split(self.separator)
         values = [self.attribute.make_value(t) for t in tokens]
         return ListAttributeValue(attribute=self, values=values)
 
 
-class ListAttributeValue(models.Model):
+class ListAttributeValue(AttributeValue):
     # Combines a set of other attribute values into a list behaving as
     # a single value.
     attribute = models.ForeignKey(ListAttribute)
@@ -296,6 +312,30 @@ class ListAttributeValueValue(models.Model):
 
     class Meta:
         order_with_respect_to = 'list'
+
+
+class ImageAttribute(Attribute):
+    class Meta:
+        verbose_name = _("image attribute")
+        verbose_name_plural = _("image attributes")
+
+    def field(self):
+        return forms.ImageField(label=self.name, required=self.required)
+
+    def make_value(self, value):
+        return ImageAttributeValue(attribute=self, image=value)
+
+
+class ImageAttributeValue(AttributeValue):
+    attribute = models.ForeignKey(StringAttribute)
+    image = models.ImageField(upload_to=upload_to(
+        'attributes.ImageAttributeValue.image', 'attributes'))
+
+    def __nonzero__(self):
+        return bool(self.image)
+
+    def __unicode__(self):
+        return self.image
 
 
 def attributes_hash(attribute_values):
