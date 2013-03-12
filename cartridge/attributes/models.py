@@ -258,7 +258,9 @@ class ListAttribute(Attribute):
 
     def make_value(self, value):
         tokens = value.split(self.separator)
-        values = [self.attribute.make_value(t) for t in tokens]
+        attribute_field = self.attribute.field()
+        values = [self.attribute.make_value(attribute_field.clean(t))
+                  for t in tokens]
         return ListAttributeValue(attribute=self, values=values)
 
 
@@ -336,7 +338,7 @@ class ImageAttributeValue(AttributeValue):
         return bool(self.image)
 
     def __unicode__(self):
-        return self.image
+        return self.image.name
 
 
 def attributes_hash(attribute_values):
