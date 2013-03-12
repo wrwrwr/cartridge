@@ -20,6 +20,7 @@ class AttributeSelectionForm(forms.ModelForm):
                     ('{}-{}'.format(attribute_type.pk, attribute.pk),
                      attribute))
             attributes.append((attribute_type, attributes_group))
+        # TODO: Base fields should never be modified?
         self.base_fields['attribute'] = forms.ChoiceField(label=_("Attribute"),
                                                           choices=attributes)
 

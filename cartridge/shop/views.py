@@ -50,8 +50,9 @@ def product(request, slug, template="shop/product.html"):
     if variations:
         initial_data = dict([(f, getattr(variations[0], f)) for f in fields])
     initial_data["quantity"] = 1
-    add_product_form = AddProductForm(request.POST or None, product=product,
-                                      initial=initial_data, to_cart=to_cart)
+    add_product_form = AddProductForm(
+        request.POST or None, request.FILES or None,
+        product=product, initial=initial_data, to_cart=to_cart)
     if request.method == "POST":
         if add_product_form.is_valid():
             if to_cart:
