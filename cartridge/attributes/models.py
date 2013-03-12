@@ -17,6 +17,7 @@ from cartridge.shop import fields
 from cartridge.shop.models import (Product, CartItem, OrderItem)
 
 # Used to limit choices in generic relations.
+# TODO: All Attribute / AttributeValue subclasses respectively.
 ATTRIBUTE_TYPES = Q(
     app_label='attributes', model__in=('choiceattribute', 'stringattribute',
                                        'lettersattribute', 'listattribute',
@@ -327,7 +328,7 @@ class ImageAttribute(Attribute):
 
 
 class ImageAttributeValue(AttributeValue):
-    attribute = models.ForeignKey(StringAttribute)
+    attribute = models.ForeignKey(ImageAttribute)
     image = models.ImageField(upload_to=upload_to(
         'attributes.ImageAttributeValue.image', 'attributes'))
 
