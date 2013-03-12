@@ -244,7 +244,7 @@ class ListAttribute(Attribute):
     attribute_id = models.IntegerField()
     attribute = generic.GenericForeignKey('attribute_type', 'attribute_id')
     separator = models.CharField(_("Values separator"),
-        max_length=10, default=', ',
+        max_length=10, default=',',
         help_text=_("Character or string used to separate values when "
                     "parsing posted string. Must be guaranteed not to "
                     "appear in string representation of any single value."))
@@ -258,9 +258,9 @@ class ListAttribute(Attribute):
 
     def make_value(self, value):
         tokens = value.split(self.separator)
-        attribute_field = self.attribute.field()
-        values = [self.attribute.make_value(attribute_field.clean(t))
-                  for t in tokens]
+        field = self.attribute.field()
+        make_value = self.attribute.make_value
+        values = [make_value(field.clean(t.strip())) for t in tokens]
         return ListAttributeValue(attribute=self, values=values)
 
 
@@ -269,52 +269,61 @@ class ListAttributeValue(AttributeValue):
     # a single value.
     attribute = models.ForeignKey(ListAttribute)
 
-    # Placeholder for unsaved subvalues.
-    _values = None
+    # Placeholder for unsaved list elements.
+    _values = []
 
     def __init__(self, *args, **kwargs):
         # Temporarily stores values on an instance variable, so we
         # can save the list and its element together.
-        self._values = kwargs.pop('values')
+        self._values = kwargs.pop('values', [])
         super(ListAttributeValue, self).__init__(*args, **kwargs)
 
     def save(self, *args, **kwargs):
         # Saves list elements, after saving the list model.
         super(ListAttributeValue, self).save(*args, **kwargs)
-        if self._values:
-            for value in self._values[:]:
-                try:
-                    value.save(*args, **kwargs)
-                except:
-                    raise
-                else:
-                    self._values = self._values[1:]
+        for value in self._values:
+            value.save(*args, **kwargs)
+            ListAttributeSubvalue.objects.create(list_value=self, value=value)
+        self._values = []
 
     def __nonzero__(self):
-        return any(self.values.all())
+        return any(self._values) or any(self.subvalues.all())
 
     def __unicode__(self):
-        return self.attribute.separator.join(self.values.all())
+        return self.attribute.separator.join(
+            unicode(v) for v in self.subvalues.all())
 
     def price(self, variation):
-        return sum(v.price(variation) for v in self.values.all())
+        return sum(v.price(variation) for v in self.subvalues.all())
 
     def digest(self):
         return self.attribute.separator.join(
-            v.digest() for v in self.values.all())
+            v.digest() for v in self.subvalues.all())
 
 
-class ListAttributeValueValue(models.Model):
-    # One of values on the list.
-
-    list = models.ForeignKey(ListAttributeValue, related_name='values')
+class ListAttributeSubvalue(models.Model):
+    # One of values on the list. Delegates methods to the actual value.
+    list_value = models.ForeignKey(ListAttributeValue,
+                                   related_name='subvalues')
     value_type = models.ForeignKey(ContentType,
                                    limit_choices_to=VALUE_TYPES)
     value_id = models.IntegerField()
     value = generic.GenericForeignKey('value_type', 'value_id')
 
     class Meta:
-        order_with_respect_to = 'list'
+        order_with_respect_to = 'list_value'
+
+    def __nonzero__(self):
+        return bool(self.value)
+
+    def __unicode__(self):
+        return unicode(self.value)
+
+    def price(self, variation):
+        return self.value.price(variation)
+
+    def digest(self):
+        return self.value.digest()
 
 
 class ImageAttribute(Attribute):
