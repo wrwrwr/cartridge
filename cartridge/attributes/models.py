@@ -330,6 +330,9 @@ class ImageAttribute(Attribute):
     max_size = models.IntegerField(_("Maximum file size"), default=1,
         help_text=_("Maximum size of file users are allowed to upload, "
                     "in megabytes. Zero means no limit."))
+    item_image = models.BooleanField(_("Use as item image"), default=True,
+        help_text=_("Show the uploaded image instead of item's own image "
+                    "in cart."))
 
     class Meta:
         verbose_name = _("image attribute")

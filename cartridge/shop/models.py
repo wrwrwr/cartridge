@@ -564,6 +564,11 @@ class Cart(models.Model):
             for attribute, value in attribute_values.iteritems():
                 value.save()
                 CartItemAttributeValue.objects.create(item=item, value=value)
+                try:
+                    if attribute.item_image and value.image is not None:
+                        item.image = unicode(value.image.url)
+                except AttributeError:
+                    pass
             variation.product.actions.added_to_cart()
         item.quantity += quantity
         item.save()
