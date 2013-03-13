@@ -6,8 +6,8 @@ from mezzanine.core.admin import TranslationAdmin, TabularDynamicInlineAdmin
 from cartridge.shop.forms import ImageWidget
 
 from .models import (ProductAttribute, ChoiceAttribute, ChoiceAttributeOption,
-                     StringAttribute, LettersAttribute, ListAttribute,
-                     ImageAttribute)
+                     ChoiceAttributeOptionsGroup, StringAttribute,
+                     LettersAttribute, ListAttribute, ImageAttribute)
 from .forms import AttributeSelectionForm, ProductAttributeForm
 
 
@@ -26,8 +26,12 @@ class ChoiceAttributeOptionInline(TabularDynamicInlineAdmin):
     formfield_overrides = {ImageField: {'widget': ImageWidget}}
 
 
+class ChoiceAttributeOptionsGroupInline(TabularDynamicInlineAdmin):
+    model = ChoiceAttributeOptionsGroup
+
+
 class ChoiceAttributeAdmin(AttributeAdmin):
-    inlines = (ChoiceAttributeOptionInline,)
+    inlines = (ChoiceAttributeOptionsGroupInline, ChoiceAttributeOptionInline)
 
 
 class StringAttributeAdmin(AttributeAdmin):

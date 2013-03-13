@@ -69,7 +69,7 @@ class ProductAttribute(Orderable):
         verbose_name_plural = _("product attributes")
 
     def __unicode__(self):
-        return unicode(u'{}: {}'.format(self.product, self.attribute))
+        return u'{}: {}'.format(self.product, self.attribute)
 
 
 class AttributeValue(models.Model):
@@ -104,7 +104,7 @@ class ItemAttributeValue(models.Model):
         abstract = True
 
     def __unicode__(self):
-        return unicode(u'{}: {}'.format(self.value.attribute, self.value))
+        return u'{}: {}'.format(self.value.attribute, self.value)
 
 
 # TODO: Should allow to (selectively) create variations (filters) for some
@@ -133,8 +133,13 @@ class ChoiceAttribute(Attribute):
         verbose_name_plural = _("choice attributes")
 
     def field(self):
-        options = ChoiceAttributeOption.objects.filter(attribute=self)
-        choices = BLANK_CHOICE_DASH[:] + [o.choice() for o in options]
+        choices = BLANK_CHOICE_DASH[:]
+        for group in self.groups.all():
+            choices_group = tuple(o.choice() for o in group.options.all())
+            choices.append((group.name, choices_group))
+        else:
+            choices.extend(o.choice() for o in self.options.all())
+        print choices
         return forms.ChoiceField(label=self.name, choices=choices,
                                  required=self.required)
 
@@ -143,9 +148,28 @@ class ChoiceAttribute(Attribute):
         return ChoiceAttributeValue(option=option)
 
 
+class ChoiceAttributeOptionsGroup(Orderable):
+    attribute = models.ForeignKey(ChoiceAttribute, related_name='groups',
+        help_text=_("What attribute is this option group of?"))
+    name = models.CharField(_("Name"), max_length=255,
+        help_text=_("Group name."))
+
+    class Meta:
+        verbose_name = _("options group")
+        verbose_name_plural = _("options groups")
+
+    def __unicode__(self):
+        return self.name
+
+
 class ChoiceAttributeOption(Orderable):
-    attribute = models.ForeignKey(ChoiceAttribute,
+    attribute = models.ForeignKey(ChoiceAttribute, related_name='options',
         help_text=_("What attribute is this value for?"))
+    group = models.ForeignKey(ChoiceAttributeOptionsGroup,
+        related_name='options', null=True, blank=True,
+        help_text=_("Group this option together with some other options. "
+                    "After creating new groups you need to save before they "
+                    "are available for selection."))
     option = models.CharField(_("Option"), max_length=255,
         help_text=_("Potential value of the attribute."))
     price = fields.MoneyField(_("Price change"), null=True, blank=True,
