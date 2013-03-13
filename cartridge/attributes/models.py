@@ -11,7 +11,7 @@ from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 
 from mezzanine.core.models import Orderable
-from mezzanine.utils.models import upload_to
+from mezzanine.utils.models import AdminThumbMixin, upload_to
 
 from cartridge.shop import fields
 from cartridge.shop.models import (Product, CartItem, OrderItem)
@@ -141,7 +141,7 @@ class ChoiceAttribute(Attribute):
         return ChoiceAttributeValue(option=option)
 
 
-class ChoiceAttributeOption(Orderable):
+class ChoiceAttributeOption(Orderable, AdminThumbMixin):
     attribute = models.ForeignKey(ChoiceAttribute,
         help_text=_("What attribute is this value for?"))
     option = models.CharField(_("Option"), max_length=255,
@@ -149,6 +149,10 @@ class ChoiceAttributeOption(Orderable):
     price = fields.MoneyField(_("Price change"), null=True, blank=True,
         help_text=_("Unit price will be modified by this amount, "
                     "if the option is chosen."))
+    image = models.ImageField(_("Image"), null=True, blank=True,
+        upload_to=upload_to('attributes.ChoiceAttributeOption.image',
+                            'attributes/options'),
+        help_text=_("Image presenting the option."))
 
     class Meta:
         order_with_respect_to = 'attribute'
@@ -330,6 +334,9 @@ class ImageAttribute(Attribute):
     max_size = models.IntegerField(_("Maximum file size"), default=1,
         help_text=_("Maximum size of file users are allowed to upload, "
                     "in megabytes. Zero means no limit."))
+    item_image = models.BooleanField(_("Use as item image"), default=True,
+        help_text=_("Show the uploaded image instead of item's own image "
+                    "in cart."))
 
     class Meta:
         verbose_name = _("image attribute")
@@ -349,7 +356,7 @@ class ImageAttribute(Attribute):
 class ImageAttributeValue(AttributeValue):
     attribute = models.ForeignKey(ImageAttribute)
     image = models.ImageField(upload_to=upload_to(
-        'attributes.ImageAttributeValue.image', 'attributes'))
+        'attributes.ImageAttributeValue.image', 'attributes/images'))
 
     def __nonzero__(self):
         return bool(self.image)
