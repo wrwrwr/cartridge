@@ -149,6 +149,10 @@ class ChoiceAttributeOption(Orderable):
     price = fields.MoneyField(_("Price change"), null=True, blank=True,
         help_text=_("Unit price will be modified by this amount, "
                     "if the option is chosen."))
+    image = models.ImageField(_("Image"), null=True, blank=True,
+        upload_to=upload_to('attributes.ChoiceAttributeOption.image',
+                            'attributes/options'),
+        help_text=_("Image presenting the option."))
 
     class Meta:
         order_with_respect_to = 'attribute'
@@ -352,7 +356,7 @@ class ImageAttribute(Attribute):
 class ImageAttributeValue(AttributeValue):
     attribute = models.ForeignKey(ImageAttribute)
     image = models.ImageField(upload_to=upload_to(
-        'attributes.ImageAttributeValue.image', 'attributes'))
+        'attributes.ImageAttributeValue.image', 'attributes/images'))
 
     def __nonzero__(self):
         return bool(self.image)
