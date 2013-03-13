@@ -64,6 +64,7 @@ class ProductAttribute(Orderable):
     attribute = generic.GenericForeignKey('attribute_type', 'attribute_id')
 
     class Meta:
+        unique_together = ('product', 'attribute_type', 'attribute_id')
         verbose_name = _("product attribute")
         verbose_name_plural = _("product attributes")
 
@@ -99,6 +100,7 @@ class ItemAttributeValue(models.Model):
     value = generic.GenericForeignKey('value_type', 'value_id')
 
     class Meta:
+        unique_together = ('item', 'value_type', 'value_id')
         abstract = True
 
     def __unicode__(self):
