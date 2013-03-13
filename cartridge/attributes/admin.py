@@ -1,6 +1,9 @@
 from django.contrib import admin
+from django.db.models import ImageField
 
 from mezzanine.core.admin import TranslationAdmin, TabularDynamicInlineAdmin
+
+from cartridge.shop.forms import ImageWidget
 
 from .models import (ProductAttribute, ChoiceAttribute, ChoiceAttributeOption,
                      StringAttribute, LettersAttribute, ListAttribute,
@@ -14,9 +17,13 @@ class AttributeAdmin(TranslationAdmin):
     list_filter = ('required', 'visible')
     ordering = ('name',)
 
+    class Media:
+        css = {'all': ('admin/css/attribute.css',)}
+
 
 class ChoiceAttributeOptionInline(TabularDynamicInlineAdmin):
     model = ChoiceAttributeOption
+    formfield_overrides = {ImageField: {'widget': ImageWidget}}
 
 
 class ChoiceAttributeAdmin(AttributeAdmin):
