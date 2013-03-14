@@ -17,17 +17,16 @@ from cartridge.shop import fields
 from cartridge.shop.models import (Product, CartItem, OrderItem)
 
 # Used to limit choices in generic relations.
-# TODO: All Attribute / AttributeValue subclasses respectively.
+#       Non-editable setting maybe?
 ATTRIBUTE_TYPES = Q(
-    app_label='attributes', model__in=('choiceattribute', 'stringattribute',
-                                       'lettersattribute', 'listattribute',
-                                       'imageattribute'))
+    app_label='attributes',
+    model__in=('choiceattribute', 'stringattribute', 'lettersattribute',
+               'listattribute', 'imageattribute'))
 VALUE_TYPES = Q(
-    app_label='attributes', model__in=('choiceattributevalue',
-                                       'stringattributevalue',
-                                       'lettersattributevalue',
-                                       'listattributevalue',
-                                       'imageattributevalue'))
+    app_label='attributes',
+    model__in=('choiceattributevalue', 'stringattributevalue',
+               'lettersattributevalue', 'listattributevalue',
+               'imageattributevalue'))
 
 
 class Attribute(models.Model):
