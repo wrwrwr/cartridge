@@ -139,7 +139,6 @@ class ChoiceAttribute(Attribute):
             choices.append((group.name, choices_group))
         else:
             choices.extend(o.choice() for o in self.options.all())
-        print choices
         return forms.ChoiceField(label=self.name, choices=choices,
                                  required=self.required)
 
@@ -186,7 +185,10 @@ class ChoiceAttributeOption(Orderable):
         verbose_name_plural = _("choice options")
 
     def __unicode__(self):
-        return u'{}: {}'.format(self.attribute, self.option)
+        if self.group:
+            return u'{}, {}'.format(self.group, self.option)
+        else:
+            return self.option
 
     def choice(self):
         context = {'option': self.option, 'price': self.price}
@@ -209,7 +211,7 @@ class ChoiceAttributeValue(AttributeValue):
         return self.option is not None
 
     def __unicode__(self):
-        return unicode(self.option.option)
+        return unicode(self.option)
 
     def price(self, variation):
         return self.option.price
