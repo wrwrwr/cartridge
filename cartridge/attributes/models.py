@@ -165,7 +165,7 @@ class StringValue(AttributeValue):
         return bool(self.string)
 
     def __unicode__(self):
-        return self.string
+        return unicode(self.string)
 
 
 class CharactersAttribute(StringAttribute):
@@ -221,6 +221,9 @@ class ChoiceOptionsGroup(Orderable):
         verbose_name = _("options group")
         verbose_name_plural = _("options groups")
 
+    def __unicode__(self):
+        return unicode(self.name)
+
 
 class ChoiceOption(Orderable):
     attribute = models.ForeignKey(ChoiceAttribute, related_name='options',
@@ -240,6 +243,12 @@ class ChoiceOption(Orderable):
         order_with_respect_to = 'attribute'
         verbose_name = _("choice option")
         verbose_name_plural = _("choice options")
+
+    def __unicode__(self):
+        if self.group:
+            return u'{}, {}'.format(self.group, self.option)
+        else:
+            return unicode(self.option)
 
     def choice(self):
         context = {'option': self.option, 'price': self.price}
@@ -270,7 +279,7 @@ class ChoiceValue(AttributeValue):
         if self.group:
             return u'{}, {}'.format(self.group, self.option)
         else:
-            return self.option
+            return unicode(self.option)
 
 
 class SimpleChoiceAttribute(ChoiceAttribute):
