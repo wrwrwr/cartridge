@@ -1,26 +1,42 @@
 from modeltranslation.translator import TranslationOptions, translator
 
-from .models import (Attribute, ChoiceAttribute, ChoiceAttributeOptionsGroup,
-                     ChoiceAttributeOption, StringAttribute, LettersAttribute,
-                     ListAttribute, ImageAttribute)
+from .models import (
+    Attribute, AttributeValue,
+    StringAttribute, CharactersAttribute,
+    ChoiceAttribute, ChoiceOptionsGroup, ChoiceOption, ChoiceValue,
+    SimpleChoiceAttribute,
+    ImageChoiceAttribute, ImageChoiceOption,
+    ColorChoiceAttribute, ColorChoiceOption,
+    ImageAttribute, ListAttribute)
 
 
 class AttributeTranslationOptions(TranslationOptions):
     fields = ('name',)
 
 
-class ChoiceAttributeOptionsGroupTranslationOptions(TranslationOptions):
+class AttributeValueTranslationOptions(TranslationOptions):
+    fields = ('attribute',)
+
+
+class ChoiceOptionsGroupTranslationOptions(TranslationOptions):
     fields = ('name',)
 
 
-class ChoiceAttributeOptionTranslationOptions(TranslationOptions):
+class ChoiceOptionTranslationOptions(TranslationOptions):
     fields = ('option',)
 
 
+class ChoiceValueTranslationOptions(TranslationOptions):
+    fields = ('option', 'group')
+
+
 translator.register(Attribute, AttributeTranslationOptions)
-translator.register((ChoiceAttribute, StringAttribute, LettersAttribute,
-                     ListAttribute, ImageAttribute))
-translator.register(ChoiceAttributeOptionsGroup,
-                    ChoiceAttributeOptionsGroupTranslationOptions)
-translator.register(ChoiceAttributeOption,
-                    ChoiceAttributeOptionTranslationOptions)
+translator.register(AttributeValue, AttributeValueTranslationOptions)
+translator.register(
+    (StringAttribute, CharactersAttribute, ChoiceAttribute,
+     SimpleChoiceAttribute, ImageChoiceAttribute, ColorChoiceAttribute,
+     ImageAttribute, ListAttribute))
+translator.register(ChoiceOptionsGroup, ChoiceOptionsGroupTranslationOptions)
+translator.register(ChoiceOption, ChoiceOptionTranslationOptions)
+translator.register((ImageChoiceOption, ColorChoiceOption,))
+translator.register(ChoiceValue, ChoiceValueTranslationOptions)
