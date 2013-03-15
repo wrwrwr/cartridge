@@ -85,14 +85,18 @@ class AttributeValue(models.Model):
 
     def __init__(self, *args, **kwargs):
         # Copies all translations of attribute name.
-        attribute = kwargs.pop('attribute')
+        attribute = kwargs.pop('attribute', None)
         super(AttributeValue, self).__init__(*args, **kwargs)
-        def set_attribute():
-            self.attribute = attribute.name
-        for_all_languages(set_attribute)
+        if attribute is not None:
+            def set_attribute():
+                self.attribute = attribute.name
+            for_all_languages(set_attribute)
 
-    def price(self):
-        return 0
+    def __getattr__(self, name):
+        # Default to zero price.
+        if name == 'price':
+            return 0
+        return super(AttributeValue, self).__getattr__(self, name)
 
     def digest(self):
         # Used to check if a product with the same attributes / values is
@@ -102,7 +106,7 @@ class AttributeValue(models.Model):
 
 class ItemAttributeValue(models.Model):
     # Attribute value assigned to a cart or order item
-    # (or a product variation?).
+    # (or a product variation filter?).
     value_type = models.ForeignKey(ContentType,
                                    limit_choices_to=VALUE_TYPES)
     value_id = models.IntegerField()
@@ -150,7 +154,7 @@ class StringAttribute(Attribute):
         return forms.CharField(label=self.name, max_length=self.max_length,
                                required=self.required)
 
-    def make_value(self, value, variation):
+    def make_value(self, value, product):
         return StringValue(attribute=self, string=value)
 
 
@@ -175,11 +179,11 @@ class CharactersAttribute(StringAttribute):
         verbose_name = _("characters attribute")
         verbose_name_plural = _("characters attributes")
 
-    def make_value(self, value, variation):
+    def make_value(self, value, product):
         characters = value
         if self.free_characters:
             characters = re.sub(self.free_characters, '', characters)
-        price = (len(characters) - 1) * variation.price()
+        price = (len(characters) - 1) * product.price()
         return CharactersValue(attribute=self, price=price, string=value,
                                free_characters=self.free_characters)
 
@@ -187,9 +191,6 @@ class CharactersAttribute(StringAttribute):
 class CharactersValue(StringValue):
     free_characters = models.CharField(max_length=50)
     price = fields.MoneyField()
-
-    def price(self):
-        return self.price
 
 
 class ChoiceAttribute(Attribute):
@@ -203,9 +204,9 @@ class ChoiceAttribute(Attribute):
         return forms.ChoiceField(label=self.name, choices=choices,
                                  required=self.required)
 
-    def make_value(self, value, variation):
+    def make_value(self, value, product):
         option = ChoiceOption.objects.get(pk=value)
-        return ChoiceValue(option=option)
+        return ChoiceValue(attribute=self, option=option)
 
 
 class ChoiceOptionsGroup(Orderable):
@@ -253,13 +254,14 @@ class ChoiceValue(AttributeValue):
     price = fields.MoneyField()
 
     def __init__(self, *args, **kwargs):
-        option = kwargs.pop('option')
+        option = kwargs.pop('option', None)
         super(ChoiceValue, self).__init__(*args, **kwargs)
-        def set_group_option():
-            self.group = option.group.name
-            self.option = option.option
-        for_all_languages(set_group_option)
-        self.price = option.price
+        if option is not None:
+            def set_group_option():
+                self.group = option.group.name if option.group else ''
+                self.option = option.option
+            for_all_languages(set_group_option)
+            self.price = option.price
 
     def __nonzero__(self):
         return bool(self.option)
@@ -269,9 +271,6 @@ class ChoiceValue(AttributeValue):
             return u'{}, {}'.format(self.group, self.option)
         else:
             return self.option
-
-    def price(self):
-        return self.price
 
 
 class SimpleChoiceAttribute(ChoiceAttribute):
@@ -322,7 +321,7 @@ class ImageAttribute(Attribute):
     def field(self):
         return forms.ImageField(label=self.name, required=self.required)
 
-    def make_value(self, value, variation):
+    def make_value(self, value, product):
         if (self.max_size > 0 and value and
                 value._size > self.max_size * 1024 * 1024):
             raise forms.ValidationError(_("Uploaded image can't be larger "
@@ -360,12 +359,11 @@ class ListAttribute(Attribute):
     def field(self):
         return forms.CharField(label=self.name, required=self.required)
 
-    def make_value(self, value, variation):
+    def make_value(self, value, product):
         tokens = value.split(self.separator)
         field = self.attribute.field()
         make_value = self.attribute.make_value
-        values = [make_value(field.clean(t.strip()), variation)
-                  for t in tokens]
+        values = [make_value(field.clean(t.strip()), product) for t in tokens]
         return ListValue(attribute=self, values=values,
                          separator=self.separator)
 
@@ -398,8 +396,9 @@ class ListValue(AttributeValue):
     def __unicode__(self):
         return self.separator.join(unicode(v) for v in self.subvalues.all())
 
+    @property
     def price(self):
-        return sum(v.price() for v in self.subvalues.all())
+        return sum(v.price for v in self.subvalues.all())
 
     def digest(self):
         return self.separator.join(v.digest() for v in self.subvalues.all())
@@ -422,8 +421,9 @@ class ListSubvalue(models.Model):
     def __unicode__(self):
         return unicode(self.value)
 
+    @property
     def price(self):
-        return self.value.price()
+        return self.value.price
 
     def digest(self):
         return self.value.digest()

@@ -2,12 +2,12 @@ from modeltranslation.translator import TranslationOptions, translator
 
 from .models import (
     Attribute, AttributeValue,
-    StringAttribute, CharactersAttribute,
+    StringAttribute, StringValue, CharactersAttribute, CharactersValue,
     ChoiceAttribute, ChoiceOptionsGroup, ChoiceOption, ChoiceValue,
     SimpleChoiceAttribute,
     ImageChoiceAttribute, ImageChoiceOption,
     ColorChoiceAttribute, ColorChoiceOption,
-    ImageAttribute, ListAttribute)
+    ImageAttribute, ImageValue, ListAttribute, ListValue)
 
 
 class AttributeTranslationOptions(TranslationOptions):
@@ -32,6 +32,7 @@ class ChoiceValueTranslationOptions(TranslationOptions):
 
 translator.register(Attribute, AttributeTranslationOptions)
 translator.register(AttributeValue, AttributeValueTranslationOptions)
+translator.register((StringValue, CharactersValue, ImageValue, ListValue))
 translator.register(
     (StringAttribute, CharactersAttribute, ChoiceAttribute,
      SimpleChoiceAttribute, ImageChoiceAttribute, ColorChoiceAttribute,

@@ -110,7 +110,7 @@ class AddProductForm(forms.Form):
         for attribute in self._attributes:
             field = attribute.field_name()
             try:
-                value = attribute.make_value(data.pop(field))
+                value = attribute.make_value(data.pop(field), self._product)
             except forms.ValidationError, e:
                 # Assign validation errors from make_value to attribute field.
                 # We're past standard field validation, so there are no field
