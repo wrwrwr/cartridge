@@ -547,7 +547,7 @@ class Cart(models.Model):
         # Apply attributes price modifications.
         price = variation.price()
         for attribute, value in attribute_values.iteritems():
-            price += value.price(variation)
+            price += value.price
 
         kwargs = {"sku": variation.sku, "unit_price": price}
         kwargs["attributes_hash"] = attributes_hash(attribute_values)
