@@ -11,25 +11,27 @@ from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 
 from mezzanine.core.models import Orderable
-from mezzanine.utils.models import AdminThumbMixin, upload_to
+from mezzanine.utils.models import upload_to
+from mezzanine.utils.translation import for_all_languages
 
 from cartridge.shop import fields
 from cartridge.shop.models import (Product, CartItem, OrderItem)
 
+
 # Used to limit choices in generic relations.
 #       Non-editable setting maybe?
-ATTRIBUTE_TYPES = Q(
-    app_label='attributes',
-    model__in=('choiceattribute', 'stringattribute', 'lettersattribute',
-               'listattribute', 'imageattribute'))
-VALUE_TYPES = Q(
-    app_label='attributes',
-    model__in=('choiceattributevalue', 'stringattributevalue',
-               'lettersattributevalue', 'listattributevalue',
-               'imageattributevalue'))
+ATTRIBUTE_TYPES = Q(app_label='attributes', model__in=(
+    'stringattribute', 'charactersattribute',
+    'simplechoiceattribute', 'imagechoiceattribute', 'colorchoiceattribute',
+    'imageattribute', 'listattribute'))
+VALUE_TYPES = Q(app_label='attributes', model__in=(
+    'stringvalue', 'charactersvalue',
+    'choicevalue', 'imagevalue', 'listvalue'))
 
 
 class Attribute(models.Model):
+    # Needs to implement make_value that creates a value object from
+    # cleaned form data.
     name = models.CharField(_("Name"), max_length=255,
         help_text=_("Attribute kind such as colour, size etc."))
     required = models.BooleanField(_("Required"), default=True,
@@ -72,16 +74,24 @@ class ProductAttribute(Orderable):
 
 
 class AttributeValue(models.Model):
-    # Common interface of all values.
+    # Attribute values can't relate to attributes or options, as they
+    # may persist past their deletion.
+    # If bool(value) is False the value is considered undefined and not saved,
+    # unicode(value) should return a string suitable for cart description.
+    attribute = models.CharField(_("Attribute name"), max_length=255)
+
     class Meta:
         abstract = True
 
-    def __nonzero__(self):
-        # If bool(value) is False it's considered undefined and not saved.
-        return super(AttributeValue, self).__nonzero__()
+    def __init__(self, *args, **kwargs):
+        # Copies all translations of attribute name.
+        attribute = kwargs.pop('attribute')
+        super(AttributeValue, self).__init__(*args, **kwargs)
+        def set_attribute():
+            self.attribute = attribute.name
+        for_all_languages(set_attribute)
 
-    def price(self, variation):
-        # Added to unit price.
+    def price(self):
         return 0
 
     def digest(self):
@@ -126,96 +136,6 @@ class OrderItemAttributeValue(ItemAttributeValue):
     item = models.ForeignKey(OrderItem, related_name='attribute_values')
 
 
-class ChoiceAttribute(Attribute):
-    class Meta:
-        verbose_name = _("choice attribute")
-        verbose_name_plural = _("choice attributes")
-
-    def field(self):
-        choices = BLANK_CHOICE_DASH[:]
-        for group in self.groups.all():
-            choices_group = tuple(o.choice() for o in group.options.all())
-            choices.append((group.name, choices_group))
-        else:
-            choices.extend(o.choice() for o in self.options.all())
-        return forms.ChoiceField(label=self.name, choices=choices,
-                                 required=self.required)
-
-    def make_value(self, value):
-        option = ChoiceAttributeOption.objects.get(pk=value)
-        return ChoiceAttributeValue(option=option)
-
-
-class ChoiceAttributeOptionsGroup(Orderable):
-    attribute = models.ForeignKey(ChoiceAttribute, related_name='groups',
-        help_text=_("What attribute is this option group of?"))
-    name = models.CharField(_("Name"), max_length=255,
-        help_text=_("Group name."))
-
-    class Meta:
-        verbose_name = _("options group")
-        verbose_name_plural = _("options groups")
-
-    def __unicode__(self):
-        return self.name
-
-
-class ChoiceAttributeOption(Orderable):
-    attribute = models.ForeignKey(ChoiceAttribute, related_name='options',
-        help_text=_("What attribute is this value for?"))
-    group = models.ForeignKey(ChoiceAttributeOptionsGroup,
-        related_name='options', null=True, blank=True,
-        help_text=_("Group this option together with some other options. "
-                    "After creating new groups you need to save before they "
-                    "are available for selection."))
-    option = models.CharField(_("Option"), max_length=255,
-        help_text=_("Potential value of the attribute."))
-    price = fields.MoneyField(_("Price change"), null=True, blank=True,
-        help_text=_("Unit price will be modified by this amount, "
-                    "if the option is chosen."))
-    image = models.ImageField(_("Image"), null=True, blank=True,
-        upload_to=upload_to('attributes.ChoiceAttributeOption.image',
-                            'attributes/options'),
-        help_text=_("Image presenting the option."))
-
-    class Meta:
-        order_with_respect_to = 'attribute'
-        verbose_name = _("choice option")
-        verbose_name_plural = _("choice options")
-
-    def __unicode__(self):
-        if self.group:
-            return u'{}, {}'.format(self.group, self.option)
-        else:
-            return self.option
-
-    def choice(self):
-        context = {'option': self.option, 'price': self.price}
-        template = 'attributes/choice_option.html'
-        return (self.id, render_to_string(template, context))
-
-
-class ChoiceAttributeValue(AttributeValue):
-    option = models.ForeignKey(ChoiceAttributeOption, verbose_name=_("Option"))
-
-    def __getattr__(self, name):
-        # We don't know the attribute, but the option does.
-        if name == 'attribute':
-            return self.option.attribute
-        else:
-            raise AttributeError
-
-    def __nonzero__(self):
-        # If bool(value) is False it's considered undefined and not saved.
-        return self.option is not None
-
-    def __unicode__(self):
-        return unicode(self.option)
-
-    def price(self, variation):
-        return self.option.price
-
-
 class StringAttribute(Attribute):
     max_length = models.PositiveIntegerField(_("Max length"),
         null=True, blank=True,
@@ -230,13 +150,12 @@ class StringAttribute(Attribute):
         return forms.CharField(label=self.name, max_length=self.max_length,
                                required=self.required)
 
-    def make_value(self, value):
-        return StringAttributeValue(attribute=self, string=value)
+    def make_value(self, value, variation):
+        return StringValue(attribute=self, string=value)
 
 
-class StringAttributeValue(AttributeValue):
-    attribute = models.ForeignKey(StringAttribute)
-    string = models.TextField(_("String"))
+class StringValue(AttributeValue):
+    string = models.TextField()
 
     def __nonzero__(self):
         return bool(self.string)
@@ -245,7 +164,7 @@ class StringAttributeValue(AttributeValue):
         return self.string
 
 
-class LettersAttribute(StringAttribute):
+class CharactersAttribute(StringAttribute):
     # Product unit price based on length.
     free_characters = models.CharField(_("Free characters"), max_length=50,
         blank=True,
@@ -253,19 +172,173 @@ class LettersAttribute(StringAttribute):
                     "(regular expression)."))
 
     class Meta:
-        verbose_name = _("letters attribute")
-        verbose_name_plural = _("letters attributes")
+        verbose_name = _("characters attribute")
+        verbose_name_plural = _("characters attributes")
 
-    def make_value(self, value):
-        return LettersAttributeValue(attribute=self, string=value)
+    def make_value(self, value, variation):
+        characters = value
+        if self.free_characters:
+            characters = re.sub(self.free_characters, '', characters)
+        price = (len(characters) - 1) * variation.price()
+        return CharactersValue(attribute=self, price=price, string=value,
+                               free_characters=self.free_characters)
 
 
-class LettersAttributeValue(StringAttributeValue):
-    def price(self, variation):
-        string = self.string
-        if self.attribute.free_characters:
-            string = re.sub(self.attribute.free_characters, '', string)
-        return (len(string) - 1) * variation.price()
+class CharactersValue(StringValue):
+    free_characters = models.CharField(max_length=50)
+    price = fields.MoneyField()
+
+    def price(self):
+        return self.price
+
+
+class ChoiceAttribute(Attribute):
+    def field(self):
+        choices = BLANK_CHOICE_DASH[:]
+        for group in self.groups.all():
+            choices_group = tuple(o.choice() for o in group.options.all())
+            choices.append((group.name, choices_group))
+        else:
+            choices.extend(o.choice() for o in self.options.all())
+        return forms.ChoiceField(label=self.name, choices=choices,
+                                 required=self.required)
+
+    def make_value(self, value, variation):
+        option = ChoiceOption.objects.get(pk=value)
+        return ChoiceValue(option=option)
+
+
+class ChoiceOptionsGroup(Orderable):
+    attribute = models.ForeignKey(ChoiceAttribute, related_name='groups',
+        help_text=_("What attribute is this option group of?"))
+    name = models.CharField(_("Name"), max_length=255,
+        help_text=_("Group name displayed as a bold heading in selection "
+                    " boxes."))
+
+    class Meta:
+        order_with_respect_to = 'attribute'
+        verbose_name = _("options group")
+        verbose_name_plural = _("options groups")
+
+
+class ChoiceOption(Orderable):
+    attribute = models.ForeignKey(ChoiceAttribute, related_name='options',
+        help_text=_("What attribute is this value for?"))
+    group = models.ForeignKey(ChoiceOptionsGroup, related_name='options',
+        null=True, blank=True,
+        help_text=_("Group this option together with some other options. "
+                    "After creating new groups you need to save before they "
+                    "are available for selection."))
+    option = models.CharField(_("Option"), max_length=255,
+        help_text=_("Potential value of the attribute."))
+    price = fields.MoneyField(_("Price change"), default=0,
+        help_text=_("Unit price will be modified by this amount, "
+                    "if the option is chosen."))
+
+    class Meta:
+        order_with_respect_to = 'attribute'
+        verbose_name = _("choice option")
+        verbose_name_plural = _("choice options")
+
+    def choice(self):
+        context = {'option': self.option, 'price': self.price}
+        template = 'attributes/choice_option.html'
+        return (self.id, render_to_string(template, context))
+
+
+class ChoiceValue(AttributeValue):
+    # Option name and price from the time of creation.
+    group = models.CharField(max_length=255)
+    option = models.CharField(max_length=255)
+    price = fields.MoneyField()
+
+    def __init__(self, *args, **kwargs):
+        option = kwargs.pop('option')
+        super(ChoiceValue, self).__init__(*args, **kwargs)
+        def set_group_option():
+            self.group = option.group.name
+            self.option = option.option
+        for_all_languages(set_group_option)
+        self.price = option.price
+
+    def __nonzero__(self):
+        return bool(self.option)
+
+    def __unicode__(self):
+        if self.group:
+            return u'{}, {}'.format(self.group, self.option)
+        else:
+            return self.option
+
+    def price(self):
+        return self.price
+
+
+class SimpleChoiceAttribute(ChoiceAttribute):
+    # Note that all choice attribute subclasses only offer additional
+    # presentation, but store their values as base choice values.
+    # TODO: This could be resolved using attribute / group / option factories.
+    class Meta:
+        verbose_name = _("simple choice attribute")
+        verbose_name_plural = _("simple choice attributes")
+
+
+class ImageChoiceAttribute(ChoiceAttribute):
+    class Meta:
+        verbose_name = _("image choice attribute")
+        verbose_name_plural = _("image choice attributes")
+
+
+class ImageChoiceOption(ChoiceOption):
+    image = models.ImageField(_("Image"), null=True, blank=True,
+        upload_to=upload_to('attributes.ImageChoiceOption.image',
+                            'attributes/options'),
+        help_text=_("Image presenting the option."))
+
+
+class ColorChoiceAttribute(ChoiceAttribute):
+    class Meta:
+        verbose_name = _("color choice attribute")
+        verbose_name_plural = _("color choice attributes")
+
+
+class ColorChoiceOption(ChoiceOption):
+    color = models.CharField(_("Color"), max_length=20,
+        help_text=_("Choosable color (in #RRGGBB notation)."))
+
+
+class ImageAttribute(Attribute):
+    max_size = models.IntegerField(_("Maximum file size"), default=1,
+        help_text=_("Maximum size of file users are allowed to upload, "
+                    "in megabytes. Zero means no limit."))
+    item_image = models.BooleanField(_("Use as item image"), default=True,
+        help_text=_("Show the uploaded image instead of item's own image "
+                    "in cart."))
+
+    class Meta:
+        verbose_name = _("image attribute")
+        verbose_name_plural = _("image attributes")
+
+    def field(self):
+        return forms.ImageField(label=self.name, required=self.required)
+
+    def make_value(self, value, variation):
+        if (self.max_size > 0 and value and
+                value._size > self.max_size * 1024 * 1024):
+            raise forms.ValidationError(_("Uploaded image can't be larger "
+                                          "than {} MB.").format(self.max_size))
+        return ImageAttributeValue(attribute=self, image=value)
+
+
+class ImageValue(AttributeValue):
+    image = models.ImageField(upload_to=upload_to(
+        'attributes.ImageValue.image', 'attributes/images'))
+
+    def __nonzero__(self):
+        return bool(self.image)
+
+    def __unicode__(self):
+        return self.image.name
 
 
 class ListAttribute(Attribute):
@@ -287,18 +360,20 @@ class ListAttribute(Attribute):
     def field(self):
         return forms.CharField(label=self.name, required=self.required)
 
-    def make_value(self, value):
+    def make_value(self, value, variation):
         tokens = value.split(self.separator)
         field = self.attribute.field()
         make_value = self.attribute.make_value
-        values = [make_value(field.clean(t.strip())) for t in tokens]
-        return ListAttributeValue(attribute=self, values=values)
+        values = [make_value(field.clean(t.strip()), variation)
+                  for t in tokens]
+        return ListValue(attribute=self, values=values,
+                         separator=self.separator)
 
 
-class ListAttributeValue(AttributeValue):
+class ListValue(AttributeValue):
     # Combines a set of other attribute values into a list behaving as
     # a single value.
-    attribute = models.ForeignKey(ListAttribute)
+    separator = models.CharField(max_length=10)
 
     # Placeholder for unsaved list elements.
     _values = []
@@ -307,35 +382,32 @@ class ListAttributeValue(AttributeValue):
         # Temporarily stores values on an instance variable, so we
         # can save the list and its element together.
         self._values = kwargs.pop('values', [])
-        super(ListAttributeValue, self).__init__(*args, **kwargs)
+        super(ListValue, self).__init__(*args, **kwargs)
 
     def save(self, *args, **kwargs):
         # Saves list elements, after saving the list model.
         super(ListAttributeValue, self).save(*args, **kwargs)
         for value in self._values:
             value.save(*args, **kwargs)
-            ListAttributeSubvalue.objects.create(list_value=self, value=value)
+            ListSubvalue.objects.create(list_value=self, value=value)
         self._values = []
 
     def __nonzero__(self):
         return any(self._values) or any(self.subvalues.all())
 
     def __unicode__(self):
-        return self.attribute.separator.join(
-            unicode(v) for v in self.subvalues.all())
+        return self.separator.join(unicode(v) for v in self.subvalues.all())
 
-    def price(self, variation):
-        return sum(v.price(variation) for v in self.subvalues.all())
+    def price(self):
+        return sum(v.price() for v in self.subvalues.all())
 
     def digest(self):
-        return self.attribute.separator.join(
-            v.digest() for v in self.subvalues.all())
+        return self.separator.join(v.digest() for v in self.subvalues.all())
 
 
-class ListAttributeSubvalue(models.Model):
+class ListSubvalue(models.Model):
     # One of values on the list. Delegates methods to the actual value.
-    list_value = models.ForeignKey(ListAttributeValue,
-                                   related_name='subvalues')
+    list_value = models.ForeignKey(ListValue, related_name='subvalues')
     value_type = models.ForeignKey(ContentType,
                                    limit_choices_to=VALUE_TYPES)
     value_id = models.IntegerField()
@@ -350,46 +422,11 @@ class ListAttributeSubvalue(models.Model):
     def __unicode__(self):
         return unicode(self.value)
 
-    def price(self, variation):
-        return self.value.price(variation)
+    def price(self):
+        return self.value.price()
 
     def digest(self):
         return self.value.digest()
-
-
-class ImageAttribute(Attribute):
-    max_size = models.IntegerField(_("Maximum file size"), default=1,
-        help_text=_("Maximum size of file users are allowed to upload, "
-                    "in megabytes. Zero means no limit."))
-    item_image = models.BooleanField(_("Use as item image"), default=True,
-        help_text=_("Show the uploaded image instead of item's own image "
-                    "in cart."))
-
-    class Meta:
-        verbose_name = _("image attribute")
-        verbose_name_plural = _("image attributes")
-
-    def field(self):
-        return forms.ImageField(label=self.name, required=self.required)
-
-    def make_value(self, value):
-        if (self.max_size > 0 and value and
-                value._size > self.max_size * 1024 * 1024):
-            raise forms.ValidationError(_("Uploaded image can't be larger "
-                                          "than {} MB.").format(self.max_size))
-        return ImageAttributeValue(attribute=self, image=value)
-
-
-class ImageAttributeValue(AttributeValue):
-    attribute = models.ForeignKey(ImageAttribute)
-    image = models.ImageField(upload_to=upload_to(
-        'attributes.ImageAttributeValue.image', 'attributes/images'))
-
-    def __nonzero__(self):
-        return bool(self.image)
-
-    def __unicode__(self):
-        return self.image.name
 
 
 def attributes_hash(attribute_values):

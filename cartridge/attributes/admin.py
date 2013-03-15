@@ -1,13 +1,19 @@
 from django.contrib import admin
 from django.db.models import ImageField
 
-from mezzanine.core.admin import TranslationAdmin, TabularDynamicInlineAdmin
+from mezzanine.core.admin import (TranslationAdmin,
+                                  TranslationInlineModelAdmin,
+                                  TabularDynamicInlineAdmin)
 
 from cartridge.shop.forms import ImageWidget
 
-from .models import (ProductAttribute, ChoiceAttribute, ChoiceAttributeOption,
-                     ChoiceAttributeOptionsGroup, StringAttribute,
-                     LettersAttribute, ListAttribute, ImageAttribute)
+from .models import (
+    ProductAttribute,
+    StringAttribute, CharactersAttribute,
+    ChoiceOption, ChoiceOptionsGroup, SimpleChoiceAttribute,
+    ImageChoiceAttribute, ImageChoiceOption,
+    ColorChoiceAttribute, ColorChoiceOption,
+    ImageAttribute, ListAttribute)
 from .forms import AttributeSelectionForm, ProductAttributeForm
 
 
@@ -21,29 +27,50 @@ class AttributeAdmin(TranslationAdmin):
         css = {'all': ('admin/css/attribute.css',)}
 
 
-class ChoiceAttributeOptionInline(TabularDynamicInlineAdmin):
-    model = ChoiceAttributeOption
-    formfield_overrides = {ImageField: {'widget': ImageWidget}}
-
-
-class ChoiceAttributeOptionsGroupInline(TabularDynamicInlineAdmin):
-    model = ChoiceAttributeOptionsGroup
-
-
-class ChoiceAttributeAdmin(AttributeAdmin):
-    inlines = (ChoiceAttributeOptionsGroupInline, ChoiceAttributeOptionInline)
-
-
 class StringAttributeAdmin(AttributeAdmin):
     string_fields = ['max_length']
     list_display = list(AttributeAdmin.list_display) + string_fields
     list_editable = list(AttributeAdmin.list_editable) + string_fields
 
 
-class LettersAttributeAdmin(StringAttributeAdmin):
+class CharactersAttributeAdmin(StringAttributeAdmin):
     letters_fields = ['free_characters']
     list_display = list(StringAttributeAdmin.list_display) + letters_fields
     list_editable = list(StringAttributeAdmin.list_editable) + letters_fields
+
+
+class TabularTranslationInline(TabularDynamicInlineAdmin,
+                               TranslationInlineModelAdmin):
+    pass
+
+
+class ChoiceOptionsGroupInline(TabularTranslationInline):
+    model = ChoiceOptionsGroup
+
+
+class SimpleChoiceOptionInline(TabularTranslationInline):
+    model = ChoiceOption
+
+
+class SimpleChoiceAttributeAdmin(AttributeAdmin):
+    inlines = (ChoiceOptionsGroupInline, SimpleChoiceOptionInline)
+
+
+class ImageChoiceOptionInline(TabularTranslationInline):
+    model = ImageChoiceOption
+    formfield_overrides = {ImageField: {'widget': ImageWidget}}
+
+
+class ImageChoiceAttributeAdmin(AttributeAdmin):
+    inlines = (ChoiceOptionsGroupInline, ImageChoiceOptionInline)
+
+
+class ColorChoiceOptionInline(TabularTranslationInline):
+    model = ColorChoiceOption
+
+
+class ColorChoiceAttributeAdmin(AttributeAdmin):
+    inlines = (ChoiceOptionsGroupInline, ColorChoiceOptionInline)
 
 
 def attribute_fieldsets(fieldsets):
@@ -77,8 +104,10 @@ class ProductAttributeAdmin(TabularDynamicInlineAdmin):
             super(ProductAttributeAdmin, self).get_fieldsets(request, obj))
 
 
-admin.site.register(ChoiceAttribute, ChoiceAttributeAdmin)
 admin.site.register(StringAttribute, StringAttributeAdmin)
-admin.site.register(LettersAttribute, LettersAttributeAdmin)
-admin.site.register(ListAttribute, ListAttributeAdmin)
+admin.site.register(CharactersAttribute, CharactersAttributeAdmin)
+admin.site.register(SimpleChoiceAttribute, SimpleChoiceAttributeAdmin)
+admin.site.register(ImageChoiceAttribute, ImageChoiceAttributeAdmin)
+admin.site.register(ColorChoiceAttribute, ColorChoiceAttributeAdmin)
 admin.site.register(ImageAttribute, AttributeAdmin)
+admin.site.register(ListAttribute, ListAttributeAdmin)
