@@ -661,9 +661,19 @@ class SelectedProduct(models.Model):
             self.delete()
 
     def attribute_values(self):
+        """
+        Returns attribute values assigned to this item.
+        """
         from django.contrib.contenttypes.models import ContentType
-        return AttributeValue.objects.filter(
-            item_id=self.id, item_type=ContentType.objects.get_for_model(self.__class__))
+        return AttributeValue.objects.filter(item_id=self.id,
+            item_type=ContentType.objects.get_for_model(self.__class__))
+
+    def visible_attribute_values(self):
+        """
+        Returns those attribute values that should be displayed in cart
+        and order details.
+        """
+        return self.attribute_values().filter(visible=True)
 
 
 class CartItem(SelectedProduct):

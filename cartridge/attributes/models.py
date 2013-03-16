@@ -85,6 +85,7 @@ class AttributeValue(models.Model):
     # If bool(value) is False the value is considered undefined and not saved,
     # unicode(value) should return a string suitable for cart description.
     attribute = models.CharField(max_length=255)
+    visible = models.BooleanField()
     value_type = models.ForeignKey(ContentType, limit_choices_to=VALUE_TYPES,
                                    related_name='attribute_values')
     item_type = models.ForeignKey(ContentType, limit_choices_to=ITEM_TYPES)
@@ -101,6 +102,7 @@ class AttributeValue(models.Model):
             def set_attribute():
                 self.attribute = attribute.name
             for_all_languages(set_attribute)
+            self.visible = attribute.visible
 
     def __getattr__(self, name):
         # Default to zero price.
@@ -326,6 +328,12 @@ class ImageValue(AttributeValue):
         'attributes.ImageValue.image', 'attributes/images'))
     item_image = models.BooleanField()
 
+    def __init__(self, *args, **kwargs):
+        item_image = kwargs.pop('item_image', None)
+        super(ImageValue, self).__init__(*args, **kwargs)
+        if item_image:
+            self.visible = False
+
     def __nonzero__(self):
         return bool(self.image)
 
@@ -340,7 +348,7 @@ class ListAttribute(Attribute):
     attribute_id = models.IntegerField()
     attribute = generic.GenericForeignKey('attribute_type', 'attribute_id')
     separator = models.CharField(_("Values separator"),
-        max_length=10, default=',',
+        max_length=10, default=', ',
         help_text=_("Character or string used to separate values when "
                     "parsing posted string. Must be guaranteed not to "
                     "appear in string representation of any single value."))
@@ -354,9 +362,13 @@ class ListAttribute(Attribute):
 
     def make_value(self, value, product):
         tokens = value.split(self.separator)
+        values = []
         field = self.attribute.field()
         make_value = self.attribute.make_value
-        values = [make_value(field.clean(t.strip()), product) for t in tokens]
+        for token in tokens:
+            value = make_value(field.clean(token.strip()), product)
+            value.visible = False
+            values.append(value)
         return ListValue(attribute=self, values=values,
                          separator=self.separator)
 
@@ -366,14 +378,17 @@ class ListValue(AttributeValue):
     # a single value.
     separator = models.CharField(max_length=10)
 
-    # Placeholder for unsaved list elements.
-    _values = []
-
     def __init__(self, *args, **kwargs):
         # Temporarily stores values on an instance variable, so we
-        # can save the list and its element together.
+        # can save the list and its elements together.
         self._values = kwargs.pop('values', [])
         super(ListValue, self).__init__(*args, **kwargs)
+
+    def __nonzero__(self):
+        return any(self.subvalues())
+
+    def __unicode__(self):
+        return self.separator.join(unicode(v) for v in self.subvalues())
 
     def save(self, *args, **kwargs):
         # Saves list elements, after saving the list model.
@@ -384,23 +399,24 @@ class ListValue(AttributeValue):
             ListSubvalue.objects.create(list_value=self, value=value)
         self._values = []
 
-    def __nonzero__(self):
-        return any(self._values) or any(self.subvalues.all())
-
-    def __unicode__(self):
-        return self.separator.join(unicode(v) for v in self.subvalues.all())
-
     @property
     def price(self):
-        return sum(v.price for v in self.subvalues.all())
+        return sum(v.price for v in self.subvalues())
 
     def digest(self):
-        return self.separator.join(v.digest() for v in self.subvalues.all())
+        return self.separator.join(v.digest() for v in self.subvalues())
+
+    def subvalues(self):
+        # Iterates over first unsaved, then saved subvalues.
+        for value in self._values:
+            yield value
+        for value in self.values.all():
+            yield value.value
 
 
 class ListSubvalue(models.Model):
-    # One of values on the list. Delegates methods to the actual value.
-    list_value = models.ForeignKey(ListValue, related_name='subvalues')
+    # One of values on the list.
+    list_value = models.ForeignKey(ListValue, related_name='values')
     value_type = models.ForeignKey(ContentType,
                                    limit_choices_to=VALUE_TYPES)
     value_id = models.IntegerField()
@@ -408,19 +424,6 @@ class ListSubvalue(models.Model):
 
     class Meta:
         order_with_respect_to = 'list_value'
-
-    def __nonzero__(self):
-        return bool(self.value)
-
-    def __unicode__(self):
-        return unicode(self.value)
-
-    @property
-    def price(self):
-        return self.value.price
-
-    def digest(self):
-        return self.value.digest()
 
 
 def attributes_hash(attribute_values):
