@@ -37,7 +37,7 @@ class Attribute(models.Model):
     # Needs to implement make_value that creates a value object from
     # cleaned form data.
     name = models.CharField(_("Name"), max_length=255,
-        help_text=_("Attribute kind such as colour, size etc."))
+        help_text=_("Attribute kind such as color, size etc."))
     required = models.BooleanField(_("Required"), default=True,
         help_text=_("Can the client leave this attribute unspecified?"))
     visible = models.BooleanField(_("Visible"), default=True,
@@ -197,8 +197,7 @@ class ChoiceOptionsGroup(Orderable):
     attribute = models.ForeignKey(ChoiceAttribute, related_name='groups',
         help_text=_("What attribute is this option group of?"))
     name = models.CharField(_("Name"), max_length=255,
-        help_text=_("Group name displayed as a bold heading in selection "
-                    " boxes."))
+        help_text=_("Group name displayed as a heading in selection boxes."))
 
     class Meta:
         order_with_respect_to = 'attribute'
