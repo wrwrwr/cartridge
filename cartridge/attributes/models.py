@@ -30,7 +30,7 @@ ATTRIBUTE_TYPES = Q(app_label='attributes', model__in=(
 
 class PolymorphicModel(models.Model):
     # simplistic implementation of dynamic model typecasting.
-    # Used to get proper value or choice option from subclass instance.
+    # Used to get proper value or choice option from a superclass instance.
     content_type = models.ForeignKey(ContentType)
 
     objects = PolymorphicManager()
@@ -43,6 +43,9 @@ class PolymorphicModel(models.Model):
             self.content_type = ContentType.objects.get_for_model(
                 self.__class__)
         return super(PolymorphicModel, self).save(*args, **kwargs)
+
+    def as_content_type(self):
+        return self.content_type.get_object_for_this_type(pk=self.pk)
 
 
 class Attribute(models.Model):
@@ -178,7 +181,7 @@ class CharactersValue(StringValue):
     price = fields.MoneyField()
 
 
-class ChoiceAttribute(Attribute):
+class ChoiceAttribute(PolymorphicModel, Attribute):
     def field(self):
         choices = BLANK_CHOICE_DASH[:]
         for group in self.groups.all():
