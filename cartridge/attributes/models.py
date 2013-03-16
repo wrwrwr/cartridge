@@ -52,7 +52,7 @@ class Attribute(models.Model):
     def field_name(self):
         # Field names can't contain Unicode, punycode would be another
         # possible choice.
-        return self.name.encode('unicode_escape')
+        return '{}_{}'.format(self.__class__.__name__.lower(), self.id)
 
     def digest(self):
         # Digests are used to generate attribute hashes, to easily check
@@ -317,12 +317,14 @@ class ImageAttribute(Attribute):
                 value._size > self.max_size * 1024 * 1024):
             raise forms.ValidationError(_("Uploaded image can't be larger "
                                           "than {} MB.").format(self.max_size))
-        return ImageAttributeValue(attribute=self, image=value)
+        return ImageValue(attribute=self, image=value,
+                          item_image=self.item_image)
 
 
 class ImageValue(AttributeValue):
     image = models.ImageField(upload_to=upload_to(
         'attributes.ImageValue.image', 'attributes/images'))
+    item_image = models.BooleanField()
 
     def __nonzero__(self):
         return bool(self.image)
@@ -375,8 +377,9 @@ class ListValue(AttributeValue):
 
     def save(self, *args, **kwargs):
         # Saves list elements, after saving the list model.
-        super(ListAttributeValue, self).save(*args, **kwargs)
+        super(ListValue, self).save(*args, **kwargs)
         for value in self._values:
+            value.item = self.item
             value.save(*args, **kwargs)
             ListSubvalue.objects.create(list_value=self, value=value)
         self._values = []
