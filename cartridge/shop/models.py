@@ -464,9 +464,10 @@ class Order(models.Model):
             field_values = dict((f.name, getattr(cart_item, f.name)) for f in
                                 SelectedProduct._meta.fields)
             order_item = self.items.create(**field_values)
-            # Copy attributes from cart item to the new order item.
-            for value in cart_item.attribute_values.all():
-                order_item.attribute_values.create(value=value.value)
+            # Reassign attribute values from cart item to the new order item.
+            for value in cart_item.attribute_values():
+                value.item = order_item
+                value.save()
 
     def complete(self, request):
         """
@@ -560,10 +561,10 @@ class Cart(models.Model):
             image = variation.image
             if image is not None:
                 item.image = unicode(image.file)
-            # Save values and assign them to the item.
+            # Link values to the cart item and save them.
             for attribute, value in attribute_values.iteritems():
+                value.item = item
                 value.save()
-                CartItemAttributeValue.objects.create(item=item, value=value)
                 try:
                     if attribute.item_image and value.image is not None:
                         item.image = unicode(value.image.url)
@@ -658,6 +659,11 @@ class SelectedProduct(models.Model):
             super(SelectedProduct, self).save(*args, **kwargs)
         else:
             self.delete()
+
+    def attribute_values(self):
+        from django.contrib.contenttypes.models import ContentType
+        return AttributeValue.objects.filter(
+            item_id=self.id, item_type=ContentType.objects.get_for_model(self.__class__))
 
 
 class CartItem(SelectedProduct):
@@ -866,5 +872,4 @@ class DiscountCode(Discount):
         verbose_name_plural = _("Discount codes")
 
 
-from cartridge.attributes.models import (CartItemAttributeValue,
-                                         attributes_hash)
+from cartridge.attributes.models import (attributes_hash, AttributeValue)

@@ -23,7 +23,7 @@ class ChoiceOptionsGroupTranslationOptions(TranslationOptions):
 
 
 class ChoiceOptionTranslationOptions(TranslationOptions):
-    fields = ('option',)
+    fields = ('name',)
 
 
 class ChoiceValueTranslationOptions(TranslationOptions):

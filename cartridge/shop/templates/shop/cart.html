@@ -40,7 +40,7 @@
 		    <a href="{{ item.get_absolute_url }}">{{ item.description }}</a>
             <ul class="attribute-values">
                 {% for value in item.attribute_values.all %}
-                <li>{{ value }}</li>
+                <li>{{ value.attribute }}: {{ value }}</li>
                 {% endfor %}
             </ul>
         </td>

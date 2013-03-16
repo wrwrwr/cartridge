@@ -15,7 +15,9 @@ from mezzanine.utils.models import upload_to
 from mezzanine.utils.translation import for_all_languages
 
 from cartridge.shop import fields
-from cartridge.shop.models import (Product, CartItem, OrderItem)
+from cartridge.shop.models import Product
+
+from .managers import AttributeValueManager
 
 
 # Used to limit choices in generic relations.
@@ -27,6 +29,8 @@ ATTRIBUTE_TYPES = Q(app_label='attributes', model__in=(
 VALUE_TYPES = Q(app_label='attributes', model__in=(
     'stringvalue', 'charactersvalue',
     'choicevalue', 'imagevalue', 'listvalue'))
+ITEM_TYPES = Q(app_label='shop', model__in=(
+    'cartitem', 'orderitem'))
 
 
 class Attribute(models.Model):
@@ -75,13 +79,19 @@ class ProductAttribute(Orderable):
 
 class AttributeValue(models.Model):
     # Attribute values can't relate to attributes or options, as they
-    # may persist past their deletion.
+    # may persist past their deletion, so only attribute name is saved.
+    # The base class stores content type, so we can get hold of
+    # the leaf models using relation from items.
     # If bool(value) is False the value is considered undefined and not saved,
     # unicode(value) should return a string suitable for cart description.
-    attribute = models.CharField(_("Attribute name"), max_length=255)
+    attribute = models.CharField(max_length=255)
+    value_type = models.ForeignKey(ContentType, limit_choices_to=VALUE_TYPES,
+                                   related_name='attribute_values')
+    item_type = models.ForeignKey(ContentType, limit_choices_to=ITEM_TYPES)
+    item_id = models.IntegerField()
+    item = generic.GenericForeignKey('item_type', 'item_id')
 
-    class Meta:
-        abstract = True
+    objects = AttributeValueManager()
 
     def __init__(self, *args, **kwargs):
         # Copies all translations of attribute name.
@@ -98,46 +108,18 @@ class AttributeValue(models.Model):
             return 0
         return super(AttributeValue, self).__getattr__(self, name)
 
+    def save(self, *args, **kwargs):
+        if self.pk is None:
+            self.value_type = ContentType.objects.get_for_model(self.__class__)
+        return super(AttributeValue, self).save(*args, **kwargs)
+
+    def as_value_type(self):
+        return self.value_type.get_object_for_this_type(id=self.id)
+
     def digest(self):
         # Used to check if a product with the same attributes / values is
         # in the cart.
         return unicode(self).encode('unicode_escape')
-
-
-class ItemAttributeValue(models.Model):
-    # Attribute value assigned to a cart or order item
-    # (or a product variation filter?).
-    value_type = models.ForeignKey(ContentType,
-                                   limit_choices_to=VALUE_TYPES)
-    value_id = models.IntegerField()
-    value = generic.GenericForeignKey('value_type', 'value_id')
-
-    class Meta:
-        unique_together = ('item', 'value_type', 'value_id')
-        abstract = True
-
-    def __unicode__(self):
-        return u'{}: {}'.format(self.value.attribute, self.value)
-
-
-# TODO: Should allow to (selectively) create variations (filters) for some
-#       attribute value sets, thus supporting subproduct sales or stock.
-#class VariationAttribute(AttributeValue):
-#    variation = models.ForeignKey(ProductVariation,
-#        related_name='attribute_values')
-
-
-class CartItemAttributeValue(ItemAttributeValue):
-    item = models.ForeignKey(CartItem, related_name='attribute_values')
-
-
-# TODO: Hopefully wishlists will become storable some day.
-#class WishlistItemAttributeValue(ItemAttributeValue):
-#    item = models.ForeignKey(WishlistItem, related_name='attribute_values')
-
-
-class OrderItemAttributeValue(ItemAttributeValue):
-    item = models.ForeignKey(OrderItem, related_name='attribute_values')
 
 
 class StringAttribute(Attribute):
@@ -233,7 +215,7 @@ class ChoiceOption(Orderable):
         help_text=_("Group this option together with some other options. "
                     "After creating new groups you need to save before they "
                     "are available for selection."))
-    option = models.CharField(_("Option"), max_length=255,
+    name = models.CharField(_("Option"), max_length=255,
         help_text=_("Potential value of the attribute."))
     price = fields.MoneyField(_("Price change"), default=0,
         help_text=_("Unit price will be modified by this amount, "
@@ -246,12 +228,12 @@ class ChoiceOption(Orderable):
 
     def __unicode__(self):
         if self.group:
-            return u'{}, {}'.format(self.group, self.option)
+            return u'{}, {}'.format(self.group, self.name)
         else:
-            return unicode(self.option)
+            return unicode(self.name)
 
     def choice(self):
-        context = {'option': self.option, 'price': self.price}
+        context = {'name': self.name, 'price': self.price}
         template = 'attributes/choice_option.html'
         return (self.id, render_to_string(template, context))
 
@@ -268,7 +250,7 @@ class ChoiceValue(AttributeValue):
         if option is not None:
             def set_group_option():
                 self.group = option.group.name if option.group else ''
-                self.option = option.option
+                self.option = option.name
             for_all_languages(set_group_option)
             self.price = option.price
 
