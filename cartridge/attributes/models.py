@@ -17,20 +17,32 @@ from mezzanine.utils.translation import for_all_languages
 from cartridge.shop import fields
 from cartridge.shop.models import Product
 
-from .managers import AttributeValueManager
+from .managers import PolymorphicManager
 
 
-# Used to limit choices in generic relations.
-#       Non-editable setting maybe?
+# Used to limit choices in product attributes inline.
+# TODO: Should be a non-editable setting.
 ATTRIBUTE_TYPES = Q(app_label='attributes', model__in=(
     'stringattribute', 'charactersattribute',
     'simplechoiceattribute', 'imagechoiceattribute', 'colorchoiceattribute',
     'imageattribute', 'listattribute'))
-VALUE_TYPES = Q(app_label='attributes', model__in=(
-    'stringvalue', 'charactersvalue',
-    'choicevalue', 'imagevalue', 'listvalue'))
-ITEM_TYPES = Q(app_label='shop', model__in=(
-    'cartitem', 'orderitem'))
+
+
+class PolymorphicModel(models.Model):
+    # simplistic implementation of dynamic model typecasting.
+    # Used to get proper value or choice option from subclass instance.
+    content_type = models.ForeignKey(ContentType)
+
+    objects = PolymorphicManager()
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        if not hasattr(self, 'content_type'):
+            self.content_type = ContentType.objects.get_for_model(
+                self.__class__)
+        return super(PolymorphicModel, self).save(*args, **kwargs)
 
 
 class Attribute(models.Model):
@@ -77,7 +89,7 @@ class ProductAttribute(Orderable):
         return u'{}: {}'.format(self.product, self.attribute)
 
 
-class AttributeValue(models.Model):
+class AttributeValue(PolymorphicModel):
     # Attribute values can't relate to attributes or options, as they
     # may persist past their deletion, so only attribute name is saved.
     # The base class stores content type, so we can get hold of
@@ -86,13 +98,10 @@ class AttributeValue(models.Model):
     # unicode(value) should return a string suitable for cart description.
     attribute = models.CharField(max_length=255)
     visible = models.BooleanField()
-    value_type = models.ForeignKey(ContentType, limit_choices_to=VALUE_TYPES,
-                                   related_name='attribute_values')
-    item_type = models.ForeignKey(ContentType, limit_choices_to=ITEM_TYPES)
+    item_type = models.ForeignKey(ContentType,
+                                  related_name='attributevalue_items_set')
     item_id = models.IntegerField()
     item = generic.GenericForeignKey('item_type', 'item_id')
-
-    objects = AttributeValueManager()
 
     def __init__(self, *args, **kwargs):
         # Copies all translations of attribute name.
@@ -109,14 +118,6 @@ class AttributeValue(models.Model):
         if name == 'price':
             return 0
         return super(AttributeValue, self).__getattr__(self, name)
-
-    def save(self, *args, **kwargs):
-        if self.pk is None:
-            self.value_type = ContentType.objects.get_for_model(self.__class__)
-        return super(AttributeValue, self).save(*args, **kwargs)
-
-    def as_value_type(self):
-        return self.value_type.get_object_for_this_type(id=self.id)
 
     def digest(self):
         # Used to check if a product with the same attributes / values is
@@ -208,7 +209,7 @@ class ChoiceOptionsGroup(Orderable):
         return unicode(self.name)
 
 
-class ChoiceOption(Orderable):
+class ChoiceOption(PolymorphicModel):
     attribute = models.ForeignKey(ChoiceAttribute, related_name='options',
         help_text=_("What attribute is this value for?"))
     group = models.ForeignKey(ChoiceOptionsGroup, related_name='options',
@@ -416,8 +417,7 @@ class ListValue(AttributeValue):
 class ListSubvalue(models.Model):
     # One of values on the list.
     list_value = models.ForeignKey(ListValue, related_name='values')
-    value_type = models.ForeignKey(ContentType,
-                                   limit_choices_to=VALUE_TYPES)
+    value_type = models.ForeignKey(ContentType)
     value_id = models.IntegerField()
     value = generic.GenericForeignKey('value_type', 'value_id')
 

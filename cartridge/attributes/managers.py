@@ -1,12 +1,12 @@
 from django.db import models
 
 
-class AttributeValueQuerySet(models.query.QuerySet):
+class PolymorphicQuerySet(models.query.QuerySet):
     def iterator(self):
-        for obj in super(AttributeValueQuerySet, self).iterator():
-            yield obj.as_value_type()
+        for obj in super(PolymorphicQuerySet, self).iterator():
+            yield obj.content_type.get_object_for_this_type(id=obj.id)
 
 
-class AttributeValueManager(models.Manager):
+class PolymorphicManager(models.Manager):
     def get_query_set(self):
-        return AttributeValueQuerySet(self.model)
+        return PolymorphicQuerySet(self.model)
