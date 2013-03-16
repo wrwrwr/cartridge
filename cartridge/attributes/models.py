@@ -31,7 +31,7 @@ ATTRIBUTE_TYPES = Q(app_label='attributes', model__in=(
 class PolymorphicModel(models.Model):
     # simplistic implementation of dynamic model typecasting.
     # Used to get proper value or choice option from a superclass instance.
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, editable=False)
 
     objects = PolymorphicManager()
 
