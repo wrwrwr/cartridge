@@ -566,7 +566,7 @@ class Cart(models.Model):
                 value.item = item
                 value.save()
                 try:
-                    if attribute.item_image and value.image is not None:
+                    if value.item_image and value.image is not None:
                         item.image = unicode(value.image.url)
                 except AttributeError:
                     pass

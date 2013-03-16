@@ -20,7 +20,6 @@ from cartridge.shop import checkout
 from cartridge.shop.models import Product, ProductOption, ProductVariation
 from cartridge.shop.models import Cart, CartItem, Order, DiscountCode
 from cartridge.shop.utils import make_choices, set_locale, set_shipping
-from cartridge.attributes.models import ProductAttribute
 
 
 ADD_PRODUCT_ERRORS = {
@@ -64,9 +63,7 @@ class AddProductForm(forms.Form):
 
         # Add fields for product's attributes.
         self._attributes = []
-        product_attributes = ProductAttribute.objects.filter(
-            product=self._product)
-        for product_attribute in product_attributes:
+        for product_attribute in self._product.attributes.all():
             attribute = product_attribute.attribute
             self.fields[attribute.field_name()] = attribute.field()
             self._attributes.append(attribute)
@@ -107,8 +104,10 @@ class AddProductForm(forms.Form):
 
         # Collect all attribute values under one key in cleaned_data.
         attribute_values = {}
+        print data
         for attribute in self._attributes:
             field = attribute.field_name()
+            print repr(attribute), field
             try:
                 value = attribute.make_value(data.pop(field), self._product)
             except forms.ValidationError, e:
