@@ -8,7 +8,7 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.fields import BLANK_CHOICE_DASH
 from django.template.loader import render_to_string
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext, ugettext_lazy as _
 
 from mezzanine.core.models import Orderable
 from mezzanine.utils.models import upload_to
@@ -193,7 +193,10 @@ class ChoiceAttribute(PolymorphicModel, Attribute):
                                  required=self.required)
 
     def make_value(self, value, product):
-        option = ChoiceOption.objects.get(pk=value)
+        if value != '':
+            option = ChoiceOption.objects.get(pk=value)
+        else:
+            option = None
         return ChoiceValue(attribute=self, option=option)
 
 
@@ -258,15 +261,16 @@ class ChoiceValue(AttributeValue):
                 self.option = option.name
             for_all_languages(set_group_option)
             self.price = option.price
+        else:
+            self.group = ''
+            self.option = ''
+            self.price = 0
 
     def __nonzero__(self):
         return bool(self.option)
 
     def __unicode__(self):
-        if self.group:
-            return u'{}, {}'.format(self.group, self.option)
-        else:
-            return unicode(self.option)
+        return unicode(self.option)
 
 
 class SimpleChoiceAttribute(ChoiceAttribute):
@@ -391,15 +395,22 @@ class ListValue(AttributeValue):
         return any(self.subvalues())
 
     def __unicode__(self):
-        return self.separator.join(unicode(v) for v in self.subvalues())
+        return self.separator.join(
+            unicode(v) if v is not None else ugettext("none")
+            for v in self.subvalues())
 
     def save(self, *args, **kwargs):
         # Saves list elements, after saving the list model.
         super(ListValue, self).save(*args, **kwargs)
         for value in self._values:
-            value.item = self.item
-            value.save(*args, **kwargs)
-            ListSubvalue.objects.create(list_value=self, value=value)
+            if value:
+                value.item = self.item
+                value.save(*args, **kwargs)
+                ListSubvalue.objects.create(list_value=self, value=value)
+            else:
+                # Not passing value=None is a workaround for
+                # https://code.djangoproject.com/ticket/7551.
+                ListSubvalue.objects.create(list_value=self)
         self._values = []
 
     @property
@@ -420,8 +431,8 @@ class ListValue(AttributeValue):
 class ListSubvalue(models.Model):
     # One of values on the list.
     list_value = models.ForeignKey(ListValue, related_name='values')
-    value_type = models.ForeignKey(ContentType)
-    value_id = models.IntegerField()
+    value_type = models.ForeignKey(ContentType, null=True)
+    value_id = models.IntegerField(null=True)
     value = generic.GenericForeignKey('value_type', 'value_id')
 
     class Meta:
