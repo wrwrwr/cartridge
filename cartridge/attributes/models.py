@@ -108,9 +108,9 @@ class AttributeValue(PolymorphicModel):
 
     def __init__(self, *args, **kwargs):
         # Copies all translations of attribute name.
-        attribute = kwargs.pop('attribute', None)
+        attribute = kwargs.get('attribute', None)
         super(AttributeValue, self).__init__(*args, **kwargs)
-        if attribute is not None:
+        if isinstance(attribute, Attribute):
             def set_attribute():
                 self.attribute = attribute.name
             for_all_languages(set_attribute)
@@ -194,7 +194,7 @@ class ChoiceAttribute(PolymorphicModel, Attribute):
 
     def make_value(self, value, product):
         if value != '':
-            option = ChoiceOption.objects.get(pk=value)
+            option = self.options.get(pk=value)
         else:
             option = None
         return ChoiceValue(attribute=self, option=option)
@@ -248,23 +248,19 @@ class ChoiceOption(PolymorphicModel):
 
 class ChoiceValue(AttributeValue):
     # Option name and price from the time of creation.
-    group = models.CharField(max_length=255)
-    option = models.CharField(max_length=255)
-    price = fields.MoneyField()
+    group = models.CharField(max_length=255, default='')
+    option = models.CharField(max_length=255, default='')
+    price = fields.MoneyField(default=0)
 
     def __init__(self, *args, **kwargs):
-        option = kwargs.pop('option', None)
+        option = kwargs.get('option', None)
         super(ChoiceValue, self).__init__(*args, **kwargs)
-        if option is not None:
+        if isinstance(option, ChoiceOption):
             def set_group_option():
                 self.group = option.group.name if option.group else ''
                 self.option = option.name
             for_all_languages(set_group_option)
             self.price = option.price
-        else:
-            self.group = ''
-            self.option = ''
-            self.price = 0
 
     def __nonzero__(self):
         return bool(self.option)
@@ -336,7 +332,7 @@ class ImageValue(AttributeValue):
     item_image = models.BooleanField()
 
     def __init__(self, *args, **kwargs):
-        item_image = kwargs.pop('item_image', None)
+        item_image = kwargs.get('item_image', None)
         super(ImageValue, self).__init__(*args, **kwargs)
         if item_image:
             self.visible = False
