@@ -1,5 +1,9 @@
 from django.contrib import admin
+from django.contrib.contenttypes.models import ContentType
+from django.core.urlresolvers import reverse
 from django.db.models import ImageField
+from django.utils.html import format_html_join
+from django.utils.translation import ugettext_lazy as _
 
 from mezzanine.core.admin import (TranslationAdmin,
                                   TranslationInlineModelAdmin,
@@ -18,13 +22,32 @@ from .forms import AttributeSelectionForm, ProductAttributeForm
 
 
 class AttributeAdmin(TranslationAdmin):
-    list_display = ('name', 'required', 'visible')
+    list_display = ('name', 'product_links', 'required', 'visible')
     list_editable = ('required', 'visible')
     list_filter = ('required', 'visible')
     ordering = ('name',)
 
     class Media:
         css = {'all': ('admin/css/attribute.css',)}
+
+    def product_links(self, attribute):
+        """
+        Links to all products the attribute or list attribute relating to it
+        are assigned to.
+        """
+        attributes = [attribute]
+        products = []
+        while attributes:
+            attribute = attributes.pop()
+            attribute_type = ContentType.objects.get_for_model(attribute)
+            attributes.extend(
+                ListAttribute.objects.filter(attribute_type=attribute_type,
+                                             attribute_id=attribute.id))
+            products.extend(attribute.products())
+        return format_html_join(u', ', u'<a href="{}">{}</a>',
+            ((reverse('admin:shop_product_change', args=(p.id,)), p.title)
+             for p in products))
+    product_links.short_description = _("Products")
 
 
 class StringAttributeAdmin(AttributeAdmin):
