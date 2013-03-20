@@ -74,6 +74,15 @@ class Attribute(models.Model):
         # if attribute sets match.
         return self.field_name()
 
+    def products(self):
+        """
+        Returns all products this attribute is assigned to.
+        """
+        attribute_type = ContentType.objects.get_for_model(self)
+        return Product.objects.filter(
+            attributes__attribute_type=attribute_type,
+            attributes__attribute_id=self.id)
+
 
 class ProductAttribute(Orderable):
     # Attribute assigned to a product.
@@ -287,7 +296,7 @@ class ImageChoiceAttribute(ChoiceAttribute):
 class ImageChoiceOption(ChoiceOption):
     image = models.ImageField(_("Image"), null=True, blank=True,
         upload_to=upload_to('attributes.ImageChoiceOption.image',
-                            'attributes/options'),
+                            'attributes/image_choice'),
         help_text=_("Image presenting the option."))
 
 
@@ -328,7 +337,7 @@ class ImageAttribute(Attribute):
 
 class ImageValue(AttributeValue):
     image = models.ImageField(upload_to=upload_to(
-        'attributes.ImageValue.image', 'attributes/images'))
+        'attributes.ImageValue.image', 'attributes/image'))
     item_image = models.BooleanField()
 
     def __init__(self, *args, **kwargs):
@@ -359,6 +368,20 @@ class ListAttribute(Attribute):
     class Meta:
         verbose_name = _("list attribute")
         verbose_name_plural = _("list attributes")
+
+    def save(self, *args, **kwargs):
+        # Ensure related attributes don't make a cycle.
+        attribute = self.attribute
+        while attribute is not None:
+            if attribute.__class__ == self.__class__ and attribute.pk == self.pk:
+                raise AttributeError("You can't set list attribute's related "
+                                     "attribute to the list attribute itself "
+                                     "or any attribute that relates to it.")
+            try:
+                attribute = attribute.attribute
+            except AttributeError:
+                break
+        super(ListAttribute, self).save(*args, **kwargs)
 
     def field(self):
         return forms.CharField(label=self.name, required=self.required)
