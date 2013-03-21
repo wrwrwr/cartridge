@@ -7,36 +7,36 @@ from mezzanine.core.forms import DynamicInlineAdminForm
 
 class AttributeSelectionForm(forms.ModelForm):
     # Choice of existing attributes instead of generic type / id.
+    attribute = forms.ChoiceField(label=_("Attribute"))
 
     def __init__(self, *args, **kwargs):
-        # Create a fake "attribute" field and populate its choices with all
-        # objects having content type allowable for the attribute_type field.
+        super(AttributeSelectionForm, self).__init__(*args, **kwargs)
+
+        # Populate attribute field choices with all models having content type
+        # allowable for the attribute_type field (grouped by content type).
         # Note: this assumes that attribute_type uses limit_choices_to.
         attributes = BLANK_CHOICE_DASH[:]
-        for attribute_type in self.base_fields['attribute_type'].queryset:
+        for attribute_type in self.fields['attribute_type'].queryset:
             attributes_group = []
             for attribute in attribute_type.model_class().objects.all():
                 attributes_group.append(
                     ('{}-{}'.format(attribute_type.pk, attribute.pk),
                      attribute))
             attributes.append((attribute_type, attributes_group))
-        # TODO: Base fields should never be modified?
-        self.base_fields['attribute'] = forms.ChoiceField(label=_("Attribute"),
-                                                          choices=attributes)
+        self.fields['attribute'].choices = attributes
 
-        super(AttributeSelectionForm, self).__init__(*args, **kwargs)
-
-        # Split attribute_type-attribute_id values in data, so they can
-        # be saved using separate fields.
+        # Split attribute_type-attribute_id values in data, so they are
+        # saved in the model fields.
         data = self.data
         attribute = self.add_prefix('attribute')
-        type_id = data.get(attribute, '').split('-', 1)
-        if len(type_id) == 2:
+        if attribute in data and data[attribute] != '':
+            type_id = data.get(attribute).split('-', 1)
             data[attribute + '_type'], data[attribute + '_id'] = type_id
-        # Make an initial value for the fake "attribute" field equal to
-        # the current attribute_type-attribute_id.
+
+        # Make an initial value for the attribute field by joining initial
+        # values for attribute_type and attribute_id.
+        initial = self.initial
         try:
-            initial = self.initial
             initial['attribute'] = '{}-{}'.format(
                 initial['attribute_type'], initial['attribute_id'])
         except KeyError:

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db.models import ImageField
-from django.utils.html import format_html_join
+from django.utils.html import format_html, format_html_join
 from django.utils.translation import ugettext_lazy as _
 
 from mezzanine.core.admin import (TranslationAdmin,
@@ -99,11 +99,8 @@ class ColorChoiceAttributeAdmin(AttributeAdmin):
 def attribute_fieldsets(fieldsets):
     # Hide type / id fields, but keep the processing they provide.
     fields = fieldsets[0][1]['fields']
-    index = fields.index('attribute_type')
     fields.remove('attribute_type')
     fields.remove('attribute_id')
-    # Workaround for https://code.djangoproject.com/ticket/12238.
-    fields.insert(index, 'attribute')
     return fieldsets
 
 
@@ -121,10 +118,31 @@ class ListAttributeAdmin(AttributeAdmin):
 class ProductAttributeAdmin(TabularDynamicInlineAdmin):
     model = ProductAttribute
     form = ProductAttributeForm
+    readonly_fields = ('edit',)
 
     def get_fieldsets(self, request, obj=None):
         return attribute_fieldsets(
             super(ProductAttributeAdmin, self).get_fieldsets(request, obj))
+
+    def edit(self, product_attribute):
+        if product_attribute.attribute is not None:
+            attribute = product_attribute.attribute
+            while True:
+                try:
+                    attribute = attribute.attribute
+                except AttributeError:
+                    break
+            app = attribute._meta.app_label
+            model = attribute.__class__.__name__.lower()
+            id = attribute.id
+            return format_html(
+                u'<a href="{}" title="{}" class="changelink"> </a>',
+                reverse('admin:{}_{}_change'.format(app, model), args=(id,)),
+                _("Edit"))
+        else:
+            return ''
+    edit.short_description = _("Edit")
+    edit.allow_tags = True
 
 
 admin.site.register(StringAttribute, StringAttributeAdmin)

@@ -373,7 +373,8 @@ class ListAttribute(Attribute):
         # Ensure related attributes don't make a cycle.
         attribute = self.attribute
         while attribute is not None:
-            if attribute.__class__ == self.__class__ and attribute.pk == self.pk:
+            if (attribute.__class__ == self.__class__ and
+                    attribute.pk == self.pk):
                 raise AttributeError("You can't set list attribute's related "
                                      "attribute to the list attribute itself "
                                      "or any attribute that relates to it.")
