@@ -33,8 +33,9 @@ from django.db.models import ImageField
 from django.utils.translation import ugettext_lazy as _
 
 from mezzanine.conf import settings
-from mezzanine.core.admin import (TranslationAdmin, DisplayableAdmin,
-                                  TabularDynamicInlineAdmin)
+from mezzanine.core.admin import (
+    TranslationAdmin, TranslationInlineModelAdmin,
+    DisplayableAdmin, TabularDynamicInlineAdmin)
 from mezzanine.pages.admin import PageAdmin
 
 from cartridge.shop.fields import MoneyField
@@ -108,7 +109,8 @@ class ProductVariationAdmin(admin.TabularInline):
     formset = ProductVariationAdminFormset
 
 
-class ProductImageAdmin(TabularDynamicInlineAdmin):
+class ProductImageAdmin(TabularDynamicInlineAdmin,
+                        TranslationInlineModelAdmin):
     model = ProductImage
     formfield_overrides = {ImageField: {"widget": ImageWidget}}
 
