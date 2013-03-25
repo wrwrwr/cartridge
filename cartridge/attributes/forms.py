@@ -4,6 +4,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from mezzanine.core.forms import DynamicInlineAdminForm
 
+from .models import PolymorphicModel
+
 
 class AttributeSelectionForm(forms.ModelForm):
     # Choice of existing attributes instead of generic type / id.
@@ -18,7 +20,11 @@ class AttributeSelectionForm(forms.ModelForm):
         attributes = BLANK_CHOICE_DASH[:]
         for attribute_type in self.fields['attribute_type'].queryset:
             attributes_group = []
-            for attribute in attribute_type.model_class().objects.all():
+            model = attribute_type.model_class()
+            queryset = model.objects.all()
+            if issubclass(model, PolymorphicModel):
+                queryset = queryset.filter(content_type=attribute_type)
+            for attribute in queryset:
                 attributes_group.append(
                     ('{}-{}'.format(attribute_type.pk, attribute.pk),
                      attribute))

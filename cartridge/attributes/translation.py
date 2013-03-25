@@ -35,8 +35,11 @@ translator.register(AttributeValue, AttributeValueTranslationOptions)
 translator.register((StringValue, CharactersValue, ImageValue, ListValue))
 translator.register(
     (StringAttribute, CharactersAttribute, ChoiceAttribute,
-     SimpleChoiceAttribute, ImageChoiceAttribute, ColorChoiceAttribute,
      ImageAttribute, ListAttribute))
+# Workaround for proxy models not inheriting translation fields.
+translator.register(
+    (SimpleChoiceAttribute, ImageChoiceAttribute, ColorChoiceAttribute),
+     AttributeTranslationOptions)
 translator.register(ChoiceOptionsGroup, ChoiceOptionsGroupTranslationOptions)
 translator.register(ChoiceOption, ChoiceOptionTranslationOptions)
 translator.register((ImageChoiceOption, ColorChoiceOption,))

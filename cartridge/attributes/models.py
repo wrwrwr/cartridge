@@ -29,8 +29,7 @@ ATTRIBUTE_TYPES = Q(app_label='attributes', model__in=(
 
 
 class PolymorphicModel(models.Model):
-    # simplistic implementation of dynamic model typecasting.
-    # Used to get proper value or choice option from a superclass instance.
+    # Simplistic implementation of dynamic model typecasting.
     content_type = models.ForeignKey(ContentType, editable=False)
 
     objects = PolymorphicManager()
@@ -41,7 +40,7 @@ class PolymorphicModel(models.Model):
     def save(self, *args, **kwargs):
         if not hasattr(self, 'content_type'):
             self.content_type = ContentType.objects.get_for_model(
-                self.__class__)
+                self.__class__, for_concrete_model=False)
         return super(PolymorphicModel, self).save(*args, **kwargs)
 
     def as_content_type(self):
@@ -78,7 +77,8 @@ class Attribute(models.Model):
         """
         Returns all products this attribute is assigned to.
         """
-        attribute_type = ContentType.objects.get_for_model(self)
+        attribute_type = ContentType.objects.get_for_model(
+            self, for_concrete_model=False)
         return Product.objects.filter(
             attributes__attribute_type=attribute_type,
             attributes__attribute_id=self.id)
@@ -279,16 +279,15 @@ class ChoiceValue(AttributeValue):
 
 
 class SimpleChoiceAttribute(ChoiceAttribute):
-    # Note that all choice attribute subclasses only offer additional
-    # presentation, but store their values as base choice values.
-    # TODO: This could be resolved using attribute / group / option factories.
     class Meta:
+        proxy = True
         verbose_name = _("simple choice attribute")
         verbose_name_plural = _("simple choice attributes")
 
 
 class ImageChoiceAttribute(ChoiceAttribute):
     class Meta:
+        proxy = True
         verbose_name = _("image choice attribute")
         verbose_name_plural = _("image choice attributes")
 
@@ -302,6 +301,7 @@ class ImageChoiceOption(ChoiceOption):
 
 class ColorChoiceAttribute(ChoiceAttribute):
     class Meta:
+        proxy = True
         verbose_name = _("color choice attribute")
         verbose_name_plural = _("color choice attributes")
 
