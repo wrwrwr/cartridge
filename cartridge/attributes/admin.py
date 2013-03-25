@@ -21,6 +21,18 @@ from .models import (
 from .forms import AttributeSelectionForm, ProductAttributeForm
 
 
+class PolymorphicAdmin(admin.ModelAdmin):
+    """
+    Filters objects to just those that match admin model's
+    content type.
+    """
+    def queryset(self, request):
+        content_type = ContentType.objects.get_for_model(
+            self.model, for_concrete_model=False)
+        print self.model, repr(content_type)
+        return self.model.objects.filter(content_type=content_type)
+
+
 class AttributeAdmin(TranslationAdmin):
     list_display = ('name', 'product_links', 'required', 'visible')
     list_editable = ('required', 'visible')
@@ -39,7 +51,9 @@ class AttributeAdmin(TranslationAdmin):
         products = []
         while attributes:
             attribute = attributes.pop()
-            attribute_type = ContentType.objects.get_for_model(attribute)
+            attribute_type = ContentType.objects.get_for_model(
+                attribute, for_concrete_model=False)
+            print attribute, attribute_type, attribute.products()
             attributes.extend(
                 ListAttribute.objects.filter(attribute_type=attribute_type,
                                              attribute_id=attribute.id))
@@ -75,7 +89,7 @@ class SimpleChoiceOptionInline(TabularTranslationInline):
     model = ChoiceOption
 
 
-class SimpleChoiceAttributeAdmin(AttributeAdmin):
+class SimpleChoiceAttributeAdmin(PolymorphicAdmin, AttributeAdmin):
     inlines = (ChoiceOptionsGroupInline, SimpleChoiceOptionInline)
 
 
@@ -84,7 +98,7 @@ class ImageChoiceOptionInline(TabularTranslationInline):
     formfield_overrides = {ImageField: {'widget': ImageWidget}}
 
 
-class ImageChoiceAttributeAdmin(AttributeAdmin):
+class ImageChoiceAttributeAdmin(PolymorphicAdmin, AttributeAdmin):
     inlines = (ChoiceOptionsGroupInline, ImageChoiceOptionInline)
 
 
@@ -92,7 +106,7 @@ class ColorChoiceOptionInline(TabularTranslationInline):
     model = ColorChoiceOption
 
 
-class ColorChoiceAttributeAdmin(AttributeAdmin):
+class ColorChoiceAttributeAdmin(PolymorphicAdmin, AttributeAdmin):
     inlines = (ChoiceOptionsGroupInline, ColorChoiceOptionInline)
 
 
@@ -147,6 +161,7 @@ class ProductAttributeAdmin(TabularDynamicInlineAdmin):
 
 admin.site.register(StringAttribute, StringAttributeAdmin)
 admin.site.register(CharactersAttribute, CharactersAttributeAdmin)
+#admin.site.register(ChoiceAttribute, ChoiceAttributeAdmin)
 admin.site.register(SimpleChoiceAttribute, SimpleChoiceAttributeAdmin)
 admin.site.register(ImageChoiceAttribute, ImageChoiceAttributeAdmin)
 admin.site.register(ColorChoiceAttribute, ColorChoiceAttributeAdmin)
