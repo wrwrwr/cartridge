@@ -126,10 +126,10 @@ class AttributeValue(PolymorphicModel):
             self.visible = attribute.visible
 
     def __getattr__(self, name):
-        # Default to zero price.
+        # Default to zero price (some subclasses have a price field).
         if name == 'price':
             return 0
-        return super(AttributeValue, self).__getattr__(self, name)
+        raise AttributeError
 
     def digest(self):
         # Used to check if a product with the same attributes / values is
