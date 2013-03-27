@@ -597,7 +597,7 @@ msgstr "Kod"
 
 #: models.py:842
 msgid "Minimum total purchase"
-msgstr "Minimalna łączna kwota zakupów"
+msgstr "Minimalna kwota zakupów"
 
 #: models.py:844
 msgid "Uses remaining"
@@ -672,7 +672,7 @@ msgstr "Ważnośc Twojego koszyka wygasła"
 
 #: views.py:162
 msgid "Cart updated"
-msgstr "Koszyk zaktualizowany"
+msgstr "Koszyk został zaktualizowany"
 
 #: management/commands/product_db.py:35
 msgid "Category"
@@ -790,7 +790,7 @@ msgstr "Drogi/Droga"
 
 #: templates/email/order_receipt.html:6 templates/email/order_receipt.txt:7
 msgid "Your order has been successful, details are below."
-msgstr "Twoje zamówienie zostało przyjęte, szczegóły poniżej."
+msgstr "Twoje zamówienie zostało przyjęte, szczegóły znajdziesz poniżej."
 
 #: templates/email/order_receipt.txt:9
 #: templates/shop/includes/order_details.html:5
