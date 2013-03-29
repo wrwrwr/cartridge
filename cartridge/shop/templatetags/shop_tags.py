@@ -89,3 +89,12 @@ def order_totals_text(context):
     Text version of order_totals.
     """
     return _order_totals(context)
+
+
+@register.simple_tag(takes_context=True)
+def order_totals_context(context):
+    """
+    Sets totals variables in context. For special tasks like PDF invoices.
+    """
+    _order_totals(context)
+    return ""
