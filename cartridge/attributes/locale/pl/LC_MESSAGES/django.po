@@ -1,5 +1,3 @@
-# Settings translations.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Cartridge attributes\n"
@@ -33,7 +31,7 @@ msgstr "Nazwa"
 
 #: models.py:54
 msgid "Attribute kind such as color, size etc."
-msgstr "Rodzaj atrybutu, taki jak kolor, rozmiar etc."
+msgstr "Rodzaj atrybutu, taki jak kolor, rozmiar itp."
 
 #: models.py:55
 msgid "Required"
@@ -131,7 +129,7 @@ msgstr "Modyfikacja ceny"
 msgid "Unit price will be modified by this amount, if the option is chosen."
 msgstr ""
 "Jeśli klient wybierze tę opcję, cena za sztukę będzie podwyższona lub "
-"obniżona o podaną kwotę, "
+"obniżona o podaną kwotę,"
 
 #: models.py:241
 msgid "choice option"
