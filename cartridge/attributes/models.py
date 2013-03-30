@@ -210,8 +210,7 @@ class ChoiceAttribute(PolymorphicModel, Attribute):
 
 
 class ChoiceOptionsGroup(Orderable):
-    attribute = models.ForeignKey(ChoiceAttribute, related_name='groups',
-        help_text=_("What attribute is this option group of?"))
+    attribute = models.ForeignKey(ChoiceAttribute, related_name='groups',)
     name = models.CharField(_("Name"), max_length=255,
         help_text=_("Group name displayed as a heading in selection boxes."))
 
@@ -225,8 +224,7 @@ class ChoiceOptionsGroup(Orderable):
 
 
 class ChoiceOption(PolymorphicModel):
-    attribute = models.ForeignKey(ChoiceAttribute, related_name='options',
-        help_text=_("What attribute is this value for?"))
+    attribute = models.ForeignKey(ChoiceAttribute, related_name='options')
     group = models.ForeignKey(ChoiceOptionsGroup, related_name='options',
         null=True, blank=True,
         help_text=_("Group this option together with some other options. "
