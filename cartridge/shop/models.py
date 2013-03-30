@@ -22,7 +22,7 @@ from mezzanine.utils.timezone import now
 from mezzanine.utils.translation import for_all_languages
 
 from cartridge.shop import fields, managers
-from cartridge.shop.utils import order_totals_fields
+from cartridge.shop.utils import order_totals_fields, set_shipping
 
 try:
     from _mysql_exceptions import OperationalError
@@ -754,6 +754,20 @@ class Discount(models.Model):
         filters = reduce(ior, filters + [Q(id__in=self.products.only("id"))])
         return Product.objects.filter(filters).distinct()
 
+    def get_total(self, user, cart):
+        """
+        Discount subclasses should be able to calculate their totals (with the
+        exception of ``Sale``).
+        """
+        return 0
+
+    def update_session(self, request):
+        """
+        Stores common discount variables in session, for saving with order.
+        """
+        total = self.get_total(request.user, request.cart)
+        request.session["discount_total"] = -total
+
 
 class Sale(Discount):
     """
@@ -884,6 +898,36 @@ class DiscountCode(Discount):
     class Meta:
         verbose_name = _("Discount code")
         verbose_name_plural = _("Discount codes")
+
+
+class LoyaltyDiscount(Discount):
+    min_purchase = fields.MoneyField(_("Minimum cart subtotal"))
+    min_purchases = fields.MoneyField(_("Minimum orders subtotal"),
+        help_text=_("Minimum sum of subtotals for orders completed by client. "
+                    "Only purchases made under the currently logged account "
+                    "are considered."))
+    free_shipping = models.BooleanField(_("Free shipping"))
+
+    objects = managers.LoyaltyDiscountManager()
+
+    class Meta:
+        verbose_name = _("Loyalty discount")
+        verbose_name_plural = _("Loyalty discounts")
+
+    def get_total(self, user, cart):
+        item_total = cart.total_price()
+        if self.discount_deduct is not None:
+            if self.discount_deduct < item_total:
+                return self.discount_deduct
+        elif self.discount_percent is not None:
+            return item_total / Decimal("100") * self.discount_percent
+        return 0
+
+    def update_session(self, request):
+        if self.free_shipping:
+            set_shipping(request, _("Free shipping"), 0)
+        request.session["free_shipping"] = self.free_shipping
+        super(LoyaltyDiscount, self).update_session(request)
 
 
 from cartridge.attributes.models import (attributes_hash, AttributeValue)

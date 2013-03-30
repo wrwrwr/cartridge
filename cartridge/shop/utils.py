@@ -60,18 +60,24 @@ def recalculate_discount(request):
     Updates an existing discount code when the cart is modified.
     """
     from cartridge.shop.forms import DiscountForm
-    from cartridge.shop.models import Cart
+    from cartridge.shop.models import Cart, LoyaltyDiscount
     # Rebind the cart to request since it's been modified.
     request.cart = Cart.objects.from_request(request)
+    try:
+        del request.session["discount_total"]
+    except KeyError:
+        pass
     discount_code = request.session.get("discount_code", "")
-    discount_form = DiscountForm(request, {"discount_code": discount_code})
-    if discount_form.is_valid():
-        discount_form.set_discount()
+    if discount_code != "":
+        discount_form = DiscountForm(request, {"discount_code": discount_code})
+        if discount_form.is_valid():
+            # TODO: Move session logic to DiscountCode model.
+            discount_form.set_discount()
     else:
-        try:
-            del request.session["discount_total"]
-        except KeyError:
-            pass
+        discount = LoyaltyDiscount.objects.get_highest(
+            request.user, request.cart)
+        if discount:
+            discount.update_session(request)
 
 
 def set_shipping(request, shipping_type, shipping_total):
