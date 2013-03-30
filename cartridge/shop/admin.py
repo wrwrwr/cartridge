@@ -332,7 +332,8 @@ class LoyaltyDiscountAdmin(TranslationAdmin):
     formfield_overrides = {MoneyField: {"widget": MoneyWidget}}
     form = DiscountAdminForm
     fieldsets = (
-        (None, {"fields": ("title", "active", "min_purchase", "min_purchases")}),
+        (None,
+            {"fields": ("title", "active", "min_purchase", "min_purchases")}),
         (_("Apply to product and/or products in categories"),
             {"fields": ("products", "categories")}),
         (_("Reduce unit price by"),
