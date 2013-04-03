@@ -29,7 +29,6 @@ class PolymorphicAdmin(admin.ModelAdmin):
     def queryset(self, request):
         content_type = ContentType.objects.get_for_model(
             self.model, for_concrete_model=False)
-        print self.model, repr(content_type)
         return self.model.objects.filter(content_type=content_type)
 
 
@@ -53,7 +52,6 @@ class AttributeAdmin(TranslationAdmin):
             attribute = attributes.pop()
             attribute_type = ContentType.objects.get_for_model(
                 attribute, for_concrete_model=False)
-            print attribute, attribute_type, attribute.products()
             attributes.extend(
                 ListAttribute.objects.filter(attribute_type=attribute_type,
                                              attribute_id=attribute.id))
