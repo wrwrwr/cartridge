@@ -416,7 +416,7 @@ class Order(models.Model):
     transaction_id = CharField(_("Transaction ID"), max_length=255, null=True,
                                blank=True)
 
-    status = models.IntegerField(_("Status"),
+    status = models.CharField(_("Status"), max_length=20,
                             choices=settings.SHOP_ORDER_STATUS_CHOICES,
                             default=settings.SHOP_ORDER_STATUS_CHOICES[0][0])
 

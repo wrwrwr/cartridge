@@ -49,8 +49,8 @@
 
 # Sequence of value/name pairs for order statuses.
 # SHOP_ORDER_STATUS_CHOICES = (
-#     (1, "Unprocessed"),
-#     (2, "Processed"),
+#     ("unprocessed", "Unprocessed"),
+#     ("processed", "Processed"),
 # )
 
 # Sequence of value/name pairs for types of product options,
