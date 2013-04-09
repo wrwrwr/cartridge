@@ -1,4 +1,5 @@
 from collections import defaultdict
+import os
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages import info
@@ -320,6 +321,19 @@ def complete(request, template="shop/complete.html"):
     return render(request, template, context)
 
 
+def invoice_media_link(uri, rel):
+    """
+    Turns media URIs (images, fonts) to paths for PDF embedding.
+    Alternatively one could use absolute URIs, but this may not
+    work on servers that don't allow loopback connections.
+    """
+    if settings.DEV_SERVER:
+        root = settings.STATICFILES_DIRS[-1]
+    else:
+        root = settings.STATIC_ROOT
+    return os.path.join(root, uri.replace(settings.STATIC_URL, ""))
+
+
 def invoice(request, order_id, template="shop/order_invoice.html"):
     """
     Display a plain text invoice for the given order. The order must
@@ -340,8 +354,8 @@ def invoice(request, order_id, template="shop/order_invoice.html"):
         name = slugify("%s-invoice-%s" % (settings.SITE_TITLE, order.id))
         response["Content-Disposition"] = "attachment; filename=%s.pdf" % name
         html = get_template(template).render(context)
-        import ho.pisa
-        ho.pisa.CreatePDF(html, response)
+        from xhtml2pdf.pisa import pisaDocument
+        pisaDocument(html, dest=response, link_callback=invoice_media_link)
         return response
     return render(request, template, context)
 
