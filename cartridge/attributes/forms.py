@@ -1,10 +1,11 @@
 from django import forms
+from django.contrib.contenttypes.models import ContentType
 from django.db.models.fields import BLANK_CHOICE_DASH
 from django.utils.translation import ugettext_lazy as _
 
 from mezzanine.core.forms import DynamicInlineAdminForm
 
-from .models import PolymorphicModel
+from .models import PRODUCT_ATTRIBUTES_ORDER, PolymorphicModel
 
 
 class AttributeSelectionForm(forms.ModelForm):
@@ -18,11 +19,12 @@ class AttributeSelectionForm(forms.ModelForm):
         # allowable for the attribute_type field (grouped by content type).
         # Note: this assumes that attribute_type uses limit_choices_to.
         attributes = BLANK_CHOICE_DASH[:]
-        for attribute_type in self.fields['attribute_type'].queryset:
+        for attribute_class in PRODUCT_ATTRIBUTES_ORDER:
+            attribute_type = ContentType.objects.get(model=attribute_class)
+            attribute_model = attribute_type.model_class()
             attributes_group = []
-            model = attribute_type.model_class()
-            queryset = model.objects.all()
-            if issubclass(model, PolymorphicModel):
+            queryset = attribute_model.objects.all()
+            if issubclass(attribute_model, PolymorphicModel):
                 queryset = queryset.filter(content_type=attribute_type)
             for attribute in queryset:
                 attributes_group.append(
