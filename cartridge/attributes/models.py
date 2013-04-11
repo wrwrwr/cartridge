@@ -20,12 +20,14 @@ from cartridge.shop.models import Product
 from .managers import PolymorphicManager
 
 
-# Used to limit choices in product attributes inline.
+# Which attributes may be assigned to products, limits and orders choices in
+# product attribute inline.
 # TODO: Should be a non-editable setting.
-ATTRIBUTE_TYPES = Q(app_label='attributes', model__in=(
+PRODUCT_ATTRIBUTES_ORDER = (
     'stringattribute', 'charactersattribute',
     'simplechoiceattribute', 'imagechoiceattribute', 'colorchoiceattribute',
-    'imageattribute', 'listattribute'))
+    'imageattribute', 'listattribute')
+ATTRIBUTE_TYPES = Q(app_label='attributes', model__in=PRODUCT_ATTRIBUTES_ORDER)
 
 
 class PolymorphicModel(models.Model):
