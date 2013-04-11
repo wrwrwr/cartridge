@@ -47,7 +47,7 @@ class PolymorphicModel(models.Model):
         return self.content_type.get_object_for_this_type(pk=self.pk)
 
 
-class Attribute(models.Model):
+class Attribute(PolymorphicModel):
     # Needs to implement make_value that creates a value object from
     # cleaned form data.
     name = models.CharField(_("Name"), max_length=255,
@@ -190,7 +190,7 @@ class CharactersValue(StringValue):
     price = fields.MoneyField()
 
 
-class ChoiceAttribute(PolymorphicModel, Attribute):
+class ChoiceAttribute(Attribute):
     def field(self):
         choices = BLANK_CHOICE_DASH[:]
         for group in self.groups.all():
@@ -354,7 +354,8 @@ class ImageValue(AttributeValue):
 class ListAttribute(Attribute):
     # Multiple values for a single attribute.
     attribute_type = models.ForeignKey(ContentType,
-                                       limit_choices_to=ATTRIBUTE_TYPES)
+                                       limit_choices_to=ATTRIBUTE_TYPES,
+                                       related_name='list_attributes')
     attribute_id = models.IntegerField()
     attribute = generic.GenericForeignKey('attribute_type', 'attribute_id')
     separator = models.CharField(_("Values separator"),

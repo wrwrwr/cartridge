@@ -32,7 +32,7 @@ class PolymorphicAdmin(admin.ModelAdmin):
         return self.model.objects.filter(content_type=content_type)
 
 
-class AttributeAdmin(TranslationAdmin):
+class AttributeAdmin(TranslationAdmin, PolymorphicAdmin):
     list_display = ('name', 'product_links', 'required', 'visible')
     list_editable = ('required', 'visible')
     list_filter = ('required', 'visible')
@@ -87,7 +87,7 @@ class SimpleChoiceOptionInline(TabularTranslationInline):
     model = ChoiceOption
 
 
-class SimpleChoiceAttributeAdmin(PolymorphicAdmin, AttributeAdmin):
+class SimpleChoiceAttributeAdmin(AttributeAdmin):
     inlines = (ChoiceOptionsGroupInline, SimpleChoiceOptionInline)
 
 
@@ -96,7 +96,7 @@ class ImageChoiceOptionInline(TabularTranslationInline):
     formfield_overrides = {ImageField: {'widget': ImageWidget}}
 
 
-class ImageChoiceAttributeAdmin(PolymorphicAdmin, AttributeAdmin):
+class ImageChoiceAttributeAdmin(AttributeAdmin):
     inlines = (ChoiceOptionsGroupInline, ImageChoiceOptionInline)
 
 
@@ -104,7 +104,7 @@ class ColorChoiceOptionInline(TabularTranslationInline):
     model = ColorChoiceOption
 
 
-class ColorChoiceAttributeAdmin(PolymorphicAdmin, AttributeAdmin):
+class ColorChoiceAttributeAdmin(AttributeAdmin):
     inlines = (ChoiceOptionsGroupInline, ColorChoiceOptionInline)
 
 
