@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cartridge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-04-01 22:09+0200\n"
+"POT-Creation-Date: 2013-04-12 02:11+0200\n"
 "PO-Revision-Date: 2013-03-30 15:07+0000\n"
 "Last-Translator: Sebastián Ramírez Magrí <sebasmagri@gmail.com>\n"
 "Language-Team: Polish (http://www.transifex.com/projects/p/cartridge/"
@@ -48,11 +48,11 @@ msgstr "Dane płatnika"
 msgid "Shipping details"
 msgstr "Dane do wysyłki"
 
-#: admin.py:283 admin.py:303
+#: admin.py:283 admin.py:303 admin.py:326
 msgid "Apply to product and/or products in categories"
 msgstr "Zastosuj do produktu i/lub produktów w kategoriach"
 
-#: admin.py:285 admin.py:305
+#: admin.py:285 admin.py:305 admin.py:328
 msgid "Reduce unit price by"
 msgstr "Obniż cenę za sztukę o"
 
@@ -60,7 +60,7 @@ msgstr "Obniż cenę za sztukę o"
 msgid "Sale period"
 msgstr "Okres wyprzedaży"
 
-#: admin.py:308
+#: admin.py:308 admin.py:331
 msgid "Valid for"
 msgstr "Ważne do"
 
@@ -277,7 +277,7 @@ msgstr "Wybranego wariantu nie ma w tej chwili na stanie."
 msgid "The selected quantity is currently unavailable."
 msgstr "Wybrana ilość jest chwilowo niedostepna."
 
-#: forms.py:38 models.py:620 templates/shop/order_history.html:20
+#: forms.py:38 models.py:622 templates/shop/order_history.html:20
 msgid "Quantity"
 msgstr "Ilość"
 
@@ -285,7 +285,7 @@ msgstr "Ilość"
 msgid "The discount code entered is invalid."
 msgstr "Wpisany kod rabatowy jest nieprawidłowy."
 
-#: forms.py:270 models.py:823
+#: forms.py:270 models.py:839 models.py:871 models.py:890
 msgid "Free shipping"
 msgstr "Darmowa wysyłka"
 
@@ -331,112 +331,112 @@ msgstr "Tylko jeden wariant może zostać zaznaczony jako domyślny."
 msgid "Please enter a value for only one type of reduction."
 msgstr "Proszę wpisać wartość tylko dla jednego rodzaju zniżki."
 
-#: models.py:41 models.py:621
+#: models.py:43 models.py:623
 msgid "Unit price"
 msgstr "Cena"
 
-#: models.py:43
+#: models.py:45
 msgid "Sale price"
 msgstr "Przecena"
 
-#: models.py:44
+#: models.py:46
 msgid "Sale start"
 msgstr "Początek wyprzedaży"
 
-#: models.py:45
+#: models.py:47
 msgid "Sale end"
 msgstr "Koniec wyprzedaży"
 
-#: models.py:47
+#: models.py:49
 msgid "Number in stock"
 msgstr "Ilość na stanie"
 
-#: models.py:97
+#: models.py:99
 msgid "Available for purchase"
 msgstr "Dostępny"
 
-#: models.py:99 models.py:155 models.py:161 models.py:215
+#: models.py:101 models.py:157 models.py:163 models.py:217
 #: management/commands/product_db.py:34
 msgid "Image"
 msgstr "Obraz"
 
-#: models.py:101 models.py:334
+#: models.py:103 models.py:336
 msgid "Product categories"
 msgstr "Kategorie"
 
-#: models.py:102
+#: models.py:104
 msgid "Date added"
 msgstr "Data dodania"
 
-#: models.py:105
+#: models.py:107
 msgid "Related products"
 msgstr "Pokrewne produkty"
 
-#: models.py:107
+#: models.py:109
 msgid "Upsell products"
 msgstr "Proponowane produkty"
 
-#: models.py:108
+#: models.py:110
 msgid "Rating"
 msgstr "Ocena"
 
-#: models.py:115
+#: models.py:117
 msgid "Product"
 msgstr "Produkt"
 
-#: models.py:116 models.py:318 models.py:690
+#: models.py:118 models.py:320 models.py:692
 msgid "Products"
 msgstr "Produkty"
 
-#: models.py:157 models.py:619 management/commands/product_db.py:32
+#: models.py:159 models.py:621 management/commands/product_db.py:32
 msgid "Description"
 msgstr "Opis"
 
-#: models.py:162
+#: models.py:164
 msgid "Images"
 msgstr "Obrazy"
 
-#: models.py:178
+#: models.py:180
 msgid "Type"
 msgstr "Rodzaj"
 
-#: models.py:180
+#: models.py:182
 msgid "Name"
 msgstr "Nazwa"
 
-#: models.py:188
+#: models.py:190
 msgid "Product option"
 msgstr "Atrybut produktu"
 
-#: models.py:189 models.py:321
+#: models.py:191 models.py:323
 msgid "Product options"
 msgstr "Atrybuty produktów"
 
-#: models.py:214
+#: models.py:216
 msgid "Default"
 msgstr "Domyślne"
 
-#: models.py:314
+#: models.py:316
 msgid "Featured Image"
 msgstr "Wybrany obraz"
 
-#: models.py:323 models.py:726
+#: models.py:325 models.py:742
 msgid "Sale"
 msgstr "Wyprzedaż"
 
-#: models.py:325
+#: models.py:327
 msgid "Minimum price"
 msgstr "Cena minimalna"
 
-#: models.py:326
+#: models.py:328
 msgid "Maximum price"
 msgstr "Cena maksymalna"
 
-#: models.py:327
+#: models.py:329
 msgid "Combined"
 msgstr "Koniunkcja"
 
-#: models.py:328
+#: models.py:330
 msgid ""
 "If checked, products must match all specified filters, otherwise products "
 "can match any specified filter."
@@ -444,166 +444,166 @@ msgstr ""
 "Czy produkt ma pasować do wszystkich podanych filtrów, czy wystarczy, że "
 "pasuje do jednego?"
 
-#: models.py:333
+#: models.py:335
 msgid "Product category"
 msgstr "Kategoria"
 
-#: models.py:387 models.py:396
+#: models.py:389 models.py:398
 msgid "First name"
 msgstr "Imię"
 
-#: models.py:388 models.py:397
+#: models.py:390 models.py:399
 msgid "Last name"
 msgstr "Nazwisko"
 
-#: models.py:389 models.py:398
+#: models.py:391 models.py:400
 msgid "Street"
 msgstr "Ulica"
 
-#: models.py:390 models.py:399
+#: models.py:392 models.py:401
 msgid "City/Suburb"
 msgstr "Miasto/Miejscowość"
 
-#: models.py:391 models.py:400
+#: models.py:393 models.py:402
 msgid "State/Region"
 msgstr "Województwo"
 
-#: models.py:392 models.py:401
+#: models.py:394 models.py:403
 msgid "Zip/Postcode"
 msgstr "Kod pocztowy"
 
-#: models.py:393 models.py:402
+#: models.py:395 models.py:404
 msgid "Country"
 msgstr "Kraj"
 
-#: models.py:394 models.py:403
+#: models.py:396 models.py:405
 msgid "Phone"
 msgstr "Telefon"
 
-#: models.py:395
+#: models.py:397
 msgid "Email"
 msgstr "E-mail"
 
-#: models.py:404
+#: models.py:406
 msgid "Additional instructions"
 msgstr "Uwagi"
 
-#: models.py:406
+#: models.py:408
 msgid "Time"
 msgstr "Czas"
 
-#: models.py:409
+#: models.py:411
 msgid "Shipping type"
 msgstr "Sposób dostawy"
 
-#: models.py:410
+#: models.py:412
 msgid "Shipping total"
 msgstr "Dostawa łącznie"
 
-#: models.py:411
+#: models.py:413
 msgid "Tax type"
 msgstr "Rodzaj podatku"
 
-#: models.py:412
+#: models.py:414
 msgid "Tax total"
 msgstr "Podatki łącznie"
 
-#: models.py:413
+#: models.py:415
 msgid "Item total"
 msgstr "Produkty łącznie"
 
-#: models.py:414 models.py:845
+#: models.py:416 models.py:861
 msgid "Discount code"
 msgstr "Kod rabatowy"
 
-#: models.py:415
+#: models.py:417
 msgid "Discount total"
 msgstr "Rabat łącznie"
 
-#: models.py:416
+#: models.py:418
 msgid "Order total"
 msgstr "Zamówienie razem"
 
-#: models.py:417
+#: models.py:419
 msgid "Transaction ID"
 msgstr "Identyfikator transakcji"
 
-#: models.py:420 templates/shop/order_history.html:22
+#: models.py:422 templates/shop/order_history.html:22
 msgid "Status"
 msgstr "Status"
 
-#: models.py:432
+#: models.py:434
 msgctxt "shop"
 msgid "Order"
 msgstr "Zamówienie"
 
-#: models.py:433
+#: models.py:435
 msgctxt "shop"
 msgid "Orders"
 msgstr "Zamówienia"
 
-#: models.py:518 templates/admin/shop/order/change_form.html:7
+#: models.py:520 templates/admin/shop/order/change_form.html:7
 #: templates/shop/complete.html:80
 msgid "Download PDF invoice"
 msgstr "Pobierz fakturę w formacie PDF"
 
-#: models.py:526
+#: models.py:528
 msgid "Last updated"
 msgstr "Ostatnio zmienione"
 
-#: models.py:622
+#: models.py:624
 msgid "Total price"
 msgstr "Łączna cena"
 
-#: models.py:687 management/commands/product_db.py:30
+#: models.py:689 management/commands/product_db.py:30
 msgid "Title"
 msgstr "Tytuł"
 
-#: models.py:688
+#: models.py:690
 msgid "Active"
 msgstr "Aktywny"
 
-#: models.py:693
+#: models.py:695
 msgid "Categories"
 msgstr "Kategorie"
 
-#: models.py:694
+#: models.py:696
 msgid "Reduce by amount"
 msgstr "Obniż o kwotę"
 
-#: models.py:695
+#: models.py:697
 msgid "Reduce by percent"
 msgstr "Obniż o procent"
 
-#: models.py:698
+#: models.py:700
 msgid "Reduce to amount"
 msgstr "Obniż do kwoty"
 
-#: models.py:699
+#: models.py:701
 msgid "Valid from"
 msgstr "Ważne od"
 
-#: models.py:700
+#: models.py:702
 msgid "Valid to"
 msgstr "Ważne do"
 
-#: models.py:727
+#: models.py:743
 msgid "Sales"
 msgstr "Wyprzedaże"
 
-#: models.py:821
+#: models.py:837
 msgid "Code"
 msgstr "Kod"
 
-#: models.py:822
+#: models.py:838
 msgid "Minimum total purchase"
 msgstr "Minimalna kwota zakupów"
 
-#: models.py:824
+#: models.py:840
 msgid "Uses remaining"
 msgstr "Pozostałe użycia"
 
-#: models.py:825
+#: models.py:841
 msgid ""
 "If you wish to limit the number of times a code may be used, set this value. "
 "It will be decremented upon each use."
@@ -611,9 +611,33 @@ msgstr ""
 "Wpisz wartość jeśli chcesz ograniczyć ilość razy, jaką kod może zostać "
 "wykorzystany. Po każdym użyciu wartość będzię zmniejszana."
 
-#: models.py:846
+#: models.py:862
 msgid "Discount codes"
 msgstr "Kody rabatowe"
+
+#: models.py:866
+msgid "Minimum cart subtotal"
+msgstr "Minimalna kwota zakupów"
+
+#: models.py:867
+msgid "Minimum orders subtotal"
+msgstr "Minimalna suma zamówień"
+
+#: models.py:868
+msgid ""
+"Minimum sum of subtotals for orders completed by client. Only purchases made "
+"under the currently logged account are considered."
+msgstr ""
+"Minimalna suma podsum zamówień zrealizowanych przez klienta. Uwzględniane są "
+"tylko zamówienia wykonane z bieżącym kontem."
+
+#: models.py:876
+msgid "Loyalty discount"
+msgstr "Rabat lojalnościowy"
+
+#: models.py:877
+msgid "Loyalty discounts"
+msgstr "Rabaty lojalnościowe"
 
 #: urls.py:7
 msgid "^product/(?P<slug>.*)/$"
@@ -639,7 +663,7 @@ msgstr "^zamówienie/zakończone/$"
 msgid "^invoice/(?P<order_id>\\d+)/$"
 msgstr "^faktura/(?P<order_id>\\d+)/$"
 
-#: utils.py:111
+#: utils.py:117
 #, python-format
 msgid ""
 "Invalid currency locale specified for SHOP_CURRENCY_LOCALE: '%s'. You'll "
