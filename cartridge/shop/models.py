@@ -13,7 +13,6 @@ from django.utils.translation import (ugettext, ugettext_lazy as _,
                                       pgettext_lazy)
 
 from mezzanine.conf import settings
-from mezzanine.core.fields import FileField
 from mezzanine.core.managers import DisplayableManager
 from mezzanine.core.models import Displayable, RichText, Orderable
 from mezzanine.generic.fields import RatingField
@@ -313,9 +312,9 @@ class Category(Page, RichText):
     A category of products on the website.
     """
 
-    featured_image = FileField(verbose_name=_("Featured Image"),
+    featured_image = models.ImageField(_("Featured Image"),
         upload_to=upload_to("shop.Category.featured_image", "shop"),
-        format="Image", max_length=255, null=True, blank=True)
+        null=True, blank=True)
     products = models.ManyToManyField("Product", blank=True,
                                      verbose_name=_("Products"),
                                      through=Product.categories.through)
@@ -330,6 +329,8 @@ class Category(Page, RichText):
         help_text=_("If checked, "
         "products must match all specified filters, otherwise products "
         "can match any specified filter."))
+
+    admin_thumb_field = "featured_image"
 
     class Meta:
         verbose_name = _("Product category")
