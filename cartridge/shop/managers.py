@@ -2,7 +2,7 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
 
-from django.db.models import Manager, Q
+from django.db.models import Manager, Q, Sum
 from django.utils.datastructures import SortedDict
 from django.utils.timezone import now
 
@@ -176,7 +176,7 @@ class ProductActionManager(Manager):
         self._action_for_field("total_purchase")
 
 
-class DiscountCodeManager(Manager):
+class DiscountManager(Manager):
 
     def active(self, *args, **kwargs):
         """
@@ -187,7 +187,10 @@ class DiscountCodeManager(Manager):
         valid_from = Q(valid_from__isnull=True) | Q(valid_from__lte=n)
         valid_to = Q(valid_to__isnull=True) | Q(valid_to__gte=n)
         valid = self.filter(valid_from, valid_to, active=True)
-        return valid.exclude(uses_remaining=0)
+        return valid
+
+
+class DiscountCodeManager(DiscountManager):
 
     def get_valid(self, code, cart):
         """
@@ -196,9 +199,39 @@ class DiscountCodeManager(Manager):
         """
         total_price_valid = (Q(min_purchase__isnull=True) |
                              Q(min_purchase__lte=cart.total_price()))
-        discount = self.active().get(total_price_valid, code=code)
+        discount = self.active().exclude(uses_remaining=0).get(
+            total_price_valid, code=code)
         products = discount.all_products()
         if products.count() > 0:
             if products.filter(variations__sku__in=cart.skus()).count() == 0:
                 raise self.model.DoesNotExist
         return discount
+
+
+class LoyaltyDiscountManager(DiscountManager):
+
+    def get_highest(self, user, cart):
+        """
+        Finds active discounts for which cart and orders subtotal limits are
+        fullfilled and returns the one that gives the best cost reduction.
+        """
+        from cartridge.shop.models import Order
+        orders = Order.objects.filter(user_id=user.id, status__gt=1)
+        orders_total = orders.aggregate(Sum("item_total"))['item_total__sum']
+        if orders_total is None:
+            orders_total = 0
+        cart_total = cart.total_price()
+        valid = ((Q(min_purchase__isnull=True) |
+                  Q(min_purchase__lte=cart_total)) &
+                 (Q(min_purchases__isnull=True) |
+                  Q(min_purchases__lte=orders_total)))
+        best_discount, best_total = None, 0
+        for discount in self.active().filter(valid):
+            products = discount.all_products()
+            if (products.count() > 0 and products.filter(
+                    variations__sku__in=cart.skus()).count() == 0):
+                continue
+            total = discount.get_total(user, cart)
+            if total > best_total:
+                best_discount, best_total = discount, total
+        return best_discount
