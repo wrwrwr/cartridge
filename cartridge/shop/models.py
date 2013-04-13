@@ -727,7 +727,7 @@ class Discount(models.Model):
     """
 
     title = CharField(_("Title"), max_length=100)
-    active = models.BooleanField(_("Active"))
+    active = models.BooleanField(_("Active"), default=True)
     products = models.ManyToManyField("Product", blank=True,
                                       verbose_name=_("Products"))
     categories = models.ManyToManyField("Category", blank=True,
