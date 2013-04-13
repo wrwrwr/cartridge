@@ -333,6 +333,7 @@ class Category(Page, RichText):
     admin_thumb_field = "featured_image"
 
     class Meta:
+        ordering = ("parent___order", "_order")
         verbose_name = _("Product category")
         verbose_name_plural = _("Product categories")
 
