@@ -342,8 +342,8 @@ def invoice(request, order_id, template="shop/order_invoice.html"):
         name = slugify("%s-invoice-%s" % (settings.SITE_TITLE, order.id))
         response["Content-Disposition"] = "attachment; filename=%s.pdf" % name
         html = get_template(template).render(context)
-        from xhtml2pdf.pisa import pisaDocument
-        pisaDocument(html, dest=response, link_callback=invoice_media_link)
+        import ho.pisa
+        ho.pisa.CreatePDF(html, response, link_callback=invoice_media_link)
         return response
     return render(request, template, context)
 
