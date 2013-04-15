@@ -198,8 +198,8 @@ class ChoiceAttribute(Attribute):
         for group in self.groups.all():
             choices_group = tuple(o.choice() for o in group.options.all())
             choices.append((group.name, choices_group))
-        else:
-            choices.extend(o.choice() for o in self.options.all())
+        choices.extend(
+            o.choice() for o in self.options.filter(group__isnull=True))
         return forms.ChoiceField(label=self.name, choices=choices,
                                  required=self.required)
 
