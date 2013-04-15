@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
@@ -83,8 +84,21 @@ class ChoiceOptionsGroupInline(TabularTranslationInline):
     model = ChoiceOptionsGroup
 
 
+class ChoiceOptionForm(forms.ModelForm):
+    """
+    Limits group choices to choice option's attribute's groups.
+    """
+    def __init__(self, *args, **kwargs):
+        super(ChoiceOptionForm, self).__init__(*args, **kwargs)
+        if self.instance.id:
+            queryset = self.fields['group'].queryset
+            queryset = queryset.filter(attribute=self.instance.attribute)
+            self.fields['group'].queryset = queryset
+
+
 class SimpleChoiceOptionInline(TabularTranslationInline):
     model = ChoiceOption
+    form = ChoiceOptionForm
 
 
 class SimpleChoiceAttributeAdmin(AttributeAdmin):
@@ -93,6 +107,7 @@ class SimpleChoiceAttributeAdmin(AttributeAdmin):
 
 class ImageChoiceOptionInline(TabularTranslationInline):
     model = ImageChoiceOption
+    form = ChoiceOptionForm
     formfield_overrides = {ImageField: {'widget': ImageWidget}}
 
 
@@ -102,6 +117,7 @@ class ImageChoiceAttributeAdmin(AttributeAdmin):
 
 class ColorChoiceOptionInline(TabularTranslationInline):
     model = ColorChoiceOption
+    form = ChoiceOptionForm
 
 
 class ColorChoiceAttributeAdmin(AttributeAdmin):
