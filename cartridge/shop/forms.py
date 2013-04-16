@@ -104,10 +104,8 @@ class AddProductForm(forms.Form):
 
         # Collect all attribute values under one key in cleaned_data.
         attribute_values = {}
-        print data
         for attribute in self._attributes:
             field = attribute.field_name()
-            print repr(attribute), field
             try:
                 value = attribute.make_value(data.pop(field), self._product)
             except forms.ValidationError, e:
