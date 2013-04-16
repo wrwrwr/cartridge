@@ -84,43 +84,52 @@ class ChoiceOptionsGroupInline(TabularTranslationInline):
     model = ChoiceOptionsGroup
 
 
-class ChoiceOptionForm(forms.ModelForm):
+class ChoiceAttributeAdmin(AttributeAdmin):
+    """
+    Makes the attribute available for inlines.
+    """
+    def get_inline_instances(self, request, obj=None):
+        instances = super(ChoiceAttributeAdmin, self).get_inline_instances(
+            request, obj)
+        for instance in instances:
+            instance.attribute = obj
+        return instances
+
+
+class ChoiceOptionInline(TabularTranslationInline):
     """
     Limits group choices to choice option's attribute's groups.
     """
-    def __init__(self, *args, **kwargs):
-        super(ChoiceOptionForm, self).__init__(*args, **kwargs)
-        if self.instance.id:
-            queryset = self.fields['group'].queryset
-            queryset = queryset.filter(attribute=self.instance.attribute)
-            self.fields['group'].queryset = queryset
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        field = super(ChoiceOptionInline, self).formfield_for_dbfield(
+            db_field, **kwargs)
+        if db_field.name == 'group':
+            field.queryset = field.queryset.filter(attribute=self.attribute)
+        return field
 
 
-class SimpleChoiceOptionInline(TabularTranslationInline):
+class SimpleChoiceOptionInline(ChoiceOptionInline):
     model = ChoiceOption
-    form = ChoiceOptionForm
 
 
-class SimpleChoiceAttributeAdmin(AttributeAdmin):
+class SimpleChoiceAttributeAdmin(ChoiceAttributeAdmin):
     inlines = (ChoiceOptionsGroupInline, SimpleChoiceOptionInline)
 
 
-class ImageChoiceOptionInline(TabularTranslationInline):
+class ImageChoiceOptionInline(ChoiceOptionInline):
     model = ImageChoiceOption
-    form = ChoiceOptionForm
     formfield_overrides = {ImageField: {'widget': ImageWidget}}
 
 
-class ImageChoiceAttributeAdmin(AttributeAdmin):
+class ImageChoiceAttributeAdmin(ChoiceAttributeAdmin):
     inlines = (ChoiceOptionsGroupInline, ImageChoiceOptionInline)
 
 
-class ColorChoiceOptionInline(TabularTranslationInline):
+class ColorChoiceOptionInline(ChoiceOptionInline):
     model = ColorChoiceOption
-    form = ChoiceOptionForm
 
 
-class ColorChoiceAttributeAdmin(AttributeAdmin):
+class ColorChoiceAttributeAdmin(ChoiceAttributeAdmin):
     inlines = (ChoiceOptionsGroupInline, ColorChoiceOptionInline)
 
 
