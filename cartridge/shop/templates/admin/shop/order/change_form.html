@@ -32,11 +32,7 @@
     <tr>
         <td>
             {{ item.description }}
-            <ul class="attribute-values">
-                {% for value in item.visible_attribute_values.all %}
-                <li>{{ value.attribute }}: {{ value }}</li>
-                {% endfor %}
-            </ul>
+            {% include "attributes/includes/attribute_values.html" with item=item %}
         </td>
         <td align="right" valign="top">{{ item.unit_price|currency }}</td>
         <td align="right" valign="top">{{ item.quantity }}</td>
