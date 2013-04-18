@@ -251,7 +251,7 @@ class ChoiceOption(PolymorphicModel):
 
     def choice(self):
         context = {'name': self.name, 'price': self.price}
-        template = 'attributes/choice_option.html'
+        template = 'attributes/includes/choice_option.html'
         return (self.id, render_to_string(template, context))
 
 
