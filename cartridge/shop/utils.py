@@ -74,6 +74,19 @@ def recalculate_discount(request):
             pass
 
 
+def update_cart(request):
+    """
+    If the cart formset is valid saves it and returns ``True``.
+    """
+    from cartridge.shop.forms import CartItemFormSet
+    cart_formset = CartItemFormSet(request.POST, instance=request.cart)
+    valid = cart_formset.is_valid()
+    if valid:
+        cart_formset.save()
+        recalculate_discount(request)
+    return valid
+
+
 def set_shipping(request, shipping_type, shipping_total):
     """
     Stores the shipping type and total in the session.
