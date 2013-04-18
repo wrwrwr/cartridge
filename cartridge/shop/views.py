@@ -21,7 +21,7 @@ from cartridge.shop import checkout
 from cartridge.shop.forms import AddProductForm, DiscountForm, CartItemFormSet
 from cartridge.shop.models import Product, ProductVariation, Order, OrderItem
 from cartridge.shop.models import DiscountCode
-from cartridge.shop.utils import recalculate_discount, sign
+from cartridge.shop.utils import recalculate_discount, update_cart, sign
 
 
 # Set up checkout handlers.
@@ -154,12 +154,7 @@ def cart(request, template="shop/cart.html"):
                 # Session timed out.
                 info(request, _("Your cart has expired"))
             else:
-                cart_formset = CartItemFormSet(request.POST,
-                                               instance=request.cart)
-                valid = cart_formset.is_valid()
-                if valid:
-                    cart_formset.save()
-                    recalculate_discount(request)
+                if update_cart(request):
                     info(request, _("Cart updated"))
         else:
             valid = discount_form.is_valid()
