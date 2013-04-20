@@ -93,6 +93,9 @@ def wishlist(request, template="shop/wishlist.html"):
     adding them to the cart.
     """
 
+    if not settings.SHOP_USE_WISHLIST:
+        raise Http404
+
     skus = request.wishlist
     error = None
     published_products = Product.objects.published(for_user=request.user)
