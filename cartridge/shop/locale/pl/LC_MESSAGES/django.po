@@ -42,11 +42,11 @@ msgstr "Produkty"
 
 #: admin.py:274
 msgid "Billing details"
-msgstr "Dane płatnika"
+msgstr "Szczegóły płatności"
 
 #: admin.py:275
 msgid "Shipping details"
-msgstr "Dane do wysyłki"
+msgstr "Szczegóły do wysyłki"
 
 #: admin.py:276
 msgid "Order totals"
