@@ -4,6 +4,7 @@
 .create-variations input {margin:-1px 3px 0px 5px;}
 .create-variations {margin-top:20px;}
 .result-list .vTextField, .sku input {width:100px !important;}
+.result-list .vIntegerField {width: 50px;}
 .tiny {font-size:70%;}
 .unit_price input, .sale_price input, .num_in_stock input {
     width:50px !important;}

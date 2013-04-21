@@ -123,9 +123,9 @@ product_fieldsets.append((_("Other products"), {
     "classes": ("collapse-closed",),
     "fields": ("related_products", "upsell_products")}))
 
-product_list_display = ["admin_thumb", "title", "status", "available",
+product_list_display = ["admin_thumb", "title", "status", "available", "_order",
                         "admin_link"]
-product_list_editable = ["status", "available"]
+product_list_editable = ["status", "available", "_order"]
 
 # If variations are used, set up the product option fields for managing
 # variations. If not, expose the denormalised price fields for a product
