@@ -89,7 +89,7 @@ class Priced(models.Model):
         obj_to.save()
 
 
-class Product(Displayable, Priced, RichText, AdminThumbMixin):
+class Product(Orderable, Displayable, Priced, RichText, AdminThumbMixin):
     """
     Container model for a product that stores information common to
     all of its variations such as the product's title and description.
