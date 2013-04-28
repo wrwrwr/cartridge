@@ -438,19 +438,28 @@ class OrderForm(FormsetForm, DiscountForm):
 #    ADMIN WIDGETS    #
 #######################
 
-class ImageWidget(forms.FileInput):
+class ImageWidgetBase(object):
     """
     Render a visible thumbnail for image fields.
     """
     def render(self, name, value, attrs):
-        rendered = super(ImageWidget, self).render(name, value, attrs)
+        rendered = super(ImageWidgetBase, self).render(name, value, attrs)
         if value:
             orig = u"%s%s" % (settings.MEDIA_URL, value)
             thumb = u"%s%s" % (settings.MEDIA_URL, thumbnail(value, 48, 48))
             rendered = (u"<a target='_blank' href='%s'>"
                         u"<img style='margin-right:6px;' src='%s'>"
-                        u"</a>%s" % (orig, thumb, rendered))
+                        u"</a><span class='clearable-image'>%s</span>" %
+                        (orig, thumb, rendered))
         return mark_safe(rendered)
+
+
+class ImageWidget(ImageWidgetBase, forms.FileInput):
+    pass
+
+
+class ClearableImageWidget(ImageWidgetBase, forms.ClearableFileInput):
+    pass
 
 
 class MoneyWidget(forms.TextInput):
