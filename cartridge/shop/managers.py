@@ -235,3 +235,21 @@ class LoyaltyDiscountManager(DiscountManager):
             if total > best_total:
                 best_discount, best_total = discount, total
         return best_discount
+
+    def get_best_percent(self, user):
+        """
+        Finds the best discount for which the ``user`` has big enough
+        orders total.
+        """
+        from cartridge.shop.models import Order
+        orders = Order.objects.filter(user_id=user.id, status__gt=1)
+        orders_total = orders.aggregate(Sum("item_total"))['item_total__sum']
+        if orders_total is None:
+            orders_total = 0
+        valid = (Q(min_purchase__isnull=True) &
+                 Q(min_purchases__lte=orders_total))
+        discounts = self.active().filter(valid).order_by('-discount_percent')
+        if discounts:
+            return discounts[0]
+        else:
+            return None
