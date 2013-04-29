@@ -10,7 +10,7 @@ from django.template import RequestContext
 from django.template.loader import get_template, TemplateDoesNotExist
 
 from mezzanine.conf import settings
-from mezzanine.utils.email import send_mail_template
+from mezzanine.utils.email import split_addresses, send_mail_template
 
 from cartridge.shop.models import Order
 from cartridge.shop.utils import set_shipping, set_tax, sign
@@ -173,9 +173,11 @@ def send_order_email(request, order):
         from warnings import warn
         warn("Shop email receipt templates have moved from "
              "templates/shop/email/ to templates/email/")
+    notify_emails = split_addresses(settings.SHOP_ORDER_NOTIFICATION_EMAILS)
+    notify_emails.append(order.billing_detail_email)
     send_mail_template(settings.SHOP_ORDER_EMAIL_SUBJECT,
         receipt_template, settings.SHOP_ORDER_FROM_EMAIL,
-        order.billing_detail_email,
+        notify_emails,
         context=RequestContext(request, order_context),
         fail_silently=settings.DEBUG)
 
