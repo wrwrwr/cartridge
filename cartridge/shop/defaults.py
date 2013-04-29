@@ -239,6 +239,16 @@ register_setting(
 )
 
 register_setting(
+    name="SHOP_ORDER_NOTIFICATION_EMAILS",
+    label=_("Order notification email addresses"),
+    description=_("A comma separated list of email addresses that "
+                  "will receive an email notification each time a "
+                  "new order is placed."),
+    editable=True,
+    default="",
+)
+
+register_setting(
     name="SHOP_ORDER_STATUS_CHOICES",
     description="Sequence of value/name pairs for order statuses.",
     editable=False,
