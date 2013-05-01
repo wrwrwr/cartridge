@@ -567,7 +567,7 @@ class Cart(models.Model):
                 value.save()
                 try:
                     if value.item_image and value.image is not None:
-                        item.image = unicode(value.image.url)
+                        item.image = unicode(value.image)
                 except AttributeError:
                     pass
             variation.product.actions.added_to_cart()
