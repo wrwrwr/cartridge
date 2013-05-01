@@ -174,7 +174,15 @@ def send_order_email(request, order):
         warn("Shop email receipt templates have moved from "
              "templates/shop/email/ to templates/email/")
     notify_emails = split_addresses(settings.SHOP_ORDER_NOTIFICATION_EMAILS)
-    notify_emails.append(order.billing_detail_email)
+    if order.billing_detail_email:
+        notify_emails.append(order.billing_detail_email)
+    else:
+        try:
+            user_email = request.user.email
+        except AttributeError:
+            pass
+        else:
+            notify_emails.append(user_email)
     send_mail_template(settings.SHOP_ORDER_EMAIL_SUBJECT,
         receipt_template, settings.SHOP_ORDER_FROM_EMAIL,
         notify_emails,
