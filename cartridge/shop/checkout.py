@@ -175,8 +175,13 @@ def send_order_email(request, order):
     notify_emails = split_addresses(settings.SHOP_ORDER_NOTIFICATION_EMAILS)
     if order.billing_detail_email:
         notify_emails.append(order.billing_detail_email)
-    elif request.user.email:
-        notify_emails.append(request.user.email)
+    else:
+        try:
+            user_email = request.user.email
+        except AttributeError:
+            pass
+        else:
+            notify_emails.append(user_email)
     send_mail_template(settings.SHOP_ORDER_EMAIL_SUBJECT,
         receipt_template, settings.SHOP_ORDER_FROM_EMAIL,
         notify_emails, context=order_context,
