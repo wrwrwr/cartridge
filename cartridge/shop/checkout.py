@@ -163,17 +163,17 @@ def send_order_email(request, order):
     Send order receipt email on successful order.
     """
     settings.use_editable()
-    order_context = {"order": order, "order_items": order.items.all(),
-                     "request": request}
-    order_context.update(order.details_as_dict())
+    context = {"request": request, "order": order,
+               "order_items": order.items.all()}
+    context.update(order.details_as_dict())
+    context = RequestContext(request, context)
     if settings.SHOP_ORDER_EMAIL_SUBJECT:
         subject = settings.SHOP_ORDER_EMAIL_SUBJECT
         from warnings import warn
         warn("SHOP_ORDER_EMAIL_SUBJECT setting is deprecated, please use "
              "the email/order_receipt_subject.txt template instead.")
     else:
-        subject = render_to_string("email/order_receipt_subject.txt",
-                                    order_context)
+        subject = render_to_string("email/order_receipt_subject.txt", context)
     subject = normalize_newlines(subject).replace('\n', ' ')
     try:
         get_template("shop/email/order_receipt.html")
@@ -197,8 +197,7 @@ def send_order_email(request, order):
     send_mail_template(
         subject, receipt_template,
         settings.SHOP_ORDER_FROM_EMAIL, notify_emails,
-        context=RequestContext(request, order_context),
-        fail_silently=settings.DEBUG)
+        context=context, fail_silently=settings.DEBUG)
 
 
 # Set up some constants for identifying each checkout step.
