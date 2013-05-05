@@ -226,7 +226,7 @@ register_setting(
     label=_("Order Email Subject"),
     description=_("Subject to be used when sending the order receipt email."),
     editable=True,
-    default=_("Order Receipt"),
+    default="",
 )
 
 register_setting(
