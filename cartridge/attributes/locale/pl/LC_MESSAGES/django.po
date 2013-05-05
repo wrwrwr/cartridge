@@ -1,0 +1,237 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Cartridge attributes\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-04-12 01:59+0200\n"
+"PO-Revision-Date: 2013-02-07 21:40+0100\n"
+"Last-Translator: Wojtek Ruszczewski <django@wr.waw.pl>\n"
+"Language-Team: None\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
+"|| n%100>=20) ? 1 : 2)\n"
+
+#: admin.py:62
+msgid "Products"
+msgstr "Produkty"
+
+#: admin.py:153 admin.py:156
+msgid "Edit"
+msgstr "Edytuj"
+
+#: forms.py:13
+msgid "Attribute"
+msgstr "Atrybut"
+
+#: models.py:55 models.py:216
+msgid "Name"
+msgstr "Nazwa"
+
+#: models.py:56
+msgid "Attribute kind such as color, size etc."
+msgstr "Rodzaj atrybutu, taki jak kolor, rozmiar itp."
+
+#: models.py:57
+msgid "Required"
+msgstr "Wymagany"
+
+#: models.py:58
+msgid "Can the client leave this attribute unspecified?"
+msgstr "Czy klient może pozostawić ten atrybut bez wartości?"
+
+#: models.py:59
+msgid "Visible"
+msgstr "Widoczny"
+
+#: models.py:60
+msgid "Should this attribute be visible in cart?"
+msgstr "Czy ten atrybut ma być widoczny w koszyku?"
+
+#: models.py:99
+msgid "product attribute"
+msgstr "atrybut produktu"
+
+#: models.py:100
+msgid "product attributes"
+msgstr "atrybuty produktu"
+
+#: models.py:143
+msgid "Max length"
+msgstr "Maksymalna długość"
+
+#: models.py:145
+msgid ""
+"Maximum number of characters a client can enter. Leave blank if you don't "
+"want to limit the text length."
+msgstr ""
+"Maksymalna ilość znaków jaką może wprowadzić klient. Pozostaw puste jeśli "
+"nie chcesz ograniczać długości tekstu."
+
+#: models.py:149
+msgid "string attribute"
+msgstr "atrybut tekstowy"
+
+#: models.py:150
+msgid "string attributes"
+msgstr "atrybuty tekstowe"
+
+#: models.py:172
+msgid "Free characters"
+msgstr "Darmowe znaki"
+
+#: models.py:174
+msgid "Characters excluded from the price calculation (regular expression)."
+msgstr "Znaki pomijane przy wyliczaniu ceny (wyrażenie regularne)."
+
+#: models.py:178
+msgid "characters attribute"
+msgstr "atrybut znakowy"
+
+#: models.py:179
+msgid "characters attributes"
+msgstr "atrybuty znakowe"
+
+#: models.py:217
+msgid "Group name displayed as a heading in selection boxes."
+msgstr "Nazwa grupy, wyświetlana jako nagłówek w polach wyboru."
+
+#: models.py:221
+msgid "options group"
+msgstr "grupa opcji"
+
+#: models.py:222
+msgid "options groups"
+msgstr "grupy opcji"
+
+#: models.py:232
+msgid ""
+"Group this option together with some other options. After creating new "
+"groups you need to save before they are available for selection."
+msgstr ""
+"Zgrupuj opcję z innymi opcjami. Po utworzeniu nowych grup musisz je zapisać "
+"zanim będą dostępne do wyboru."
+
+#: models.py:235
+msgid "Option"
+msgstr "Opcja"
+
+#: models.py:236
+msgid "Potential value of the attribute."
+msgstr "Potencjalna wartość atrybutu."
+
+#: models.py:237
+msgid "Price change"
+msgstr "Modyfikacja ceny"
+
+#: models.py:238
+msgid "Unit price will be modified by this amount, if the option is chosen."
+msgstr ""
+"Jeśli klient wybierze tę opcję, cena za sztukę będzie podwyższona lub "
+"obniżona o podaną kwotę,"
+
+#: models.py:243
+msgid "choice option"
+msgstr "opcja do wyboru"
+
+#: models.py:244
+msgid "choice options"
+msgstr "opcje do wyboru"
+
+#: models.py:284
+msgid "simple choice attribute"
+msgstr "prosty atrybut wyboru"
+
+#: models.py:285
+msgid "simple choice attributes"
+msgstr "proste atrybuty wyboru"
+
+#: models.py:291
+msgid "image choice attribute"
+msgstr "atrybut wyboru obrazu"
+
+#: models.py:292
+msgid "image choice attributes"
+msgstr "atrybuty wyboru obrazu"
+
+#: models.py:296
+msgid "Image"
+msgstr "Obraz"
+
+#: models.py:299
+msgid "Image presenting the option."
+msgstr "Obraz prezentujący opcję."
+
+#: models.py:305
+msgid "color choice attribute"
+msgstr "atrybut wyboru koloru"
+
+#: models.py:306
+msgid "color choice attributes"
+msgstr "atrybuty wyboru koloru"
+
+#: models.py:310
+msgid "Color"
+msgstr "Kolor"
+
+#: models.py:311
+msgid "Choosable color (in #RRGGBB notation)."
+msgstr "Kolor do wyboru (w notacji #RRGGBB)."
+
+#: models.py:315
+msgid "Maximum file size"
+msgstr "Maksymalna wielkość pliku"
+
+#: models.py:316
+msgid ""
+"Maximum size of file users are allowed to upload, in megabytes. Zero means "
+"no limit."
+msgstr ""
+"Maksymalna wielkośc plików, jakie użytkownicy mogą wgrywać, w megabajtach. "
+"Zero oznacza brak limitu."
+
+#: models.py:318
+msgid "Use as item image"
+msgstr "Wyświetlaj jako obraz produktu"
+
+#: models.py:319
+msgid "Show the uploaded image instead of item's own image in cart."
+msgstr "Pokaż wgrany obraz zamiast obrazu produktu w koszyku."
+
+#: models.py:323
+msgid "image attribute"
+msgstr "atrybut obrazu"
+
+#: models.py:324
+msgid "image attributes"
+msgstr "atrybuty obrazu"
+
+#: models.py:332
+msgid "Uploaded image can't be larger than {} MB."
+msgstr "Wgrany plik nie może być większy niż {} MB."
+
+#: models.py:363
+msgid "Values separator"
+msgstr "Separator wartości"
+
+#: models.py:365
+msgid ""
+"Character or string used to separate values when parsing posted string. Must "
+"be guaranteed not to appear in string representation of any single value."
+msgstr ""
+"Znak lub napis używany do rozdzielenia wartości przy analizowaniu "
+"przesłanego napisu. Nie może pojawiać się w tekstowej reprezentacji "
+"pojedynczej wartości."
+
+#: models.py:370
+msgid "list attribute"
+msgstr "atrybut listowy"
+
+#: models.py:371
+msgid "list attributes"
+msgstr "atrybuty listowe"
+
+#: models.py:420
+msgid "none"
+msgstr "brak"

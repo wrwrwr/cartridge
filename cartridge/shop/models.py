@@ -9,17 +9,19 @@ from django.db.models.base import ModelBase
 from django.db.utils import DatabaseError
 from django.dispatch import receiver
 from django.utils.timezone import now
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import (ugettext, ugettext_lazy as _,
+                                      pgettext_lazy)
 
 from mezzanine.conf import settings
-from mezzanine.core.fields import FileField
 from mezzanine.core.managers import DisplayableManager
 from mezzanine.core.models import Displayable, RichText, Orderable
 from mezzanine.generic.fields import RatingField
 from mezzanine.pages.models import Page
 from mezzanine.utils.models import AdminThumbMixin, upload_to
+from mezzanine.utils.translation import for_all_languages
 
 from cartridge.shop import fields, managers
+from cartridge.shop.utils import order_totals_fields, set_shipping
 
 try:
     from _mysql_exceptions import OperationalError
@@ -310,9 +312,9 @@ class Category(Page, RichText):
     A category of products on the website.
     """
 
-    featured_image = FileField(verbose_name=_("Featured Image"),
+    featured_image = models.ImageField(_("Featured Image"),
         upload_to=upload_to("shop.Category.featured_image", "shop"),
-        format="Image", max_length=255, null=True, blank=True)
+        null=True, blank=True)
     products = models.ManyToManyField("Product", blank=True,
                                      verbose_name=_("Products"),
                                      through=Product.categories.through)
@@ -328,7 +330,10 @@ class Category(Page, RichText):
         "products must match all specified filters, otherwise products "
         "can match any specified filter."))
 
+    admin_thumb_field = "featured_image"
+
     class Meta:
+        ordering = ("parent___order", "_order")
         verbose_name = _("Product category")
         verbose_name_plural = _("Product categories")
 
@@ -416,7 +421,7 @@ class Order(models.Model):
     transaction_id = CharField(_("Transaction ID"), max_length=255, null=True,
                                blank=True)
 
-    status = models.IntegerField(_("Status"),
+    status = models.CharField(_("Status"), max_length=20,
                             choices=settings.SHOP_ORDER_STATUS_CHOICES,
                             default=settings.SHOP_ORDER_STATUS_CHOICES[0][0])
 
@@ -424,12 +429,11 @@ class Order(models.Model):
 
     # These are fields that are stored in the session. They're copied to
     # the order in setup() and removed from the session in complete().
-    session_fields = ("shipping_type", "shipping_total", "discount_total",
-                      "discount_code", "tax_type", "tax_total")
+    session_fields = order_totals_fields()
 
     class Meta:
-        verbose_name = _("Order")
-        verbose_name_plural = _("Orders")
+        verbose_name = pgettext_lazy("shop", u"Order")
+        verbose_name_plural = pgettext_lazy("shop", u"Orders")
         ordering = ("-id",)
 
     def __unicode__(self):
@@ -438,6 +442,7 @@ class Order(models.Model):
     def billing_name(self):
         return "%s %s" % (self.billing_detail_first_name,
                           self.billing_detail_last_name)
+    billing_name.short_description = _("Billing name")
 
     def setup(self, request):
         """
@@ -452,18 +457,21 @@ class Order(models.Model):
             if field in request.session:
                 setattr(self, field, request.session[field])
         self.total = self.item_total = request.cart.total_price()
-        if self.shipping_total is not None:
-            self.shipping_total = Decimal(str(self.shipping_total))
-            self.total += self.shipping_total
-        if self.discount_total is not None:
-            self.total -= self.discount_total
-        if self.tax_total is not None:
-            self.total += self.tax_total
+        for total_field, _, _ in settings.SHOP_ORDER_TOTALS:
+            total = getattr(self, total_field)
+            if total is not None:
+                total = Decimal(str(total))
+                setattr(self, total_field, total)
+                self.total += total
         self.save()  # We need an ID before we can add related items.
-        for item in request.cart:
-            product_fields = [f.name for f in SelectedProduct._meta.fields]
-            item = dict([(f, getattr(item, f)) for f in product_fields])
-            self.items.create(**item)
+        for cart_item in request.cart:
+            field_values = dict((f.name, getattr(cart_item, f.name)) for f in
+                                SelectedProduct._meta.fields)
+            order_item = self.items.create(**field_values)
+            # Reassign attribute values from cart item to the new order item.
+            for value in cart_item.attribute_values():
+                value.item = order_item
+                value.save()
 
     def complete(self, request):
         """
@@ -535,20 +543,39 @@ class Cart(models.Model):
             self._cached_items = self.items.all()
         return iter(self._cached_items)
 
-    def add_item(self, variation, quantity):
+    def add_item(self, variation, quantity, attribute_values):
         """
-        Increase quantity of existing item if SKU matches, otherwise create
-        new.
+        Increase quantity of existing item if SKU and attributes match,
+        otherwise create new.
         """
-        kwargs = {"sku": variation.sku, "unit_price": variation.price()}
+
+        # Apply attributes price modifications.
+        price = variation.price()
+        for attribute, value in attribute_values.iteritems():
+            price += value.price
+
+        kwargs = {"sku": variation.sku, "unit_price": price}
+        kwargs["attributes_hash"] = attributes_hash(attribute_values)
         item, created = self.items.get_or_create(**kwargs)
+
         if created:
-            item.description = unicode(variation)
-            item.unit_price = variation.price()
-            item.url = variation.product.get_absolute_url()
+            def set_description_and_url():
+                item.description = unicode(variation)
+                item.url = variation.product.get_absolute_url()
+            for_all_languages(set_description_and_url)
+            item.unit_price = price
             image = variation.image
             if image is not None:
                 item.image = unicode(image.file)
+            # Link values to the cart item and save them.
+            for attribute, value in attribute_values.iteritems():
+                value.item = item
+                value.save()
+                try:
+                    if value.item_image and value.image is not None:
+                        item.image = unicode(value.image.url)
+                except AttributeError:
+                    pass
             variation.product.actions.added_to_cart()
         item.quantity += quantity
         item.save()
@@ -615,6 +642,7 @@ class SelectedProduct(models.Model):
     """
 
     sku = fields.SKUField()
+    attributes_hash = models.CharField(max_length=32, editable=False)
     description = CharField(_("Description"), max_length=200)
     quantity = models.IntegerField(_("Quantity"), default=0)
     unit_price = fields.MoneyField(_("Unit price"), default=Decimal("0"))
@@ -637,6 +665,21 @@ class SelectedProduct(models.Model):
             super(SelectedProduct, self).save(*args, **kwargs)
         else:
             self.delete()
+
+    def attribute_values(self):
+        """
+        Returns attribute values assigned to this item.
+        """
+        from django.contrib.contenttypes.models import ContentType
+        return AttributeValue.objects.filter(item_id=self.id,
+            item_type=ContentType.objects.get_for_model(self.__class__))
+
+    def visible_attribute_values(self):
+        """
+        Returns those attribute values that should be displayed in cart
+        and order details.
+        """
+        return self.attribute_values().filter(visible=True)
 
 
 class CartItem(SelectedProduct):
@@ -712,6 +755,20 @@ class Discount(models.Model):
         filters = [category.filters() for category in self.categories.all()]
         filters = reduce(ior, filters + [Q(id__in=self.products.only("id"))])
         return Product.objects.filter(filters).distinct()
+
+    def get_total(self, user, cart):
+        """
+        Discount subclasses should be able to calculate their totals (with the
+        exception of ``Sale``).
+        """
+        return 0
+
+    def update_session(self, request):
+        """
+        Stores common discount variables in session, for saving with order.
+        """
+        total = self.get_total(request.user, request.cart)
+        request.session["discount_total"] = -total
 
 
 class Sale(Discount):
@@ -843,3 +900,36 @@ class DiscountCode(Discount):
     class Meta:
         verbose_name = _("Discount code")
         verbose_name_plural = _("Discount codes")
+
+
+class LoyaltyDiscount(Discount):
+    min_purchase = fields.MoneyField(_("Minimum cart subtotal"))
+    min_purchases = fields.MoneyField(_("Minimum orders subtotal"),
+        help_text=_("Minimum sum of subtotals for orders completed by client. "
+                    "Only purchases made under the currently logged account "
+                    "are considered."))
+    free_shipping = models.BooleanField(_("Free shipping"))
+
+    objects = managers.LoyaltyDiscountManager()
+
+    class Meta:
+        verbose_name = _("Loyalty discount")
+        verbose_name_plural = _("Loyalty discounts")
+
+    def get_total(self, user, cart):
+        item_total = cart.total_price()
+        if self.discount_deduct is not None:
+            if self.discount_deduct < item_total:
+                return self.discount_deduct
+        elif self.discount_percent is not None:
+            return item_total / Decimal("100") * self.discount_percent
+        return 0
+
+    def update_session(self, request):
+        if self.free_shipping:
+            set_shipping(request, _("Free shipping"), 0)
+        request.session["free_shipping"] = self.free_shipping
+        super(LoyaltyDiscount, self).update_session(request)
+
+
+from cartridge.attributes.models import (attributes_hash, AttributeValue)

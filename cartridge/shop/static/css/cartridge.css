@@ -45,16 +45,20 @@
 .wishlist .btn {margin-left:5px;}
 .wishlist .btn-primary {margin-left:20px;}
 
+/* Attributes */
+.attribute-values {list-style:none; margin-left:0px; padding-left:10px; font-size:0.9em; color:#666;}
+
+/* Order totals */
+.order-totals > div {clear:both; float:right;}
+.order-totals label {float:left; text-align:right;}
+.order-totals span {display:block; float:left; width:80px;}
+
 /* Cart panel in checkout */
 #checkout .checkout-panel {float:right; margin:0px 30px 0 0;}
 #checkout .checkout-panel li {border-bottom:1px dashed #eee; padding:10px 0; color:#999; line-height:15px;}
 #checkout .checkout-panel img {float:left; margin-right:10px;}
 #checkout .checkout-panel .price {float:right; line-height:20px;}
 #checkout .checkout-panel .btn {float:right; margin-top:15px;}
-#checkout .checkout-panel .order-totals {text-align:right;}
-.order-totals label {margin-right:10px; display:inline;}
-.order-totals {float:right; margin:10px 0;}
-
 
 /* Checkout forms */
 #checkout .left, #checkout .right {display:none !important;}

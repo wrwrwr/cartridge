@@ -39,7 +39,7 @@ try:
 
         install_requires=[
             "mezzanine >= 1.4.4",
-            "pisa >= 3.0.33",
+            "xhtml2pdf >= 0.0.5",
         ],
 
         classifiers=[

@@ -57,15 +57,24 @@ class AddProductForm(forms.Form):
         given for the variation, so the creation of choice fields
         is skipped.
         """
-        self._product = kwargs.pop("product", None)
+        self._product = kwargs.pop("product")
         self._to_cart = kwargs.pop("to_cart")
         super(AddProductForm, self).__init__(*args, **kwargs)
+
+        # Add fields for product's attributes.
+        self._attributes = []
+        for product_attribute in self._product.attributes.all():
+            attribute = product_attribute.attribute
+            self.fields[attribute.field_name()] = attribute.field()
+            self._attributes.append(attribute)
+
         # Adding from the wishlist with a sku, bail out.
         if args[0] is not None and args[0].get("sku", None):
             return
         # Adding from the product page, remove the sku field
         # and build the choice fields for the variations.
         del self.fields["sku"]
+
         option_fields = ProductVariation.option_fields()
         if not option_fields:
             return
@@ -92,6 +101,26 @@ class AddProductForm(forms.Form):
         # a variation.
         data = self.cleaned_data.copy()
         quantity = data.pop("quantity")
+
+        # Collect all attribute values under one key in cleaned_data.
+        attribute_values = {}
+        print data
+        for attribute in self._attributes:
+            field = attribute.field_name()
+            print repr(attribute), field
+            try:
+                value = attribute.make_value(data.pop(field), self._product)
+            except forms.ValidationError, e:
+                # Assign validation errors from make_value to attribute field.
+                # We're past standard field validation, so there are no field
+                # errors to start with, and the exception will have just non-
+                # field errors.
+                self._errors[field] = self.error_class(e.messages)
+            else:
+                if value:
+                    attribute_values[attribute] = value
+        self.cleaned_data['attribute_values'] = attribute_values
+
         # Ensure the product has a price if adding to cart.
         if self._to_cart:
             data["unit_price__isnull"] = False
@@ -117,6 +146,7 @@ class AddProductForm(forms.Form):
         if error is not None:
             raise forms.ValidationError(ADD_PRODUCT_ERRORS[error])
         self.variation = variation
+
         return self.cleaned_data
 
 
@@ -270,7 +300,7 @@ class DiscountForm(forms.ModelForm):
                 set_shipping(self._request, _("Free shipping"), 0)
             self._request.session["free_shipping"] = discount.free_shipping
             self._request.session["discount_code"] = discount.code
-            self._request.session["discount_total"] = total
+            self._request.session["discount_total"] = -total
 
 
 class OrderForm(FormsetForm, DiscountForm):

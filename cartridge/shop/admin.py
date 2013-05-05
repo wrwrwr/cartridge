@@ -33,16 +33,20 @@ from django.db.models import ImageField
 from django.utils.translation import ugettext_lazy as _
 
 from mezzanine.conf import settings
-from mezzanine.core.admin import DisplayableAdmin, TabularDynamicInlineAdmin
+from mezzanine.core.admin import (
+    TranslationAdmin, TranslationInlineModelAdmin,
+    DisplayableAdmin, TabularDynamicInlineAdmin)
 from mezzanine.pages.admin import PageAdmin
 
+from cartridge.attributes.admin import ProductAttributeAdmin
 from cartridge.shop.fields import MoneyField
 from cartridge.shop.forms import ProductAdminForm, ProductVariationAdminForm
 from cartridge.shop.forms import ProductVariationAdminFormset
 from cartridge.shop.forms import DiscountAdminForm, ImageWidget, MoneyWidget
-from cartridge.shop.models import Category, Product, ProductImage
-from cartridge.shop.models import ProductVariation, ProductOption, Order
-from cartridge.shop.models import OrderItem, Sale, DiscountCode
+from cartridge.shop.models import (
+    Category, Product, ProductImage, ProductVariation, ProductOption,
+    Order, OrderItem, Sale, DiscountCode, LoyaltyDiscount)
+from cartridge.shop.utils import order_totals_fields
 
 
 # Lists of field names.
@@ -107,7 +111,8 @@ class ProductVariationAdmin(admin.TabularInline):
     formset = ProductVariationAdminFormset
 
 
-class ProductImageAdmin(TabularDynamicInlineAdmin):
+class ProductImageAdmin(TabularDynamicInlineAdmin,
+                        TranslationInlineModelAdmin):
     model = ProductImage
     formfield_overrides = {ImageField: {"widget": ImageWidget}}
 
@@ -152,7 +157,7 @@ class ProductAdmin(DisplayableAdmin):
     filter_horizontal = ("categories", "related_products", "upsell_products")
     search_fields = ("title", "content", "categories__title",
                      "variations__sku")
-    inlines = (ProductImageAdmin, ProductVariationAdmin)
+    inlines = (ProductImageAdmin, ProductAttributeAdmin, ProductVariationAdmin)
     form = ProductAdminForm
     fieldsets = product_fieldsets
 
@@ -230,7 +235,7 @@ class ProductAdmin(DisplayableAdmin):
             self._product.copy_default_variation()
 
 
-class ProductOptionAdmin(admin.ModelAdmin):
+class ProductOptionAdmin(TranslationAdmin):
     ordering = ("type", "name")
     list_display = ("type", "name")
     list_display_links = ("type",)
@@ -258,19 +263,25 @@ class OrderAdmin(admin.ModelAdmin):
                      billing_fields + shipping_fields)
     date_hierarchy = "time"
     radio_fields = {"status": admin.HORIZONTAL}
-    inlines = (OrderItemInline,)
+#   TODO: Proper attributes editing would require inlines within inlines.
+#   There's an accepted Django ticket concerning this:
+#       https://code.djangoproject.com/ticket/9025.
+#   Considering that the inlined form misses what may be the most common use
+#   case -- adding more products, replacing it with plain list won't hurt much.
+#   inlines = (OrderItemInline,)
     formfield_overrides = {MoneyField: {"widget": MoneyWidget}}
     fieldsets = (
         (_("Billing details"), {"fields": (tuple(billing_fields),)}),
         (_("Shipping details"), {"fields": (tuple(shipping_fields),)}),
-        (None, {"fields": ("additional_instructions", ("shipping_total",
-            "shipping_type"), ('tax_total', 'tax_type'),
-             ("discount_total", "discount_code"), "item_total",
-            ("total", "status"), "transaction_id")}),
+        (_("Order totals"), {"fields": ["item_total"] +
+                                       order_totals_fields(flat=False) +
+                                       ["total"]}),
+        (None, {"fields": ("additional_instructions", "transaction_id",
+                           "status")}),
     )
 
 
-class SaleAdmin(admin.ModelAdmin):
+class SaleAdmin(TranslationAdmin):
     list_display = ("title", "active", "discount_deduct", "discount_percent",
         "discount_exact", "valid_from", "valid_to")
     list_editable = ("active", "discount_deduct", "discount_percent",
@@ -289,7 +300,7 @@ class SaleAdmin(admin.ModelAdmin):
     )
 
 
-class DiscountCodeAdmin(admin.ModelAdmin):
+class DiscountCodeAdmin(TranslationAdmin):
     list_display = ("title", "active", "code", "discount_deduct",
         "discount_percent", "min_purchase", "free_shipping", "valid_from",
         "valid_to")
@@ -310,6 +321,29 @@ class DiscountCodeAdmin(admin.ModelAdmin):
     )
 
 
+class LoyaltyDiscountAdmin(TranslationAdmin):
+    list_display = ("title", "active", "discount_deduct", "discount_percent",
+        "min_purchase", "min_purchases", "free_shipping", "valid_from",
+        "valid_to")
+    list_editable = ("active", "discount_deduct", "discount_percent",
+        "min_purchase", "min_purchases", "free_shipping", "valid_from",
+        "valid_to")
+    filter_horizontal = ("categories", "products")
+    formfield_overrides = {MoneyField: {"widget": MoneyWidget}}
+    form = DiscountAdminForm
+    fieldsets = (
+        (None,
+            {"fields": ("title", "active", "min_purchase", "min_purchases")}),
+        (_("Apply to product and/or products in categories"),
+            {"fields": ("products", "categories")}),
+        (_("Reduce unit price by"),
+            {"fields": (("discount_deduct", "discount_percent"),)}),
+        (None, {"fields": ("free_shipping",)}),
+        (_("Valid for"),
+            {"fields": (("valid_from", "valid_to"),)}),
+    )
+
+
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Product, ProductAdmin)
 if settings.SHOP_USE_VARIATIONS:
@@ -317,3 +351,4 @@ if settings.SHOP_USE_VARIATIONS:
 admin.site.register(Order, OrderAdmin)
 admin.site.register(Sale, SaleAdmin)
 admin.site.register(DiscountCode, DiscountCodeAdmin)
+admin.site.register(LoyaltyDiscount, LoyaltyDiscountAdmin)

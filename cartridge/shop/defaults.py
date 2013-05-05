@@ -18,7 +18,8 @@ register_setting(
     editable=False,
     default=(
         (_("Content"), ("pages.Page", "blog.BlogPost",
-            "generic.ThreadedComment", (_("Media Library"), "fb_browse"),)),
+                        "generic.ThreadedComment", "generic.Keyword",
+                        (_("Media Library"), "fb_browse"),)),
         (_("Shop"), ("shop.Product", "shop.ProductOption", "shop.DiscountCode",
             "shop.Sale", "shop.Order")),
         (_("Site"), ("sites.Site", "redirects.Redirect", "conf.Setting")),
@@ -243,8 +244,23 @@ register_setting(
     description="Sequence of value/name pairs for order statuses.",
     editable=False,
     default=(
-        (1, _("Unprocessed")),
-        (2, _("Processed")),
+        ("unprocessed", _("Unprocessed")),
+        ("processed", _("Processed")),
+    ),
+)
+
+register_setting(
+    name="SHOP_ORDER_TOTALS",
+    label=_("Order Totals"),
+    description="Sequence of totals, each consisting of three elements: "
+        "total field name (a property of the ``Order`` model), total type "
+        "field (possibly ``None``), and a string to use as the total title "
+        "when type is not available.",
+    editable=False,
+    default=(
+        ("shipping_total", "shipping_type", _("Shipping")),
+        ("discount_total", "discount_code", _("Discount")),
+        ("tax_total", "tax_type", _("Tax")),
     ),
 )
 

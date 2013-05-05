@@ -1,4 +1,5 @@
 from collections import defaultdict
+import os
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages import info
@@ -49,13 +50,16 @@ def product(request, slug, template="shop/product.html"):
     if variations:
         initial_data = dict([(f, getattr(variations[0], f)) for f in fields])
     initial_data["quantity"] = 1
-    add_product_form = AddProductForm(request.POST or None, product=product,
-                                      initial=initial_data, to_cart=to_cart)
+    add_product_form = AddProductForm(
+        request.POST or None, request.FILES or None,
+        product=product, initial=initial_data, to_cart=to_cart)
     if request.method == "POST":
         if add_product_form.is_valid():
             if to_cart:
                 quantity = add_product_form.cleaned_data["quantity"]
-                request.cart.add_item(add_product_form.variation, quantity)
+                attributes = add_product_form.cleaned_data["attribute_values"]
+                request.cart.add_item(add_product_form.variation, quantity,
+                                      attribute_values=attributes)
                 recalculate_discount(request)
                 info(request, _("Item added to cart"))
                 return redirect("shop_cart")
@@ -94,22 +98,30 @@ def wishlist(request, template="shop/wishlist.html"):
 
     skus = request.wishlist
     error = None
+    published_products = Product.objects.published(for_user=request.user)
+
     if request.method == "POST":
         to_cart = request.POST.get("add_cart")
-        add_product_form = AddProductForm(request.POST or None,
-                                          to_cart=to_cart)
+        sku = request.POST.get("sku")
         if to_cart:
+            variation = get_object_or_404(ProductVariation,
+                product__in=published_products, sku=sku)
+            add_product_form = AddProductForm(request.POST,
+                product=variation.product, to_cart=to_cart)
             if add_product_form.is_valid():
-                request.cart.add_item(add_product_form.variation, 1)
+                # TODO: Attributes should be stored for wishlist items (once
+                # there are wishlist items :-)
+                request.cart.add_item(add_product_form.variation, 1,
+                                      attribute_values={})
                 recalculate_discount(request)
                 message = _("Item added to cart")
                 url = "shop_cart"
             else:
-                error = add_product_form.errors.values()[0]
+                message = _("Please choose attributes")
+                url = variation.product.get_absolute_url()
         else:
             message = _("Item removed from wishlist")
             url = "shop_wishlist"
-        sku = request.POST.get("sku")
         if sku in skus:
             skus.remove(sku)
         if not error:
@@ -119,14 +131,13 @@ def wishlist(request, template="shop/wishlist.html"):
             return response
 
     # Remove skus from the cookie that no longer exist.
-    published_products = Product.objects.published(for_user=request.user)
     f = {"product__in": published_products, "sku__in": skus}
     wishlist = ProductVariation.objects.filter(**f).select_related(depth=1)
     wishlist = sorted(wishlist, key=lambda v: skus.index(v.sku))
     context = {"wishlist_items": wishlist, "error": error}
     response = render(request, template, context)
     if len(wishlist) < len(skus):
-        skus = [variation.sku for variation in wishlist]
+        skus = [v.sku for v in wishlist]
         set_cookie(response, "wishlist", ",".join(skus))
     return response
 
@@ -196,6 +207,8 @@ def checkout_steps(request):
         # Back button in the form was pressed - load the order form
         # for the previous step and maintain the field values entered.
         step -= 1
+        if step < 1:
+            return redirect("shop_cart")
         form = form_class(request, step, initial=initial)
     elif request.method == "POST" and request.cart.has_items():
         form = form_class(request, step, initial=initial, data=data)
@@ -311,6 +324,19 @@ def complete(request, template="shop/complete.html"):
     return render(request, template, context)
 
 
+def invoice_media_link(uri, rel):
+    """
+    Turns media URIs (images, fonts) to paths for PDF embedding.
+    Alternatively one could use absolute URIs, but this may not
+    work on servers that don't allow loopback connections.
+    """
+    if settings.DEV_SERVER:
+        root = settings.STATICFILES_DIRS[-1]
+    else:
+        root = settings.STATIC_ROOT
+    return os.path.join(root, uri.replace(settings.STATIC_URL, ""))
+
+
 def invoice(request, order_id, template="shop/order_invoice.html"):
     """
     Display a plain text invoice for the given order. The order must
@@ -331,8 +357,8 @@ def invoice(request, order_id, template="shop/order_invoice.html"):
         name = slugify("%s-invoice-%s" % (settings.SITE_TITLE, order.id))
         response["Content-Disposition"] = "attachment; filename=%s.pdf" % name
         html = get_template(template).render(context)
-        import ho.pisa
-        ho.pisa.CreatePDF(html, response)
+        from xhtml2pdf.pisa import pisaDocument
+        pisaDocument(html, dest=response, link_callback=invoice_media_link)
         return response
     return render(request, template, context)
 

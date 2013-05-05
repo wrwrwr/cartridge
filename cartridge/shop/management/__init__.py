@@ -14,15 +14,13 @@ from cartridge.shop import models as shop_app
 def create_product(app, created_models, verbosity, interactive, **kwargs):
     if Product in created_models:
         call_command("loaddata", "cartridge_required.json")
+        optional = True
         if interactive:
             confirm = raw_input("\nWould you like to install an initial "
                                 "demo product and sale? (yes/no): ")
-            while True:
-                if confirm == "yes":
-                    break
-                elif confirm == "no":
-                    return
+            while confirm not in ("yes", "no"):
                 confirm = raw_input("Please enter either 'yes' or 'no': ")
+            optional = (confirm == "yes")
         # This is a hack. Ideally to split fixtures between optional
         # and required, we'd use the same approach Mezzanine does,
         # within a ``createdb`` management command. Ideally to do this,
@@ -33,13 +31,16 @@ def create_product(app, created_models, verbosity, interactive, **kwargs):
         # bits) to work correctly.
         # SO........... we just cheat, and check sys.argv here. Namaste.
         elif "--nodata" in sys.argv:
-            return
-        if verbosity >= 1:
-            print
-            print "Creating demo product and sale ..."
-            print
-        call_command("loaddata", "cartridge_optional.json")
-        copy_test_to_media("cartridge.shop", "product")
+            optional = False
+        if optional:
+            if verbosity >= 1:
+                print
+                print "Creating demo product and sale ..."
+                print
+            call_command("loaddata", "cartridge_optional.json")
+            copy_test_to_media("cartridge.shop", "product")
+        if settings.USE_MODELTRANSLATION:
+            call_command("update_generated_fields", verbosity=0)
 
 
 if not settings.TESTING:

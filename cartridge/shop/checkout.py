@@ -7,6 +7,7 @@ from copy import copy
 from django.contrib.auth.models import SiteProfileNotAvailable
 from django.utils.text import normalize_newlines
 from django.utils.translation import ugettext as _
+from django.template import RequestContext
 from django.template.loader import (get_template, TemplateDoesNotExist,
                                     render_to_string)
 
@@ -185,7 +186,8 @@ def send_order_email(request, order):
              "templates/shop/email/ to templates/email/")
     send_mail_template(subject,
         receipt_template, settings.SHOP_ORDER_FROM_EMAIL,
-        order.billing_detail_email, context=order_context,
+        order.billing_detail_email,
+        context=RequestContext(request, order_context),
         fail_silently=settings.DEBUG)
 
 

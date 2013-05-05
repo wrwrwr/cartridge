@@ -1,5 +1,13 @@
 {% extends "admin/change_form.html" %}
-{% load i18n future %}
+{% load future i18n mezzanine_tags shop_tags %}
+
+{% block extrahead %}{{ block.super }}
+<style>
+    h2 {margin-top: 20px;}
+    #order_form {margin-top: 20px;}
+    .attribute-values {font-weight: normal !important; color: #666; padding-left: 20px;}
+</style>
+{% endblock %}
 
 {% block object-tools %}
 {% if change %}{% if not is_popup %}
@@ -8,4 +16,33 @@
 <li><a href="history/" class="historylink">{% trans "History" %}</a></li>
 </ul>
 {% endif %}{% endif %}
+
+{# TODO: Add fieldsets or before_fieldsets block to grappelli template, original template has the former. #}
+{% with original as order %}
+{# TODO: Below is a copy from order_details.html, split and include. #}
+<h2>{% trans "Items Ordered" %}</h2>
+<table width="100%" border="1" cellspacing="0" cellpadding="10">
+    <tr>
+        <th align="left">{% trans "Item" %}</th>
+        <th align="right">{% trans "Unit Price" %}</th>
+        <th align="right">{% trans "Qty" %}</th>
+        <th align="right">{% trans "Price" %}</th>
+    </tr>
+    {% for item in order.items.all %}
+    <tr>
+        <td>
+            {{ item.description }}
+            <ul class="attribute-values">
+                {% for value in item.visible_attribute_values.all %}
+                <li>{{ value.attribute }}: {{ value }}</li>
+                {% endfor %}
+            </ul>
+        </td>
+        <td align="right" valign="top">{{ item.unit_price|currency }}</td>
+        <td align="right" valign="top">{{ item.quantity }}</td>
+        <td align="right" valign="top">{{ item.total_price|currency }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endwith %}
 {% endblock %}
