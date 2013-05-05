@@ -7,7 +7,8 @@ from copy import copy
 from django.contrib.auth.models import SiteProfileNotAvailable
 from django.utils.translation import ugettext as _
 from django.template import RequestContext
-from django.template.loader import get_template, TemplateDoesNotExist
+from django.template.loader import (get_template, TemplateDoesNotExist,
+                                    render_to_string)
 
 from mezzanine.conf import settings
 from mezzanine.utils.email import split_addresses, send_mail_template
@@ -161,9 +162,17 @@ def send_order_email(request, order):
     Send order receipt email on successful order.
     """
     settings.use_editable()
-    order_context = {"order": order, "request": request,
-                     "order_items": order.items.all()}
+    order_context = {"order": order, "order_items": order.items.all(),
+                     "request": request}
     order_context.update(order.details_as_dict())
+    if settings.SHOP_ORDER_EMAIL_SUBJECT:
+        subject = settings.SHOP_ORDER_EMAIL_SUBJECT
+        from warnings import warn
+        warn("SHOP_ORDER_EMAIL_SUBJECT setting is deprecated, please use "
+             "the email/order_receipt_subject.txt template instead.")
+    else:
+        subject = render_to_string("email/order_receipt_subject.txt",
+                                    order_context)
     try:
         get_template("shop/email/order_receipt.html")
     except TemplateDoesNotExist:
@@ -183,9 +192,9 @@ def send_order_email(request, order):
             pass
         else:
             notify_emails.append(user_email)
-    send_mail_template(settings.SHOP_ORDER_EMAIL_SUBJECT,
-        receipt_template, settings.SHOP_ORDER_FROM_EMAIL,
-        notify_emails,
+    send_mail_template(
+        subject, receipt_template,
+        settings.SHOP_ORDER_FROM_EMAIL, notify_emails,
         context=RequestContext(request, order_context),
         fail_silently=settings.DEBUG)
 
