@@ -5,6 +5,7 @@ Checkout process utilities.
 from copy import copy
 
 from django.contrib.auth.models import SiteProfileNotAvailable
+from django.utils.text import normalize_newlines
 from django.utils.translation import ugettext as _
 from django.template.loader import (get_template, TemplateDoesNotExist,
                                     render_to_string)
@@ -172,6 +173,7 @@ def send_order_email(request, order):
     else:
         subject = render_to_string("email/order_receipt_subject.txt",
                                     order_context)
+    subject = normalize_newlines(subject).replace('\n', ' ')
     try:
         get_template("shop/email/order_receipt.html")
     except TemplateDoesNotExist:
