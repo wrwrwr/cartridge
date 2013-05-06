@@ -2,6 +2,7 @@ from collections import defaultdict
 import os
 
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import redirect_to_login
 from django.contrib.messages import info
 from django.core.urlresolvers import get_callable, reverse
 from django.http import Http404, HttpResponse
@@ -345,7 +346,13 @@ def invoice(request, order_id, template="shop/order_invoice.html"):
         lookup["key"] = request.session.session_key
     elif not request.user.is_staff:
         lookup["user_id"] = request.user.id
-    order = get_object_or_404(Order, **lookup)
+    try:
+        order = Order.objects.get(**lookup)
+    except Order.DoesNotExist:
+        if request.user.is_authenticated():
+            return Http404
+        else:
+            return redirect_to_login(request.path)
     context = {"order": order}
     context.update(order.details_as_dict())
     context = RequestContext(request, context)
