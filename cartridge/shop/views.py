@@ -311,11 +311,16 @@ def complete(request, template="shop/complete.html"):
     return render(request, template, context)
 
 
-def invoice(request, order_id, template="shop/order_invoice.html"):
+def invoice(request, order_id, template="shop/order_invoice.html",
+            as_attachment=False, force_pdf=False):
     """
-    Display a plain text invoice for the given order. The order must
-    belong to the user which is checked via session or ID if
-    authenticated, or if the current user is staff.
+    Returns an ``HttpResponse`` that may be sent directly to the client,
+    or a 3-tuple suitable for use with ``EmailMessage.attach``.
+
+    If the ``request`` has a ``format=pdf`` parameter or ``force_pdf`` is
+    true, the response will have PDF content and a suitable content
+    disposition HTTP header, resulting in the browser offering to save the
+    document as a file or displaying it with some PDF plugin.
     """
     lookup = {"id": order_id}
     if not request.user.is_authenticated():
@@ -326,15 +331,26 @@ def invoice(request, order_id, template="shop/order_invoice.html"):
     context = {"order": order}
     context.update(order.details_as_dict())
     context = RequestContext(request, context)
-    if request.GET.get("format") == "pdf":
-        response = HttpResponse(mimetype="application/pdf")
-        name = slugify("%s-invoice-%s" % (settings.SITE_TITLE, order.id))
+    name = slugify("%s-invoice-%s" % (settings.SITE_TITLE, order.id))
+    pdf = force_pdf or request.GET.get("format") == "pdf"
+    if pdf:
+        response = HttpResponse(content_type="application/pdf")
         response["Content-Disposition"] = "attachment; filename=%s.pdf" % name
         html = get_template(template).render(context)
         import ho.pisa
         ho.pisa.CreatePDF(html, response)
+    else:
+        response = render(request, template, context)
+    if as_attachment:
+        try:
+            response.render()
+        except AttributeError:
+            pass
+        filename = "%s.%s" % (name, "pdf" if pdf else "html")
+        content_type = "application/pdf" if pdf else "text/html"
+        return (filename, response.content, content_type)
+    else:
         return response
-    return render(request, template, context)
 
 
 @login_required
