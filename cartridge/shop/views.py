@@ -6,12 +6,11 @@ from django.contrib.auth.views import redirect_to_login
 from django.contrib.messages import info
 from django.core.urlresolvers import get_callable, reverse
 from django.http import Http404, HttpResponse
-from django.shortcuts import get_object_or_404, redirect, resolve_url
+from django.shortcuts import get_object_or_404, redirect
 from django.template import RequestContext
 from django.template.defaultfilters import slugify
 from django.template.loader import get_template
 from django.utils import simplejson
-from django.utils.encoding import force_str
 from django.utils.translation import ugettext as _
 from django.views.decorators.cache import never_cache
 
@@ -186,9 +185,7 @@ def checkout_steps(request):
     # LOGIN_URL and fall back to our own login view.
     authenticated = request.user.is_authenticated()
     if settings.SHOP_CHECKOUT_ACCOUNT_REQUIRED and not authenticated:
-        url = "%s?next=%s" % (force_str(resolve_url(settings.LOGIN_URL)),
-                              reverse("shop_checkout"))
-        return redirect(url)
+        return redirect_to_login(reverse("shop_checkout"))
 
     # Determine the Form class to use during the checkout process
     form_class = get_callable(settings.SHOP_CHECKOUT_FORM_CLASS)
