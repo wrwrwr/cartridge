@@ -250,6 +250,15 @@ register_setting(
 )
 
 register_setting(
+    name="SHOP_ORDER_EMAIL_ATTACH_INVOICE",
+    label=_("Attach invoice documents to order receipts"),
+    description=_("Should an invoice document, in the form of a .pdf file, "
+                  "be attached to order receipt emails?"),
+    editable=True,
+    default=True,
+)
+
+register_setting(
     name="SHOP_ORDER_STATUS_CHOICES",
     description="Sequence of value/name pairs for order statuses.",
     editable=False,

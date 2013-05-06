@@ -194,10 +194,16 @@ def send_order_email(request, order):
             pass
         else:
             notify_emails.append(user_email)
+    if settings.SHOP_ORDER_EMAIL_ATTACH_INVOICE:
+        from .views import invoice
+        attachments = [
+            invoice(request, order.id, as_attachment=True, force_pdf=True)]
+    else:
+        attachments = None
     send_mail_template(
         subject, receipt_template,
         settings.SHOP_ORDER_FROM_EMAIL, notify_emails,
-        context=context, fail_silently=settings.DEBUG)
+        context=context, attachments=attachments, fail_silently=settings.DEBUG)
 
 
 # Set up some constants for identifying each checkout step.
