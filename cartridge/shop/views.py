@@ -331,7 +331,7 @@ def invoice(request, order_id, template="shop/order_invoice.html",
     context = {"order": order}
     context.update(order.details_as_dict())
     context = RequestContext(request, context)
-    name = slugify("%s-invoice-%s" % (settings.SITE_TITLE, order.id))
+    name = slugify("%s-%s" % (settings.SITE_TITLE, order.id))
     pdf = force_pdf or request.GET.get("format") == "pdf"
     if pdf:
         response = HttpResponse(content_type="application/pdf")
