@@ -728,7 +728,7 @@ class Discount(models.Model):
         Stores common discount variables in session, for saving with order.
         """
         total = self.get_total(request.user, request.cart)
-        request.session["discount_type"] = self.title
+        request.session["discount_type"] = unicode(self)
         request.session["discount_total"] = -total
 
 
@@ -845,6 +845,10 @@ class DiscountCode(Discount):
 
     objects = managers.DiscountCodeManager()
 
+    class Meta:
+        verbose_name = _("Discount code")
+        verbose_name_plural = _("Discount codes")
+
     def calculate(self, amount):
         """
         Calculates the discount for the given amount.
@@ -858,9 +862,15 @@ class DiscountCode(Discount):
             return amount / Decimal("100") * self.discount_percent
         return 0
 
-    class Meta:
-        verbose_name = _("Discount code")
-        verbose_name_plural = _("Discount codes")
+    def get_total(self, user, cart):
+        return cart.calculate_discount(self)
+
+    def update_session(self, request):
+        if self.free_shipping:
+            set_shipping(request, _("Free shipping"), 0)
+        request.session["free_shipping"] = self.free_shipping
+        request.session["discount_code"] = self.code
+        super(DiscountCode, self).update_session(request)
 
 
 class LoyaltyDiscount(Discount):
