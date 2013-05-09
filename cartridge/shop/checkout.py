@@ -116,6 +116,8 @@ def initial_order_data(request, form_class=None):
         previous_orders = Order.objects.filter(**previous_lookup).values()[:1]
         if len(previous_orders) > 0:
             initial.update(previous_orders[0])
+            initial.pop('discount_code', None)
+            initial.pop('additional_instructions', None)
     if not initial and request.user.is_authenticated():
         # No previous order data - try and get field values from the
         # logged in user. Check the profile model before the user model
