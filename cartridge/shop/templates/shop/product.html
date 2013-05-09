@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "shop/base.html" %}
 {% load mezzanine_tags shop_tags rating_tags i18n %}
 
 {% block meta_title %}{{ product.meta_title }}{% endblock %}
@@ -92,7 +92,9 @@
     <div class="form-actions clearfix">
         <div class="form-actions-wrap">
         <input type="submit" class="btn btn-primary btn-large" name="add_cart" value="{% trans "Buy" %}">
-        <input type="submit" class="btn btn-large" name="add_wishlist" value="{% trans "Save for later" %}">
+        {% if settings.SHOP_USE_WISHLIST %}
+        <input type="submit" class="btn btn -large" name="add_wishlist" value="{% trans "Save for later" %}">
+        {% endif %}
         </div>
     </div>
 </form>
@@ -100,7 +102,9 @@
 <p>{% trans "This product is currently unavailable." %}</p>
 {% endif %}
 
+{% if settings.SHOP_USE_RATINGS %}
 {% rating_for product %}
+{% endif %}
 
 {% if related_products %}
 <h2>{% trans "Related Products" %}</h2>
