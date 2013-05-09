@@ -187,7 +187,7 @@ class DiscountCodeManager(Manager):
         valid_from = Q(valid_from__isnull=True) | Q(valid_from__lte=n)
         valid_to = Q(valid_to__isnull=True) | Q(valid_to__gte=n)
         valid = self.filter(valid_from, valid_to, active=True)
-        return valid.exclude(uses_remaining=0)
+        return valid.exclude(uses_remaining__isnull=False, uses_remaining=0)
 
     def get_valid(self, code, cart):
         """
