@@ -50,7 +50,9 @@ def _order_totals(context):
         order_total = item_total = order.item_total
         for total_field, type_field, label in settings.SHOP_ORDER_TOTALS:
             if type_field:
-                label = getattr(order, type_field)
+                total_type = getattr(order, type_field)
+                if total_type:
+                    label = total_type
             total = getattr(order, total_field)
             if total:
                 totals.append((label, total))

@@ -278,6 +278,8 @@ register_setting(
     editable=False,
     default=(
         ("shipping_total", "shipping_type", _("Shipping")),
+        # TODO: The discount_type field added on the loyalty-discount branch
+        #       could be used here.
         ("discount_total", "discount_code", _("Discount")),
         ("tax_total", "tax_type", _("Tax")),
     ),
