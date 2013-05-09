@@ -199,7 +199,7 @@ class DiscountCodeManager(DiscountManager):
         """
         total_price_valid = (Q(min_purchase__isnull=True) |
                              Q(min_purchase__lte=cart.total_price()))
-        discount = self.active().valid.exclude(
+        discount = self.active().exclude(
             uses_remaining__isnull=False, uses_remaining=0).get(
             total_price_valid, code=code)
         products = discount.all_products()
