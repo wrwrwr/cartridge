@@ -412,6 +412,7 @@ class Order(models.Model):
     tax_type = CharField(_("Tax type"), max_length=50, blank=True)
     tax_total = fields.MoneyField(_("Tax total"))
     item_total = fields.MoneyField(_("Item total"))
+    discount_type = CharField(_("Discount type"), max_length=50, blank=True)
     discount_code = fields.DiscountCodeField(_("Discount code"), blank=True)
     discount_total = fields.MoneyField(_("Discount total"))
     total = fields.MoneyField(_("Order total"))
@@ -727,6 +728,7 @@ class Discount(models.Model):
         Stores common discount variables in session, for saving with order.
         """
         total = self.get_total(request.user, request.cart)
+        request.session["discount_type"] = self.title
         request.session["discount_total"] = -total
 
 
