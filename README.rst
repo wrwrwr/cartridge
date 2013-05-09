@@ -182,14 +182,18 @@ Sites Using Cartridge
   * `Puraforce Remedies <http://puraforceremedies.com/>`_
   * `Adrenaline <http://www.adrln.com/>`_
   * `The Peculiar Store <http://thepeculiarstore.com>`_
+  * `KisanHub <http://www.kisanhub.com/>`_
+  * `Kegbot <http://kegbot.org>`_
+  * `Amblitec <http://www.amblitec.com>`_
 
 .. _`Django`: http://djangoproject.com/
 .. _`BSD licensed`: http://www.linfo.org/bsdlicense.html
 .. _`Mezzanine live demo`: http://mezzanine.jupo.org/
+.. _`Mezzanine`: http://mezzanine.jupo.org/
+.. _`Mezzanine Project`: http://mezzanine.jupo.org/
 .. _`pip`: http://www.pip-installer.org/
 .. _`FAQ section of the Mezzanine documentation`: http://mezzanine.jupo.org/docs/frequently-asked-questions.html#how-can-i-add-mezzanine-to-an-existing-django-project
 .. _`setuptools`: http://pypi.python.org/pypi/setuptools
-.. _`Mezzanine`: http://mezzanine.jupo.org/
 .. _`South`: http://south.aeracode.org/
 .. _`Github`: http://github.com/stephenmcd/cartridge/
 .. _`Bitbucket`: http://bitbucket.org/stephenmcd/cartridge/
