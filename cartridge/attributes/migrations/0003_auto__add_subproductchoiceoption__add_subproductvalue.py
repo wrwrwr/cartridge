@@ -8,16 +8,9 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'SubproductChoiceOption'
-        db.create_table(u'attributes_subproductchoiceoption', (
-            (u'choiceoption_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['attributes.ChoiceOption'], unique=True, primary_key=True)),
-            ('subproduct', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['shop.Product'])),
-        ))
-        db.send_create_signal(u'attributes', ['SubproductChoiceOption'])
-
-        # Adding model 'SubproductValue'
-        db.create_table(u'attributes_subproductvalue', (
-            (u'attributevalue_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['attributes.AttributeValue'], unique=True, primary_key=True)),
+        # Adding model 'SubproductChoiceValue'
+        db.create_table(u'attributes_subproductchoicevalue', (
+            (u'choicevalue_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['attributes.ChoiceValue'], unique=True, primary_key=True)),
             ('sku', self.gf('cartridge.shop.fields.SKUField')(max_length=20)),
             ('attributes_hash', self.gf('django.db.models.fields.CharField')(max_length=32)),
             ('description', self.gf('django.db.models.fields.CharField')(max_length=200)),
@@ -25,15 +18,22 @@ class Migration(SchemaMigration):
             ('unit_price', self.gf('cartridge.shop.fields.MoneyField')(default='0', null=True, max_digits=10, decimal_places=2, blank=True)),
             ('total_price', self.gf('cartridge.shop.fields.MoneyField')(default='0', null=True, max_digits=10, decimal_places=2, blank=True)),
         ))
-        db.send_create_signal(u'attributes', ['SubproductValue'])
+        db.send_create_signal(u'attributes', ['SubproductChoiceValue'])
+
+        # Adding model 'SubproductChoiceOption'
+        db.create_table(u'attributes_subproductchoiceoption', (
+            (u'choiceoption_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['attributes.ChoiceOption'], unique=True, primary_key=True)),
+            ('subproduct', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['shop.Product'])),
+        ))
+        db.send_create_signal(u'attributes', ['SubproductChoiceOption'])
 
 
     def backwards(self, orm):
+        # Deleting model 'SubproductChoiceValue'
+        db.delete_table(u'attributes_subproductchoicevalue')
+
         # Deleting model 'SubproductChoiceOption'
         db.delete_table(u'attributes_subproductchoiceoption')
-
-        # Deleting model 'SubproductValue'
-        db.delete_table(u'attributes_subproductvalue')
 
 
     models = {
@@ -166,10 +166,10 @@ class Migration(SchemaMigration):
             u'choiceoption_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['attributes.ChoiceOption']", 'unique': 'True', 'primary_key': 'True'}),
             'subproduct': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['shop.Product']"})
         },
-        u'attributes.subproductvalue': {
-            'Meta': {'object_name': 'SubproductValue', '_ormbases': [u'attributes.AttributeValue']},
+        u'attributes.subproductchoicevalue': {
+            'Meta': {'object_name': 'SubproductChoiceValue', '_ormbases': [u'attributes.ChoiceValue']},
             'attributes_hash': ('django.db.models.fields.CharField', [], {'max_length': '32'}),
-            u'attributevalue_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['attributes.AttributeValue']", 'unique': 'True', 'primary_key': 'True'}),
+            u'choicevalue_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['attributes.ChoiceValue']", 'unique': 'True', 'primary_key': 'True'}),
             'description': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
             'quantity': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'sku': ('cartridge.shop.fields.SKUField', [], {'max_length': '20'}),

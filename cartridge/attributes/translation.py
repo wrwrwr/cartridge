@@ -7,7 +7,7 @@ from .models import (
     SimpleChoiceAttribute,
     ImageChoiceAttribute, ImageChoiceOption,
     ColorChoiceAttribute, ColorChoiceOption,
-    SubproductChoiceAttribute, SubproductChoiceOption,
+    SubproductChoiceAttribute, SubproductChoiceOption, SubproductChoiceValue,
     ImageAttribute, ImageValue, ListAttribute, ListValue)
 
 
@@ -46,3 +46,4 @@ translator.register(ChoiceOption, ChoiceOptionTranslationOptions)
 translator.register(
     (ImageChoiceOption, ColorChoiceOption, SubproductChoiceOption))
 translator.register(ChoiceValue, ChoiceValueTranslationOptions)
+translator.register(SubproductChoiceValue)
