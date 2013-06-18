@@ -7,6 +7,7 @@ from .models import (
     SimpleChoiceAttribute,
     ImageChoiceAttribute, ImageChoiceOption,
     ColorChoiceAttribute, ColorChoiceOption,
+    SubproductChoiceAttribute, SubproductChoiceOption,
     ImageAttribute, ImageValue, ListAttribute, ListValue)
 
 
@@ -38,9 +39,10 @@ translator.register(
      ImageAttribute, ListAttribute))
 # Workaround for proxy models not inheriting translation fields.
 translator.register(
-    (SimpleChoiceAttribute, ImageChoiceAttribute, ColorChoiceAttribute),
-     AttributeTranslationOptions)
+    (SimpleChoiceAttribute, ImageChoiceAttribute, ColorChoiceAttribute,
+     SubproductChoiceAttribute), AttributeTranslationOptions)
 translator.register(ChoiceOptionsGroup, ChoiceOptionsGroupTranslationOptions)
 translator.register(ChoiceOption, ChoiceOptionTranslationOptions)
-translator.register((ImageChoiceOption, ColorChoiceOption,))
+translator.register(
+    (ImageChoiceOption, ColorChoiceOption, SubproductChoiceOption))
 translator.register(ChoiceValue, ChoiceValueTranslationOptions)

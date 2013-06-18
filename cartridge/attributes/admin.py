@@ -18,6 +18,7 @@ from .models import (
     ChoiceOption, ChoiceOptionsGroup, SimpleChoiceAttribute,
     ImageChoiceAttribute, ImageChoiceOption,
     ColorChoiceAttribute, ColorChoiceOption,
+    SubproductChoiceAttribute, SubproductChoiceOption,
     ImageAttribute, ListAttribute)
 from .forms import AttributeSelectionForm, ProductAttributeForm
 
@@ -133,6 +134,14 @@ class ColorChoiceAttributeAdmin(ChoiceAttributeAdmin):
     inlines = (ChoiceOptionsGroupInline, ColorChoiceOptionInline)
 
 
+class SubproductChoiceOptionInline(ChoiceOptionInline):
+    model = SubproductChoiceOption
+
+
+class SubproductChoiceAttributeAdmin(ChoiceAttributeAdmin):
+    inlines = (ChoiceOptionsGroupInline, SubproductChoiceOptionInline)
+
+
 def attribute_fieldsets(fieldsets):
     # Hide type / id fields, but keep the processing they provide.
     fields = fieldsets[0][1]['fields']
@@ -184,9 +193,9 @@ class ProductAttributeAdmin(TabularDynamicInlineAdmin):
 
 admin.site.register(StringAttribute, StringAttributeAdmin)
 admin.site.register(CharactersAttribute, CharactersAttributeAdmin)
-#admin.site.register(ChoiceAttribute, ChoiceAttributeAdmin)
 admin.site.register(SimpleChoiceAttribute, SimpleChoiceAttributeAdmin)
 admin.site.register(ImageChoiceAttribute, ImageChoiceAttributeAdmin)
 admin.site.register(ColorChoiceAttribute, ColorChoiceAttributeAdmin)
+admin.site.register(SubproductChoiceAttribute, SubproductChoiceAttributeAdmin)
 admin.site.register(ImageAttribute, AttributeAdmin)
 admin.site.register(ListAttribute, ListAttributeAdmin)
