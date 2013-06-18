@@ -136,6 +136,7 @@ class ColorChoiceAttributeAdmin(ChoiceAttributeAdmin):
 
 class SubproductChoiceOptionInline(ChoiceOptionInline):
     model = SubproductChoiceOption
+    exclude = ('name',)
 
 
 class SubproductChoiceAttributeAdmin(ChoiceAttributeAdmin):

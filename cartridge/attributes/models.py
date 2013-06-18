@@ -326,7 +326,8 @@ class ColorChoiceOption(ChoiceOption):
 class SubproductChoiceAttribute(ChoiceAttribute):
     """
     Product as an attribute of another product. Intended as a
-    way of realizing product sets.
+    way of realizing product sets. Inbuilt form only supports
+    subproducts without attributes.
     """
     class Meta:
         proxy = True
@@ -344,8 +345,30 @@ class SubproductChoiceAttribute(ChoiceAttribute):
 
 
 class SubproductChoiceOption(ChoiceOption):
+    """
+    A product available for choice as an attribute value (assumed to have
+    just a single variation). Parent's name is ignored and product's name
+    is used instead.
+    """
     subproduct = models.ForeignKey(Product,
         help_text=_("The product belonging to the set."))
+
+    @property
+    def name(self):
+        return unicode(self.subproduct.variations.all()[0])
+
+    @name.setter
+    def name(self, value):
+        pass
+
+    def choice(self):
+        """
+        Price displayed is product's price plus options price.
+        """
+        variation = self.subproduct.variations.all()[0]
+        context = {'name': self.name, 'price': variation.price() + self.price}
+        template = 'attributes/includes/choice_option.html'
+        return (self.id, render_to_string(template, context))
 
 
 class SubproductChoiceValue(ChoiceValue, SelectedProduct):
