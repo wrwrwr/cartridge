@@ -15,7 +15,7 @@ from mezzanine.utils.models import upload_to
 from mezzanine.utils.translation import for_all_languages
 
 from cartridge.shop import fields
-from cartridge.shop.models import Product
+from cartridge.shop.models import Product, SelectedProduct
 
 from .managers import PolymorphicManager
 
@@ -279,6 +279,11 @@ class ChoiceValue(AttributeValue):
 
 
 class SimpleChoiceAttribute(ChoiceAttribute):
+    """
+    Basic choice option, knows the attribute and group it belongs to, has
+    display name and may have a price. This submodel is needed to separate
+    different choice attributes in administration.
+    """
     class Meta:
         proxy = True
         verbose_name = _("simple choice attribute")
@@ -286,6 +291,10 @@ class SimpleChoiceAttribute(ChoiceAttribute):
 
 
 class ImageChoiceAttribute(ChoiceAttribute):
+    """
+    Adds image illustration for choice options, the images are uploaded for
+    options and not stored with values.
+    """
     class Meta:
         proxy = True
         verbose_name = _("image choice attribute")
@@ -300,6 +309,9 @@ class ImageChoiceOption(ChoiceOption):
 
 
 class ColorChoiceAttribute(ChoiceAttribute):
+    """
+    Extends choice options with encoded colors.
+    """
     class Meta:
         proxy = True
         verbose_name = _("color choice attribute")
@@ -311,7 +323,35 @@ class ColorChoiceOption(ChoiceOption):
         help_text=_("Choosable color (in #RRGGBB notation)."))
 
 
+class SubproductChoiceAttribute(ChoiceAttribute):
+    """
+    Product as an attribute of another product. Product sets can be realized
+    in this way.
+    """
+    class Meta:
+        proxy = True
+        verbose_name = _("subproduct choice attribute")
+        verbose_name_plural = _("subproduct choice attributes")
+
+
+class SubproductChoiceOption(ChoiceOption):
+    subproduct = models.ForeignKey(Product,
+        help_text=_("The product belonging to the set."))
+
+
+class SubproductValue(AttributeValue, SelectedProduct):
+    """
+    Attribute values of the subproduct use this model as the target
+    for their ``item`` relation -- where for the top level products they
+    would point to ``CartItem`` or ``OrderItem`` objects.
+    """
+    pass
+
+
 class ImageAttribute(Attribute):
+    """
+    Allows users to upload an image to attach to the product.
+    """
     max_size = models.IntegerField(_("Maximum file size"), default=1,
         help_text=_("Maximum size of file users are allowed to upload, "
                     "in megabytes. Zero means no limit."))
