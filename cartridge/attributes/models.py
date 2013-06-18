@@ -26,7 +26,7 @@ from .managers import PolymorphicManager
 PRODUCT_ATTRIBUTES_ORDER = (
     'stringattribute', 'charactersattribute',
     'simplechoiceattribute', 'imagechoiceattribute', 'colorchoiceattribute',
-    'imageattribute', 'listattribute')
+    'subproductchoiceattribute', 'imageattribute', 'listattribute')
 ATTRIBUTE_TYPES = Q(app_label='attributes', model__in=PRODUCT_ATTRIBUTES_ORDER)
 
 
