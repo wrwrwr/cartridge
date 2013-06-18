@@ -325,13 +325,22 @@ class ColorChoiceOption(ChoiceOption):
 
 class SubproductChoiceAttribute(ChoiceAttribute):
     """
-    Product as an attribute of another product. Product sets can be realized
-    in this way.
+    Product as an attribute of another product. Intended as a
+    way of realizing product sets.
     """
     class Meta:
         proxy = True
         verbose_name = _("subproduct choice attribute")
         verbose_name_plural = _("subproduct choice attributes")
+
+    def make_value(self, value, product, quantity=1, attribute_values={}):
+        if value != '':
+            option = self.options.get(pk=value)
+        else:
+            option = None
+        return SubproductChoiceValue(
+            attribute=self, option=option, quantity=quantity,
+            attribute_values=attribute_values)
 
 
 class SubproductChoiceOption(ChoiceOption):
@@ -339,13 +348,44 @@ class SubproductChoiceOption(ChoiceOption):
         help_text=_("The product belonging to the set."))
 
 
-class SubproductValue(AttributeValue, SelectedProduct):
+class SubproductChoiceValue(ChoiceValue, SelectedProduct):
     """
     Attribute values of the subproduct use this model as the target
     for their ``item`` relation -- where for the top level products they
     would point to ``CartItem`` or ``OrderItem`` objects.
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        """
+        Does all that ``cart.add_item`` does, except for saving attribute
+        values.
+        """
+        option = kwargs.get('option', None)
+        quantity = kwargs.pop('quantity', 1)
+        self._attribute_values = kwargs.pop('attribute_values', {})
+        super(SubproductChoiceValue, self).__init__(*args, **kwargs)
+        if isinstance(option, SubproductChoiceOption):
+            variation = option.subproduct.variations.all()[0]
+            self.sku = variation.sku
+            self.unit_price = variation.price()
+            for attribute, value in self._attribute_values.iteritems():
+                self.unit_price += value.price
+            self.price += self.unit_price
+            def set_description():
+                self.description = unicode(variation)
+            for_all_languages(set_description)
+            for attribute, value in self._attribute_values.iteritems():
+                # Link attribute values to this subproduct value.
+                value.item = self
+            self.quantity = quantity
+
+    def save(self, *args, **kwargs):
+        """
+        Save attribute values pointing at this subproduct.
+        """
+        super(SubproductChoiceValue, self).save(*args, **kwargs)
+        for attribute, value in self._attribute_values.iteritems():
+            value.save()
+        self._attribute_values = {}
 
 
 class ImageAttribute(Attribute):
