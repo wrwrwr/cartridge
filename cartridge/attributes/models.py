@@ -351,7 +351,8 @@ class SubproductChoiceOption(ChoiceOption):
     is used instead.
     """
     subproduct = models.ForeignKey(Product,
-        help_text=_("The product belonging to the set."))
+        help_text=_("Another product, being a part or add-on for the main "
+                    "product (the product the attribute is assigned to)."))
 
     @property
     def name(self):
