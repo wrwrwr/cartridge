@@ -394,9 +394,11 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
             for attribute, value in self._attribute_values.iteritems():
                 self.unit_price += value.price
             self.price += self.unit_price
+
             def set_description():
                 self.description = unicode(variation)
             for_all_languages(set_description)
+
             for attribute, value in self._attribute_values.iteritems():
                 # Link attribute values to this subproduct value.
                 value.item = self
