@@ -34,7 +34,7 @@ class PolymorphicAdmin(admin.ModelAdmin):
         return self.model.objects.filter(content_type=content_type)
 
 
-class AttributeAdmin(TranslationAdmin, PolymorphicAdmin):
+class AttributeAdmin(PolymorphicAdmin, TranslationAdmin):
     list_display = ('name', 'product_links', 'required', 'visible')
     list_editable = ('required', 'visible')
     list_filter = ('required', 'visible')
