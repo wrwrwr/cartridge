@@ -955,7 +955,7 @@ class FacebookDiscount(Discount):
     connection = fields.CharField(_("Connection type"), max_length=32,
         help_text=_("Facebook connection kind, such as ``likes``, ``events``, "
                     "``friends`` or ``games``."))
-    target_id = fields.CharField(_("Connection id"), max_length=64,
+    target_id = fields.CharField(_("Target id"), max_length=64,
         help_text=_("Open Graph id of an object user is to be connected with"
                     "to be eliglible for the discount."))
     free_shipping = models.BooleanField(_("Free shipping"))
