@@ -57,10 +57,13 @@ def make_choices(choices):
 
 def recalculate_discount(request):
     """
-    Updates an existing discount code when the cart is modified.
+    Updates discounts when the cart is modified.
+
+    If a discount code is entered applies its discount, otherwise
+    checks loyalty and Facebook discounts and chooses just one highest.
     """
     from cartridge.shop.forms import DiscountForm
-    from cartridge.shop.models import Cart, LoyaltyDiscount
+    from cartridge.shop.models import Cart, LoyaltyDiscount, FacebookDiscount
     # Rebind the cart to request since it's been modified.
     request.cart = Cart.objects.from_request(request)
     try:
@@ -74,10 +77,16 @@ def recalculate_discount(request):
             # TODO: Move session logic to DiscountCode model.
             discount_form.set_discount()
     else:
-        discount = LoyaltyDiscount.objects.get_highest(
+        loyalty_discount, loyalty_total = LoyaltyDiscount.objects.get_highest(
             request.user, request.cart)
-        if discount:
-            discount.update_session(request)
+        facebook_discount, facebook_total = \
+            FacebookDiscount.objects.get_highest(
+                request.user, request.cart, request.COOKIES)
+        if loyalty_discount or facebook_discount:
+            if loyalty_total > facebook_total:
+                loyalty_discount.update_session(request)
+            else:
+                facebook_discount.update_session(request)
 
 
 def set_shipping(request, shipping_type, shipping_total):

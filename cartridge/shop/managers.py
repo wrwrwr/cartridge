@@ -235,7 +235,7 @@ class LoyaltyDiscountManager(DiscountManager):
             total = discount.get_total(user, cart)
             if total > best_total:
                 best_discount, best_total = discount, total
-        return best_discount
+        return best_discount, best_total
 
     def get_best_percent(self, user):
         """
@@ -254,3 +254,32 @@ class LoyaltyDiscountManager(DiscountManager):
             return discounts[0]
         else:
             return None
+
+
+class FacebookDiscountManager(DiscountManager):
+
+    def get_highest(self, user, cart, cookies):
+        """
+        Scans active discounts for which "liking" prerequisites are met.
+        """
+        import facebook
+        facebook_user = facebook.get_user_from_cookie(
+            cookies,
+            settings.FACEBOOK_APP_ID, settings.FACEBOOK_APP_SECRET)
+        if not facebook_user:
+            return None, 0
+        graph = facebook.GraphAPI(facebook_user['access_token'])
+        best_discount, best_total = None, 0
+        for discount in self.active():
+            products = discount.all_products()
+            if (products.count() > 0 and products.filter(
+                    variations__sku__in=cart.skus()).count() == 0):
+                continue
+            data = graph.get_object('me', fields='{}.target_id({})'.format(
+                discount.connection, discount.target_id))
+            if not data.get(discount.connection, {}).get('data', []):
+                continue
+            total = discount.get_total(user, cart)
+            if total > best_total:
+                best_discount, best_total = discount, total
+        return best_discount, best_total

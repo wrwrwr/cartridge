@@ -716,20 +716,43 @@ class Discount(models.Model):
         filters = reduce(ior, filters + [Q(id__in=self.products.only("id"))])
         return Product.objects.filter(filters).distinct()
 
+    def calculate(self, amount):
+        """
+        Calculates the discount for the given amount (e.g. a product price).
+        """
+        if self.discount_deduct is not None:
+            # Don't apply to amounts that would be negative after
+            # deduction.
+            if self.discount_deduct < amount:
+                return self.discount_deduct
+        elif self.discount_percent is not None:
+            return amount / Decimal("100") * self.discount_percent
+        return 0
+
     def get_total(self, user, cart):
         """
         Discount subclasses should be able to calculate their totals (with the
         exception of ``Sale``).
         """
-        return 0
+        return cart.calculate_discount(self)
 
     def update_session(self, request):
         """
-        Stores common discount variables in session, for saving with order.
+        Stores common discount variables in session, to be saved with order.
+        Free shipping is common to many, discounts, so we handle it here
+        conditionally.
         """
         total = self.get_total(request.user, request.cart)
         request.session["discount_type"] = unicode(self)
         request.session["discount_total"] = -total
+        try:
+            free_shipping = self.free_shipping
+        except AttributeError:
+            pass
+        else:
+            if free_shipping:
+                set_shipping(request, _("Free shipping"), 0)
+            request.session["free_shipping"] = free_shipping
 
 
 class Sale(Discount):
@@ -849,26 +872,10 @@ class DiscountCode(Discount):
         verbose_name = _("Discount code")
         verbose_name_plural = _("Discount codes")
 
-    def calculate(self, amount):
-        """
-        Calculates the discount for the given amount.
-        """
-        if self.discount_deduct is not None:
-            # Don't apply to amounts that would be negative after
-            # deduction.
-            if self.discount_deduct < amount:
-                return self.discount_deduct
-        elif self.discount_percent is not None:
-            return amount / Decimal("100") * self.discount_percent
-        return 0
-
     def get_total(self, user, cart):
         return cart.calculate_discount(self)
 
     def update_session(self, request):
-        if self.free_shipping:
-            set_shipping(request, _("Free shipping"), 0)
-        request.session["free_shipping"] = self.free_shipping
         request.session["discount_code"] = self.code
         super(DiscountCode, self).update_session(request)
 
@@ -888,16 +895,38 @@ class LoyaltyDiscount(Discount):
         verbose_name_plural = _("Loyalty discounts")
 
     def get_total(self, user, cart):
-        item_total = cart.total_price()
-        if self.discount_deduct is not None:
-            if self.discount_deduct < item_total:
-                return self.discount_deduct
-        elif self.discount_percent is not None:
-            return item_total / Decimal("100") * self.discount_percent
-        return 0
+        return cart.calculate_discount(self)
 
-    def update_session(self, request):
-        if self.free_shipping:
-            set_shipping(request, _("Free shipping"), 0)
-        request.session["free_shipping"] = self.free_shipping
-        super(LoyaltyDiscount, self).update_session(request)
+
+class FacebookDiscount(Discount):
+    """
+    Discounts based on Facebook connections.
+
+    Requires the "official" Python SDK:
+        https://github.com/pythonforfacebook/facebook-sdk/.
+
+    To make discounts work you'll need to create an app on Facebook, configure
+    its ``FACEBOOK_APP_ID`` and ``FACEBOOK_APP_SECRET`` in settings, and make
+    a page (possibly displayed on a Facebook canvas) that will login users to
+    Facebook and request permissions to read connections of kinds you want
+    to check (e.g. through Javascript SDK).
+    """
+    connection = fields.CharField(_("Connection type"), max_length=32,
+        help_text=_("Facebook connection kind, such as ``likes``, ``events``, "
+                    "``friends`` or ``games``."))
+    target_id = fields.CharField(_("Connection id"), max_length=64,
+        help_text=_("Open Graph id of an object user is to be connected with"
+                    "to be eliglible for the discount."))
+    free_shipping = models.BooleanField(_("Free shipping"))
+
+    objects = managers.FacebookDiscountManager()
+
+    class Meta:
+        verbose_name = _("Facebook discount")
+        verbose_name_plural = _("Facebook discounts")
+
+    def get_total(self, user, cart):
+        return cart.calculate_discount(self)
+
+
+from cartridge.attributes.models import (attributes_hash, AttributeValue)
