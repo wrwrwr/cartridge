@@ -720,11 +720,11 @@ msgstr ""
 
 #: models.py:966
 msgid "Facebook discount"
-msgstr "Rabat Facebook-owy"
+msgstr "Rabat Facebookowy"
 
 #: models.py:967
 msgid "Facebook discounts"
-msgstr "Rabaty Facebook-owe"
+msgstr "Rabaty Facebookowe"
 
 #: urls.py:7
 msgid "^product/(?P<slug>.*)/$"
