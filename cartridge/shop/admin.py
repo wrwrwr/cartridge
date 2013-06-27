@@ -45,7 +45,7 @@ from cartridge.shop.forms import ProductVariationAdminFormset
 from cartridge.shop.forms import DiscountAdminForm, ImageWidget, MoneyWidget
 from cartridge.shop.models import (
     Category, Product, ProductImage, ProductVariation, ProductOption,
-    Order, OrderItem, Sale, DiscountCode, LoyaltyDiscount)
+    Order, OrderItem, Sale, DiscountCode, LoyaltyDiscount, FacebookDiscount)
 from cartridge.shop.utils import order_totals_fields
 
 
@@ -322,25 +322,48 @@ class DiscountCodeAdmin(TranslationAdmin):
 
 
 class LoyaltyDiscountAdmin(TranslationAdmin):
-    list_display = ("title", "active", "discount_deduct", "discount_percent",
-        "min_purchase", "min_purchases", "free_shipping", "valid_from",
-        "valid_to")
-    list_editable = ("active", "discount_deduct", "discount_percent",
-        "min_purchase", "min_purchases", "free_shipping", "valid_from",
-        "valid_to")
+    list_display = ("title", "active", "valid_from", "valid_to",
+        "min_purchase", "min_purchases",
+        "discount_deduct", "discount_percent", "free_shipping",)
+    list_editable = ("active", "valid_from", "valid_to",
+        "min_purchase", "min_purchases",
+        "discount_deduct", "discount_percent", "free_shipping",)
     filter_horizontal = ("categories", "products")
     formfield_overrides = {MoneyField: {"widget": MoneyWidget}}
     form = DiscountAdminForm
     fieldsets = (
         (None,
-            {"fields": ("title", "active", "min_purchase", "min_purchases")}),
+            {"fields": ("title", "active", "valid_from", "valid_to")}),
+        (_("Check cart and previous orders"),
+            {"fields": ("min_purchase", "min_purchases")}),
         (_("Apply to product and/or products in categories"),
             {"fields": ("products", "categories")}),
         (_("Reduce unit price by"),
             {"fields": (("discount_deduct", "discount_percent"),)}),
         (None, {"fields": ("free_shipping",)}),
-        (_("Valid for"),
-            {"fields": (("valid_from", "valid_to"),)}),
+    )
+
+
+class FacebookDiscountAdmin(TranslationAdmin):
+    list_display = ("title", "active", "valid_from", "valid_to",
+        "connection", "target_id",
+        "discount_deduct", "discount_percent", "free_shipping",)
+    list_editable = ("active", "valid_from", "valid_to",
+        "connection", "target_id",
+        "discount_deduct", "discount_percent", "free_shipping",)
+    filter_horizontal = ("categories", "products")
+    formfield_overrides = {MoneyField: {"widget": MoneyWidget}}
+    form = DiscountAdminForm
+    fieldsets = (
+        (None,
+            {"fields": ("title", "active", "valid_from", "valid_to")}),
+        (_("Check if the user has connection"),
+            {"fields": ("connection", "target_id")}),
+        (_("Apply to product and/or products in categories"),
+            {"fields": ("products", "categories")}),
+        (_("Reduce unit price by"),
+            {"fields": (("discount_deduct", "discount_percent"),)}),
+        (None, {"fields": ("free_shipping",)}),
     )
 
 
@@ -352,3 +375,4 @@ admin.site.register(Order, OrderAdmin)
 admin.site.register(Sale, SaleAdmin)
 admin.site.register(DiscountCode, DiscountCodeAdmin)
 admin.site.register(LoyaltyDiscount, LoyaltyDiscountAdmin)
+admin.site.register(FacebookDiscount, FacebookDiscountAdmin)

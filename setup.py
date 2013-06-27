@@ -41,6 +41,7 @@ try:
             "mezzanine >= 1.4.4",
             "pisa >= 3.0.33",
             "reportlab >= 2.1",
+            "facebook-sdk >= 0.4",
         ],
 
         classifiers=[
