@@ -40,6 +40,7 @@ try:
         install_requires=[
             "mezzanine >= 1.4.4",
             "pisa >= 3.0.33",
+            "facebook-sdk >= 0.4",
         ],
 
         classifiers=[
