@@ -44,8 +44,8 @@ from cartridge.shop.forms import ProductAdminForm, ProductVariationAdminForm
 from cartridge.shop.forms import ProductVariationAdminFormset
 from cartridge.shop.forms import DiscountAdminForm, ImageWidget, MoneyWidget
 from cartridge.shop.models import (
-    Category, Product, ProductImage, ProductVariation, ProductOption,
-    Order, OrderItem, Sale, DiscountCode, LoyaltyDiscount, FacebookDiscount)
+    Category, Product, ProductImage, ProductVariation, ProductOption, Order,
+    OrderItem, Sale, DiscountCode, Voucher, LoyaltyDiscount, FacebookDiscount)
 from cartridge.shop.utils import order_totals_fields
 
 
@@ -281,90 +281,83 @@ class OrderAdmin(admin.ModelAdmin):
     )
 
 
-class SaleAdmin(TranslationAdmin):
-    list_display = ("title", "active", "discount_deduct", "discount_percent",
-        "discount_exact", "valid_from", "valid_to")
-    list_editable = ("active", "discount_deduct", "discount_percent",
-        "discount_exact", "valid_from", "valid_to")
+class DiscountAdmin(TranslationAdmin):
+    list_display = ("title", "active", "valid_from", "valid_to",
+                    "discount_deduct", "discount_percent", "discount_exact")
+    list_editable = ("active", "valid_from", "valid_to",
+                     "discount_deduct", "discount_percent", "discount_exact")
     filter_horizontal = ("categories", "products")
     formfield_overrides = {MoneyField: {"widget": MoneyWidget}}
     form = DiscountAdminForm
     fieldsets = (
-        (None, {"fields": ("title", "active")}),
+        (None, {"fields": ("title", "active", "valid_from", "valid_to")}),
         (_("Apply to product and/or products in categories"),
             {"fields": ("products", "categories")}),
         (_("Reduce unit price by"),
             {"fields": (("discount_deduct", "discount_percent",
             "discount_exact"),)}),
-        (_("Sale period"), {"fields": (("valid_from", "valid_to"),)}),
     )
 
 
-class DiscountCodeAdmin(TranslationAdmin):
-    list_display = ("title", "active", "code", "discount_deduct",
-        "discount_percent", "min_purchase", "free_shipping", "valid_from",
-        "valid_to")
-    list_editable = ("active", "code", "discount_deduct", "discount_percent",
-        "min_purchase", "free_shipping", "valid_from", "valid_to")
-    filter_horizontal = ("categories", "products")
-    formfield_overrides = {MoneyField: {"widget": MoneyWidget}}
-    form = DiscountAdminForm
-    fieldsets = (
-        (None, {"fields": ("title", "active", "code")}),
-        (_("Apply to product and/or products in categories"),
-            {"fields": ("products", "categories")}),
-        (_("Reduce unit price by"),
-            {"fields": (("discount_deduct", "discount_percent"),)}),
-        (None, {"fields": (("min_purchase", "free_shipping"),)}),
-        (_("Valid for"),
-            {"fields": (("valid_from", "valid_to", "uses_remaining"),)}),
-    )
+class SaleAdmin(DiscountAdmin):
+    pass
 
 
-class LoyaltyDiscountAdmin(TranslationAdmin):
-    list_display = ("title", "active", "valid_from", "valid_to",
-        "min_purchase", "min_purchases",
-        "discount_deduct", "discount_percent", "free_shipping",)
-    list_editable = ("active", "valid_from", "valid_to",
-        "min_purchase", "min_purchases",
-        "discount_deduct", "discount_percent", "free_shipping",)
-    filter_horizontal = ("categories", "products")
-    formfield_overrides = {MoneyField: {"widget": MoneyWidget}}
-    form = DiscountAdminForm
-    fieldsets = (
-        (None,
-            {"fields": ("title", "active", "valid_from", "valid_to")}),
-        (_("Check cart and previous orders"),
-            {"fields": ("min_purchase", "min_purchases")}),
-        (_("Apply to product and/or products in categories"),
-            {"fields": ("products", "categories")}),
-        (_("Reduce unit price by"),
-            {"fields": (("discount_deduct", "discount_percent"),)}),
-        (None, {"fields": ("free_shipping",)}),
-    )
+discount_code_list = list(DiscountAdmin.list_display)
+discount_code_list[4:4] = ("code", "uses_remaining", "min_purchase")
+discount_code_list.append("free_shipping")
+discount_code_fieldsets = list(DiscountAdmin.fieldsets)
+discount_code_fieldsets += (
+    (None, {"fields": ("free_shipping",)}),
+    (_("Code"), {"fields": ("code", "uses_remaining", "min_purchase")}))
+
+class DiscountCodeAdmin(DiscountAdmin):
+    list_display = discount_code_list
+    list_editable = discount_code_list[1:]
+    fieldsets = discount_code_fieldsets
 
 
-class FacebookDiscountAdmin(TranslationAdmin):
-    list_display = ("title", "active", "valid_from", "valid_to",
-        "connection", "target_id",
-        "discount_deduct", "discount_percent", "free_shipping",)
-    list_editable = ("active", "valid_from", "valid_to",
-        "connection", "target_id",
-        "discount_deduct", "discount_percent", "free_shipping",)
-    filter_horizontal = ("categories", "products")
-    formfield_overrides = {MoneyField: {"widget": MoneyWidget}}
-    form = DiscountAdminForm
-    fieldsets = (
-        (None,
-            {"fields": ("title", "active", "valid_from", "valid_to")}),
-        (_("Check if the user has connection"),
-            {"fields": ("connection", "target_id")}),
-        (_("Apply to product and/or products in categories"),
-            {"fields": ("products", "categories")}),
-        (_("Reduce unit price by"),
-            {"fields": (("discount_deduct", "discount_percent"),)}),
-        (None, {"fields": ("free_shipping",)}),
-    )
+loyalty_discount_list = list(DiscountAdmin.list_display)
+loyalty_discount_list[4:4] = ("min_purchase", "min_purchases")
+loyalty_discount_list.append("free_shipping")
+loyalty_discount_fieldsets = list(DiscountAdmin.fieldsets)
+loyalty_discount_fieldsets += (
+    (None, {"fields": ("free_shipping",)}),
+    (_("Cart and previous orders value"),
+     {"fields": ("min_purchase", "min_purchases")}))
+
+class LoyaltyDiscountAdmin(DiscountAdmin):
+    list_display = loyalty_discount_list
+    list_editable = loyalty_discount_list[1:]
+    fieldsets = loyalty_discount_fieldsets
+
+
+voucher_list = list(DiscountAdmin.list_display)
+voucher.insert(3, "min_purchase")
+voucher_list.append("free_shipping")
+voucher_fieldsets = list(DiscountAdmin.fieldsets)
+voucher_fieldsets += (
+    (None, {"fields": ("free_shipping",)}),
+    (_("Cart value"), {"fields": ("min_purchase",)}))
+
+class VoucherAdmin(DiscountAdmin):
+    list_display = voucher_list
+    list_editable = voucher_list[1:]
+    fieldsets = voucher_fieldsets
+
+
+facebook_discount_list = list(DiscountAdmin.list_display)
+facebook_discount[4:4] = ("connection", "target_id")
+facebook_discount_list.append("free_shipping")
+facebook_discount_fieldsets = list(DiscountAdmin.fieldsets)
+facebook_discount_fieldsets += (
+    (None, {"fields": ("free_shipping",)}),
+    (_("Facebook connection"), {"fields": ("connection", "target_id",)}))
+
+class FacebookDiscountAdmin(DiscountAdmin):
+    list_display = facebook_discount_list
+    list_editable = facebook_discount_list[1:]
+    fieldsets = facebook_discount_fieldsets
 
 
 admin.site.register(Category, CategoryAdmin)
@@ -374,5 +367,6 @@ if settings.SHOP_USE_VARIATIONS:
 admin.site.register(Order, OrderAdmin)
 admin.site.register(Sale, SaleAdmin)
 admin.site.register(DiscountCode, DiscountCodeAdmin)
+admin.site.register(Voucher, VoucherAdmin)
 admin.site.register(LoyaltyDiscount, LoyaltyDiscountAdmin)
 admin.site.register(FacebookDiscount, FacebookDiscountAdmin)

@@ -1,7 +1,8 @@
 
 from cartridge.shop.models import (
     Product, ProductImage, ProductOption, Category, SelectedProduct, CartItem,
-    OrderItem, Discount, Sale, DiscountCode, LoyaltyDiscount, FacebookDiscount)
+    OrderItem, Discount, Sale, DiscountCode, Voucher, LoyaltyDiscount,
+    FacebookDiscount)
 
 from modeltranslation.translator import TranslationOptions, translator
 
@@ -38,4 +39,4 @@ translator.register(CartItem, CartItemTranslationOptions)
 translator.register(Discount, DiscountTranslationOptions)
 translator.register(
     (Category, OrderItem,
-     Sale, DiscountCode, LoyaltyDiscount, FacebookDiscount))
+     Sale, DiscountCode, Voucher, LoyaltyDiscount, FacebookDiscount))
