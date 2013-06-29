@@ -290,7 +290,7 @@ class DiscountForm(forms.ModelForm):
                         (Q(voucher__min_purchase__isnull=True) |
                          Q(voucher__min_purchase__lte=cart.total_price())))
                     voucher_code = VoucherCode.objects.filter(
-                        voucher_valid).get(code=code)
+                        voucher_valid).get(code=code, used=False)
                     self._discount = voucher_code
                 except VoucherCode.DoesNotExist:
                     error = _("The discount code entered is invalid.")
