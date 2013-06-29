@@ -480,7 +480,7 @@ class Order(models.Model):
         if code:
             DiscountCode.objects.active().filter(code=code).update(
                 uses_remaining=F('uses_remaining') - 1)
-            VoucherCode.objects.filter(code=code).delete()
+            VoucherCode.objects.filter(code=code).update(used=True)
         for field in self.session_fields:
             if field in request.session:
                 del request.session[field]
@@ -902,6 +902,7 @@ class VoucherCode(models.Model):
     """
     voucher = models.ForeignKey(Voucher)
     code = fields.DiscountCodeField(_("Code"), unique=True)
+    used = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = _("Voucher code")

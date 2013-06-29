@@ -323,7 +323,7 @@ class LoyaltyDiscountAdmin(DiscountAdmin):
 
 
 voucher_list = list(DiscountAdmin.list_display)
-voucher.insert(3, "min_purchase")
+voucher_list.insert(3, "min_purchase")
 voucher_list.append("free_shipping")
 voucher_fieldsets = list(DiscountAdmin.fieldsets)
 voucher_fieldsets += (
@@ -337,7 +337,7 @@ class VoucherAdmin(DiscountAdmin):
 
 
 facebook_discount_list = list(DiscountAdmin.list_display)
-facebook_discount[4:4] = ("connection", "target_id")
+facebook_discount_list[4:4] = ("connection", "target_id")
 facebook_discount_list.append("free_shipping")
 facebook_discount_fieldsets = list(DiscountAdmin.fieldsets)
 facebook_discount_fieldsets += (
