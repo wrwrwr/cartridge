@@ -311,6 +311,7 @@ discount_code_fieldsets += (
     (None, {"fields": ("free_shipping",)}),
     (_("Code"), {"fields": ("code", "uses_remaining", "min_purchase")}))
 
+
 class DiscountCodeAdmin(DiscountAdmin):
     list_display = discount_code_list
     list_editable = discount_code_list[1:]
@@ -326,6 +327,7 @@ loyalty_discount_fieldsets += (
     (_("Cart and previous orders value"),
      {"fields": ("min_purchase", "min_purchases")}))
 
+
 class LoyaltyDiscountAdmin(DiscountAdmin):
     list_display = loyalty_discount_list
     list_editable = loyalty_discount_list[1:]
@@ -340,6 +342,7 @@ voucher_fieldsets += (
     (None, {"fields": ("free_shipping",)}),
     (_("Cart value"), {"fields": ("min_purchase",)}))
 
+
 class VoucherAdmin(DiscountAdmin):
     list_display = voucher_list
     list_editable = voucher_list[1:]
@@ -353,6 +356,7 @@ facebook_discount_fieldsets = list(DiscountAdmin.fieldsets)
 facebook_discount_fieldsets += (
     (None, {"fields": ("free_shipping",)}),
     (_("Facebook connection"), {"fields": ("connection", "target_id",)}))
+
 
 class FacebookDiscountAdmin(DiscountAdmin):
     list_display = facebook_discount_list
