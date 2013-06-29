@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cartridge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-06-27 17:32+0200\n"
+"POT-Creation-Date: 2013-06-29 17:09+0200\n"
 "PO-Revision-Date: 2013-03-30 15:07+0000\n"
 "Last-Translator: Sebastián Ramírez Magrí <sebasmagri@gmail.com>\n"
 "Language-Team: Polish (http://www.transifex.com/projects/p/cartridge/"
@@ -52,29 +52,29 @@ msgstr "Szczegóły do wysyłki"
 msgid "Order totals"
 msgstr "Podsumy zamówienia"
 
-#: admin.py:294 admin.py:314 admin.py:339 admin.py:362
+#: admin.py:294
 msgid "Apply to product and/or products in categories"
 msgstr "Zastosuj do produktu i/lub produktów w kategoriach"
 
-#: admin.py:296 admin.py:316 admin.py:341 admin.py:364
+#: admin.py:296
 msgid "Reduce unit price by"
 msgstr "Obniż cenę za sztukę o"
 
-#: admin.py:299
-msgid "Sale period"
-msgstr "Okres wyprzedaży"
+#: admin.py:312 models.py:903 models.py:945
+msgid "Code"
+msgstr "Kod"
 
-#: admin.py:319
-msgid "Valid for"
-msgstr "Ważne do"
+#: admin.py:327
+msgid "Cart and previous orders value"
+msgstr "Wartość koszyka i wcześniejszych zamówień"
 
-#: admin.py:337
-msgid "Check cart and previous orders"
-msgstr "Koszyk i wcześniejsze zamówienia"
+#: admin.py:343
+msgid "Cart value"
+msgstr "Wartość koszyka"
 
-#: admin.py:360
-msgid "Check if the user has connection"
-msgstr "Połączenia użytkownika"
+#: admin.py:358
+msgid "Facebook connection"
+msgstr "Powiązania na Facebooku"
 
 #: checkout.py:43
 msgid "Flat rate shipping"
@@ -237,8 +237,8 @@ msgid ""
 "A comma separated list of email addresses that will receive an email "
 "notification each time a new order is placed."
 msgstr ""
-"Lista adresów, na które będzie wysyłane powiadomienie, za każdym razem "
-"gdy złożone zostaje nowe zamówienie"
+"Lista adresów, na które będzie wysyłane powiadomienie, za każdym razem gdy "
+"złożone zostaje nowe zamówienie"
 
 #: defaults.py:254
 msgid "Attach invoice documents to order receipts"
@@ -316,69 +316,69 @@ msgstr "Włącz listy życzeń"
 msgid "SKU"
 msgstr "Kod"
 
-#: forms.py:26 templates/shop/product.html:83
+#: forms.py:28 templates/shop/product.html:83
 msgid "The selected options are currently unavailable."
 msgstr "Wybrany wariant jest chwilowo niedostępny."
 
-#: forms.py:27
+#: forms.py:29
 msgid "The selected options are currently not in stock."
 msgstr "Wybranego wariantu nie ma w tej chwili na stanie."
 
-#: forms.py:28
+#: forms.py:30
 msgid "The selected quantity is currently unavailable."
 msgstr "Wybrana ilość jest chwilowo niedostepna."
 
-#: forms.py:38 models.py:648 templates/shop/order_history.html:20
+#: forms.py:40 models.py:649 templates/shop/order_history.html:20
 msgid "Quantity"
 msgstr "Ilość"
 
-#: forms.py:286
+#: forms.py:297
 msgid "The discount code entered is invalid."
 msgstr "Wpisany kod rabatowy jest nieprawidłowy."
 
-#: forms.py:308
+#: forms.py:319
 msgid "My delivery details are the same as my billing details"
 msgstr "Moje dane do wysyłki są takie same jak dane płatnika"
 
-#: forms.py:310
+#: forms.py:321
 msgid "Remember my address for next time"
 msgstr "Zapamiętaj mój adres na przyszłość"
 
-#: forms.py:311
+#: forms.py:322
 msgid "Cardholder name"
 msgstr "Nazwa posiadacza karty"
 
-#: forms.py:312
+#: forms.py:323
 msgid "Card type"
 msgstr "Rodzaj karty"
 
-#: forms.py:315
+#: forms.py:326
 msgid "Card number"
 msgstr "Numer karty"
 
-#: forms.py:320
+#: forms.py:331
 msgid "CCV"
 msgstr "Kod karty"
 
-#: forms.py:320
+#: forms.py:331
 msgid ""
 "A security code, usually the last 3 digits found on the back of your card."
 msgstr ""
 "Kod bezpieczeństwa, zwykle ostatnie 3 cyfry znajdujące się na odwrocie karty."
 
-#: forms.py:419
+#: forms.py:430
 msgid "A valid expiry date is required."
 msgstr "Wymagana jest data ważności karty."
 
-#: forms.py:536
+#: forms.py:547
 msgid "Only one variation can be checked as the default."
 msgstr "Tylko jeden wariant może zostać zaznaczony jako domyślny."
 
-#: forms.py:549
+#: forms.py:560
 msgid "Please enter a value for only one type of reduction."
 msgstr "Proszę wpisać wartość tylko dla jednego rodzaju zniżki."
 
-#: models.py:42 models.py:649
+#: models.py:42 models.py:650
 msgid "Unit price"
 msgstr "Cena"
 
@@ -431,11 +431,11 @@ msgstr "Ocena"
 msgid "Product"
 msgstr "Produkt"
 
-#: models.py:117 models.py:319 models.py:733
+#: models.py:117 models.py:319 models.py:734
 msgid "Products"
 msgstr "Produkty"
 
-#: models.py:158 models.py:647 management/commands/product_db.py:32
+#: models.py:158 models.py:648 management/commands/product_db.py:32
 msgid "Description"
 msgstr "Opis"
 
@@ -463,7 +463,7 @@ msgstr "Atrybuty produktów"
 msgid "Featured Image"
 msgstr "Wybrany obraz"
 
-#: models.py:324 models.py:807
+#: models.py:324 models.py:808
 msgid "Sale"
 msgstr "Wyprzedaż"
 
@@ -559,7 +559,7 @@ msgstr "Produkty łącznie"
 msgid "Discount type"
 msgstr "Rodzaj rabatu"
 
-#: models.py:419 models.py:913
+#: models.py:419 models.py:914
 msgid "Discount code"
 msgstr "Kod rabatowy"
 
@@ -593,72 +593,68 @@ msgstr "Zamówienia"
 msgid "Billing name"
 msgstr "Nazwa płatnika"
 
-#: models.py:526 templates/admin/shop/order/change_form.html:15
+#: models.py:527 templates/admin/shop/order/change_form.html:15
 #: templates/shop/complete.html:80
 msgid "Download PDF invoice"
 msgstr "Pobierz fakturę w formacie PDF"
 
-#: models.py:534
+#: models.py:535
 msgid "Last updated"
 msgstr "Ostatnio zmienione"
 
-#: models.py:650
+#: models.py:651
 msgid "Total price"
 msgstr "Łączna cena"
 
-#: models.py:730 management/commands/product_db.py:30
+#: models.py:731 management/commands/product_db.py:30
 msgid "Title"
 msgstr "Tytuł"
 
-#: models.py:731
+#: models.py:732
 msgid "Active"
 msgstr "Aktywny"
 
-#: models.py:736
+#: models.py:737
 msgid "Categories"
 msgstr "Kategorie"
 
-#: models.py:737
+#: models.py:738
 msgid "Reduce by amount"
 msgstr "Obniż o kwotę"
 
-#: models.py:738
+#: models.py:739
 msgid "Reduce by percent"
 msgstr "Obniż o procent"
 
-#: models.py:741
+#: models.py:742
 msgid "Reduce to amount"
 msgstr "Obniż do kwoty"
 
-#: models.py:742
+#: models.py:743
 msgid "Valid from"
 msgstr "Ważne od"
 
-#: models.py:743
+#: models.py:744
 msgid "Valid to"
 msgstr "Ważne do"
 
-#: models.py:795 models.py:904 models.py:930 models.py:961
+#: models.py:796 models.py:905 models.py:930 models.py:963 models.py:994
 msgid "Free shipping"
 msgstr "Darmowa wysyłka"
 
-#: models.py:808
+#: models.py:809
 msgid "Sales"
 msgstr "Wyprzedaże"
 
-#: models.py:902
-msgid "Code"
-msgstr "Kod"
-
-#: models.py:903
+#: models.py:904 models.py:929
 msgid "Minimum total purchase"
 msgstr "Minimalna kwota zakupów"
 
-#: models.py:905
+#: models.py:906
 msgid "Uses remaining"
 msgstr "Pozostałe użycia"
 
-#: models.py:906
+#: models.py:907
 msgid ""
 "If you wish to limit the number of times a code may be used, set this value. "
 "It will be decremented upon each use."
@@ -666,19 +662,35 @@ msgstr ""
 "Wpisz wartość jeśli chcesz ograniczyć ilość razy, jaką kod może zostać "
 "wykorzystany. Po każdym użyciu wartość będzię zmniejszana."
 
-#: models.py:914
+#: models.py:915
 msgid "Discount codes"
 msgstr "Kody rabatowe"
 
-#: models.py:925
+#: models.py:933
+msgid "Voucher"
+msgstr "Voucher"
+
+#: models.py:934
+msgid "Vouchers"
+msgstr "Vouchery"
+
+#: models.py:949
+msgid "Voucher code"
+msgstr "Kod na voucherze"
+
+#: models.py:950
+msgid "Voucher codes"
+msgstr "Kody na voucherach"
+
+#: models.py:958
 msgid "Minimum cart subtotal"
 msgstr "Minimalna kwota zakupów"
 
-#: models.py:926
+#: models.py:959
 msgid "Minimum orders subtotal"
 msgstr "Minimalna suma zamówień"
 
-#: models.py:927
+#: models.py:960
 msgid ""
 "Minimum sum of subtotals for orders completed by client. Only purchases made "
 "under the currently logged account are considered."
@@ -686,43 +698,43 @@ msgstr ""
 "Minimalna suma podsum zamówień zrealizowanych przez klienta. Uwzględniane są "
 "tylko zamówienia wykonane z bieżącym kontem."
 
-#: models.py:935
+#: models.py:968
 msgid "Loyalty discount"
 msgstr "Rabat lojalnościowy"
 
-#: models.py:936
+#: models.py:969
 msgid "Loyalty discounts"
 msgstr "Rabaty lojalnościowe"
 
-#: models.py:955
+#: models.py:988
 msgid "Connection type"
 msgstr "Rodzaj połączenia"
 
-#: models.py:956
+#: models.py:989
 msgid ""
 "Facebook connection kind, such as ``likes``, ``events``, ``friends`` or "
 "``games``."
 msgstr ""
-"Rodzaj połączenia na Facebooku, taki jak ``likes``, ``events``, ``friends``"
-"czy ``games``."
+"Rodzaj połączenia na Facebooku, taki jak ``likes``, ``events``, "
+"``friends``czy ``games``."
 
-#: models.py:958
+#: models.py:991
 msgid "Target id"
 msgstr "Id obiektu"
 
-#: models.py:959
+#: models.py:992
 msgid ""
 "Open Graph id of an object user is to be connected withto be eliglible for "
 "the discount."
 msgstr ""
-"Identyfikator obiektu, z którym użytkownik ma być połączony, aby kwalifikować"
-"się do przydzielenia rabatu."
+"Identyfikator obiektu, z którym użytkownik ma być połączony, aby "
+"kwalifikowaćsię do przydzielenia rabatu."
 
-#: models.py:966
+#: models.py:999
 msgid "Facebook discount"
 msgstr "Rabat Facebookowy"
 
-#: models.py:967
+#: models.py:1000
 msgid "Facebook discounts"
 msgstr "Rabaty Facebookowe"
 
