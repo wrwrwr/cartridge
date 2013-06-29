@@ -476,6 +476,11 @@ class Order(models.Model):
         delete the cart.
         """
         self.save()  # Save the transaction ID.
+        code = request.session.get('discount_code')
+        if code:
+            DiscountCode.objects.active().filter(code=code).update(
+                uses_remaining=F('uses_remaining') - 1)
+            VoucherCode.objects.filter(code=code).delete()
         for field in self.session_fields:
             if field in request.session:
                 del request.session[field]
@@ -491,10 +496,6 @@ class Order(models.Model):
             else:
                 variation.update_stock(item.quantity * -1)
                 variation.product.actions.purchased()
-        code = request.session.get('discount_code')
-        if code:
-            DiscountCode.objects.active().filter(code=code).update(
-                uses_remaining=F('uses_remaining') - 1)
         request.cart.delete()
 
     def details_as_dict(self):
@@ -878,6 +879,37 @@ class DiscountCode(Discount):
     def update_session(self, request):
         request.session["discount_code"] = self.code
         super(DiscountCode, self).update_session(request)
+
+
+class Voucher(Discount):
+    """
+    Similar to discount code, but with single-use generated codes.
+    """
+    min_purchase = fields.MoneyField(_("Minimum total purchase"))
+    free_shipping = models.BooleanField(_("Free shipping"))
+
+    class Meta:
+        verbose_name = _("Voucher")
+        verbose_name_plural = _("Vouchers")
+
+    def get_total(self, user, cart):
+        return cart.calculate_discount(self)
+
+
+class VoucherCode(models.Model):
+    """
+    Single-use discount code.
+    """
+    voucher = models.ForeignKey(Voucher)
+    code = fields.DiscountCodeField(_("Code"), unique=True)
+
+    class Meta:
+        verbose_name = _("Voucher code")
+        verbose_name_plural = _("Voucher codes")
+
+    def update_session(self, request):
+        request.session["discount_code"] = self.code
+        self.voucher.update_session(request)
 
 
 class LoyaltyDiscount(Discount):

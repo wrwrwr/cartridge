@@ -18,7 +18,8 @@ from mezzanine.core.templatetags.mezzanine_tags import thumbnail
 
 from cartridge.shop import checkout
 from cartridge.shop.models import Product, ProductOption, ProductVariation
-from cartridge.shop.models import Cart, CartItem, Order, DiscountCode
+from cartridge.shop.models import (Cart, CartItem, Order,
+                                   DiscountCode, VoucherCode)
 from cartridge.shop.utils import make_choices, set_locale, set_shipping
 
 
@@ -255,8 +256,17 @@ class DiscountForm(forms.ModelForm):
                 discount = DiscountCode.objects.get_valid(code=code, cart=cart)
                 self._discount = discount
             except DiscountCode.DoesNotExist:
-                error = _("The discount code entered is invalid.")
-                raise forms.ValidationError(error)
+                try:
+                    voucher_valid = (
+                        Q(voucher__active=True) &
+                        (Q(voucher__min_purchase__isnull=True) |
+                         Q(voucher__min_purchase__lte=cart.total_price())))
+                    voucher_code = VoucherCode.objects.filter(
+                        voucher_valid).get(code=code)
+                    self._discount = voucher_code
+                except VoucherCode.DoesNotExist:
+                    error = _("The discount code entered is invalid.")
+                    raise forms.ValidationError(error)
         return code
 
     def set_discount(self):
