@@ -910,7 +910,7 @@ class Voucher(Discount):
                 return VoucherCode.objects.create(voucher=self, code=code)
             except IntegrityError:
                 pass
-        raise RuntimeException("Couldn't find a free voucher code, consider "
+        raise RuntimeError("Couldn't find a free voucher code, consider "
                                "increasing length of your codes.")
 
     def get_total(self, user, cart):
