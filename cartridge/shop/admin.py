@@ -44,8 +44,9 @@ from cartridge.shop.forms import ProductAdminForm, ProductVariationAdminForm
 from cartridge.shop.forms import ProductVariationAdminFormset
 from cartridge.shop.forms import DiscountAdminForm, ImageWidget, MoneyWidget
 from cartridge.shop.models import (
-    Category, Product, ProductImage, ProductVariation, ProductOption, Order,
-    OrderItem, Sale, DiscountCode, Voucher, LoyaltyDiscount, FacebookDiscount)
+    Category, Product, ProductImage, ProductVariation, ProductOption,
+    Order, OrderItem, Sale, DiscountCode, Voucher, VoucherCode,
+    LoyaltyDiscount, FacebookDiscount)
 from cartridge.shop.utils import order_totals_fields
 
 
@@ -334,6 +335,10 @@ class LoyaltyDiscountAdmin(DiscountAdmin):
     fieldsets = loyalty_discount_fieldsets
 
 
+class VoucherCodeInline(TabularDynamicInlineAdmin):
+    model = VoucherCode
+
+
 voucher_list = list(DiscountAdmin.list_display)
 voucher_list.insert(3, "min_purchase")
 voucher_list.append("free_shipping")
@@ -347,6 +352,7 @@ class VoucherAdmin(DiscountAdmin):
     list_display = voucher_list
     list_editable = voucher_list[1:]
     fieldsets = voucher_fieldsets
+    inlines = (VoucherCodeInline,)
 
 
 facebook_discount_list = list(DiscountAdmin.list_display)
