@@ -962,7 +962,7 @@ class VoucherCode(models.Model):
     """
     Single-use discount code.
     """
-    voucher = models.ForeignKey(Voucher)
+    voucher = models.ForeignKey(Voucher, related_name="codes")
     code = fields.DiscountCodeField(_("Code"), unique=True)
     used = models.BooleanField(default=False)
 

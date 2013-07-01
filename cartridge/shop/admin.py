@@ -349,10 +349,15 @@ voucher_fieldsets += (
 
 
 class VoucherAdmin(DiscountAdmin):
-    list_display = voucher_list
+    list_display = voucher_list + ["codes_count"]
     list_editable = voucher_list[1:]
     fieldsets = voucher_fieldsets
     inlines = (VoucherCodeInline,)
+
+    def codes_count(self, voucher):
+        return "%d / %d" % (voucher.codes.filter(used=True).count(),
+                            voucher.codes.all().count())
+    codes_count.short_description = _("Codes count")
 
 
 facebook_discount_list = list(DiscountAdmin.list_display)
