@@ -20,7 +20,7 @@ from mezzanine.core.templatetags.mezzanine_tags import thumbnail
 from cartridge.shop import checkout
 from cartridge.shop.models import Product, ProductOption, ProductVariation
 from cartridge.shop.models import (Cart, CartItem, Order,
-                                   DiscountCode, VoucherCode)
+                                   DiscountCode, Voucher, VoucherCode)
 from cartridge.shop.utils import make_choices, set_locale, set_shipping
 
 
@@ -368,8 +368,9 @@ class OrderForm(FormsetForm, DiscountForm):
 
         # Hide Discount Code field if no codes are active.
         settings.use_editable()
-        no_discounts = DiscountCode.objects.active().count() == 0
-        if no_discounts or not settings.SHOP_DISCOUNT_FIELD_IN_CHECKOUT:
+        discounts = (DiscountCode.objects.active().count() > 0 or
+                     Voucher.objects.active().count() > 0)
+        if not settings.SHOP_DISCOUNT_FIELD_IN_CHECKOUT or not discounts:
             self.fields["discount_code"].widget = forms.HiddenInput()
 
         # Determine which sets of fields to hide for each checkout step.
