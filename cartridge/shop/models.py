@@ -966,7 +966,7 @@ class VoucherCode(models.Model):
     """
     voucher = models.ForeignKey(Voucher, related_name="codes")
     code = fields.DiscountCodeField(_("Code"), unique=True)
-    used = models.BooleanField(default=False)
+    used = models.BooleanField(_("Used"), default=False)
 
     class Meta:
         verbose_name = _("Voucher code")
