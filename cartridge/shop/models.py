@@ -894,6 +894,8 @@ class Voucher(Discount):
         verbose_name = _("Voucher")
         verbose_name_plural = _("Vouchers")
 
+    objects = managers.DiscountManager()
+
     def new_code(self):
         """
         Generates a new pseudorandom voucher code.
