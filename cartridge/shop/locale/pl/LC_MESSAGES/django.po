@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cartridge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-07-01 16:52+0200\n"
+"POT-Creation-Date: 2013-07-02 17:04+0200\n"
 "PO-Revision-Date: 2013-03-30 15:07+0000\n"
 "Last-Translator: Sebastián Ramírez Magrí <sebasmagri@gmail.com>\n"
 "Language-Team: Polish (http://www.transifex.com/projects/p/cartridge/"
@@ -60,7 +60,7 @@ msgstr "Zastosuj do produktu i/lub produktów w kategoriach"
 msgid "Reduce unit price by"
 msgstr "Obniż cenę za sztukę o"
 
-#: admin.py:313 models.py:905 models.py:966
+#: admin.py:313 models.py:905 models.py:968
 msgid "Code"
 msgstr "Kod"
 
@@ -378,15 +378,15 @@ msgid ""
 msgstr ""
 "Kod bezpieczeństwa, zwykle ostatnie 3 cyfry znajdujące się na odwrocie karty."
 
-#: forms.py:430
+#: forms.py:431
 msgid "A valid expiry date is required."
 msgstr "Wymagana jest data ważności karty."
 
-#: forms.py:547
+#: forms.py:548
 msgid "Only one variation can be checked as the default."
 msgstr "Tylko jeden wariant może zostać zaznaczony jako domyślny."
 
-#: forms.py:560
+#: forms.py:561
 msgid "Please enter a value for only one type of reduction."
 msgstr "Proszę wpisać wartość tylko dla jednego rodzaju zniżki."
 
@@ -650,7 +650,7 @@ msgstr "Ważne od"
 msgid "Valid to"
 msgstr "Ważne do"
 
-#: models.py:798 models.py:907 models.py:932 models.py:987 models.py:1018
+#: models.py:798 models.py:907 models.py:932 models.py:989 models.py:1020
 msgid "Free shipping"
 msgstr "Darmowa wysyłka"
 
@@ -686,23 +686,27 @@ msgstr "Voucher"
 msgid "Vouchers"
 msgstr "Vouchery"
 
-#: models.py:970
+#: models.py:969
+msgid "Used"
+msgstr "Wykorzystany"
+
+#: models.py:972
 msgid "Voucher code"
 msgstr "Kod na voucherze"
 
-#: models.py:971
+#: models.py:973
 msgid "Voucher codes"
 msgstr "Kody na voucherach"
 
-#: models.py:982
+#: models.py:984
 msgid "Minimum cart subtotal"
 msgstr "Minimalna kwota zakupów"
 
-#: models.py:983
+#: models.py:985
 msgid "Minimum orders subtotal"
 msgstr "Minimalna suma zamówień"
 
-#: models.py:984
+#: models.py:986
 msgid ""
 "Minimum sum of subtotals for orders completed by client. Only purchases made "
 "under the currently logged account are considered."
@@ -710,19 +714,19 @@ msgstr ""
 "Minimalna suma podsum zamówień zrealizowanych przez klienta. Uwzględniane są "
 "tylko zamówienia wykonane z bieżącym kontem."
 
-#: models.py:992
+#: models.py:994
 msgid "Loyalty discount"
 msgstr "Rabat lojalnościowy"
 
-#: models.py:993
+#: models.py:995
 msgid "Loyalty discounts"
 msgstr "Rabaty lojalnościowe"
 
-#: models.py:1012
+#: models.py:1014
 msgid "Connection type"
 msgstr "Rodzaj połączenia"
 
-#: models.py:1013
+#: models.py:1015
 msgid ""
 "Facebook connection kind, such as ``likes``, ``events``, ``friends`` or "
 "``games``."
@@ -730,11 +734,11 @@ msgstr ""
 "Rodzaj połączenia na Facebooku, taki jak ``likes``, ``events``, "
 "``friends``czy ``games``."
 
-#: models.py:1015
+#: models.py:1017
 msgid "Target id"
 msgstr "Id obiektu"
 
-#: models.py:1016
+#: models.py:1018
 msgid ""
 "Open Graph id of an object user is to be connected withto be eliglible for "
 "the discount."
@@ -742,11 +746,11 @@ msgstr ""
 "Identyfikator obiektu, z którym użytkownik ma być połączony, aby "
 "kwalifikowaćsię do przydzielenia rabatu."
 
-#: models.py:1023
+#: models.py:1025
 msgid "Facebook discount"
 msgstr "Rabat Facebookowy"
 
-#: models.py:1024
+#: models.py:1026
 msgid "Facebook discounts"
 msgstr "Rabaty Facebookowe"
 
