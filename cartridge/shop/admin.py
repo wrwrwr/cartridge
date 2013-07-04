@@ -36,6 +36,7 @@ from mezzanine.conf import settings
 from mezzanine.core.admin import DisplayableAdmin, TabularDynamicInlineAdmin
 from mezzanine.pages.admin import PageAdmin
 
+from cartridge.attributes.admin import ProductAttributeAdmin
 from cartridge.shop.fields import MoneyField
 from cartridge.shop.forms import ProductAdminForm, ProductVariationAdminForm
 from cartridge.shop.forms import ProductVariationAdminFormset
@@ -152,7 +153,7 @@ class ProductAdmin(DisplayableAdmin):
     filter_horizontal = ("categories", "related_products", "upsell_products")
     search_fields = ("title", "content", "categories__title",
                      "variations__sku")
-    inlines = (ProductImageAdmin, ProductVariationAdmin)
+    inlines = (ProductImageAdmin, ProductAttributeAdmin, ProductVariationAdmin)
     form = ProductAdminForm
     fieldsets = product_fieldsets
 
@@ -258,7 +259,12 @@ class OrderAdmin(admin.ModelAdmin):
                      billing_fields + shipping_fields)
     date_hierarchy = "time"
     radio_fields = {"status": admin.HORIZONTAL}
-    inlines = (OrderItemInline,)
+#   TODO: Proper attributes editing would require inlines within inlines.
+#   There's an accepted Django ticket concerning this:
+#       https://code.djangoproject.com/ticket/9025.
+#   Considering that the inlined form misses what may be the most common use
+#   case -- adding more products, replacing it with plain list won't hurt much.
+#   inlines = (OrderItemInline,)
     formfield_overrides = {MoneyField: {"widget": MoneyWidget}}
     fieldsets = (
         (_("Billing details"), {"fields": (tuple(billing_fields),)}),

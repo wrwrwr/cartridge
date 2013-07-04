@@ -86,7 +86,7 @@
 	</li>
 	{% endfor %}
 </ul>
-<form method="post" id="add-cart" class="form-horizontal form-shop">
+<form method="post" id="add-cart" class="form-horizontal form-shop"{% if add_product_form.is_multipart %} enctype="multipart/form-data"{% endif %}>
     {% csrf_token %}
     {% fields_for add_product_form %}
     <div class="form-actions clearfix">

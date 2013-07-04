@@ -49,10 +49,10 @@
     	<td align="left" valign="top">{{ item.total_price|currency }}</td>
     	<td align="left" valign="top">{{ item.quantity }}</td>
     	<td align="left" valign="top">{{ item.unit_price|currency }}</td>
-    	<td align="right">{{ item.description }}</td>
-
-
-
+    	<td align="right">
+            {{ item.description }}
+            {% include "attributes/includes/attribute_values.html" with item=item %}
+        </td>
 	</tr>
 	{% endfor %}
 	<tr>
