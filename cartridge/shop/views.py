@@ -69,13 +69,10 @@ def product(request, slug, template="shop/product.html"):
                 sku = add_product_form.variation.sku
                 if sku not in skus:
                     skus.append(sku)
-                # info(request, _("Item added to wishlist"))
-                # FIXME: With one setup setting even an empty cookie here,
-                #        causes gUnicorn to throw an UnicodeDecodeError.
-                # response = redirect("shop_wishlist")
-                # set_cookie(response, "wishlist", ",".join(skus))
-                # return response
-                info(request, "Wishlists are temporarily disabled, sorry for the inconvenience.")
+                info(request, _("Item added to wishlist"))
+                response = redirect("shop_wishlist")
+                set_cookie(response, "wishlist", ",".join(skus))
+                return response
     context = {
         "product": product,
         "editable_obj": product,
