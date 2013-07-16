@@ -138,6 +138,14 @@ class AttributeValue(PolymorphicModel):
         # in the cart.
         return unicode(self).encode('unicode_escape')
 
+    def process_subproduct_attributes(self, subproduct_attribute_values):
+        """
+        For subproduct value assigns subproduct attribute values to the value.
+        The argument may be a list of attribute values dicts (for a list of
+        subproducts) or just a single dict.
+        """
+        raise AttributeError("Only to be used with subproduct values.")
+
 
 class StringAttribute(Attribute):
     max_length = models.PositiveIntegerField(_("Max length"),
@@ -334,14 +342,12 @@ class SubproductChoiceAttribute(ChoiceAttribute):
         verbose_name = _("subproduct choice attribute")
         verbose_name_plural = _("subproduct choice attributes")
 
-    def make_value(self, value, product, quantity=1, attribute_values={}):
+    def make_value(self, value, product):
         if value != '':
             option = self.options.get(pk=value)
         else:
             option = None
-        return SubproductChoiceValue(
-            attribute=self, option=option, quantity=quantity,
-            attribute_values=attribute_values)
+        return SubproductChoiceValue(attribute=self, option=option)
 
 
 class SubproductChoiceOption(ChoiceOption):
@@ -385,33 +391,39 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
         """
         option = kwargs.get('option', None)
         quantity = kwargs.pop('quantity', 1)
-        self._attribute_values = kwargs.pop('attribute_values', {})
         super(SubproductChoiceValue, self).__init__(*args, **kwargs)
         if isinstance(option, SubproductChoiceOption):
             variation = option.subproduct.variations.all()[0]
             self.sku = variation.sku
             self.unit_price = variation.price()
-            for attribute, value in self._attribute_values.iteritems():
-                self.unit_price += value.price
-            self.price += self.unit_price
-
+            self.price = self.unit_price
             def set_description():
                 self.description = unicode(variation)
             for_all_languages(set_description)
-
-            for attribute, value in self._attribute_values.iteritems():
-                # Link attribute values to this subproduct value.
-                value.item = self
             self.quantity = quantity
 
     def save(self, *args, **kwargs):
         """
-        Save attribute values pointing at this subproduct.
+        Saves attribute values pointing at this subproduct.
         """
         super(SubproductChoiceValue, self).save(*args, **kwargs)
         for attribute, value in self._attribute_values.iteritems():
+            value.item = value.item # TODO: A bit surprising... Item is set in
+                                    #       process_subproduct_attributes, but
+                                    #       item_id doesn't get propagated.
             value.save()
         self._attribute_values = {}
+
+    def process_subproduct_attributes(self, subproduct_attribute_values):
+        """
+        Stores subproduct attributes for saving (when we are saved).
+        Sets item of subproduct values and updates price.
+        """
+        self._attribute_values = subproduct_attribute_values
+        for attribute, value in self._attribute_values.iteritems():
+            value.item = self
+            self.unit_price += value.price
+            self.price += value.price
 
 
 class ImageAttribute(Attribute):
@@ -553,6 +565,14 @@ class ListValue(AttributeValue):
             yield value
         for value in self.values.all():
             yield value.value
+
+    def process_subproduct_attributes(self, subproduct_attribute_values):
+        """
+        Processes subproduct attributes for each subvalue.
+        """
+        for subvalue, attribute_values in zip(self.subvalues(),
+                                              subproduct_attribute_values):
+            subvalue.process_subproduct_attributes(attribute_values)
 
 
 class ListSubvalue(models.Model):

@@ -59,8 +59,12 @@ def product(request, slug, template="shop/product.html"):
             if to_cart:
                 quantity = add_product_form.cleaned_data["quantity"]
                 attributes = add_product_form.cleaned_data["attribute_values"]
-                request.cart.add_item(add_product_form.variation, quantity,
-                                      attribute_values=attributes)
+                subproduct_attributes = request.session.get(
+                    "subproduct_attribute_values", {}).get(product.id, {})
+                request.cart.add_item(
+                    add_product_form.variation, quantity,
+                    attribute_values=attributes,
+                    subproduct_attribute_values=subproduct_attributes)
                 recalculate_discount(request)
                 info(request, _("Item added to cart"))
                 return redirect("shop_cart")
