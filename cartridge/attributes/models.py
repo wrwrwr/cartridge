@@ -397,6 +397,7 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
             self.sku = variation.sku
             self.unit_price = variation.price()
             self.price = self.unit_price
+
             def set_description():
                 self.description = unicode(variation)
             for_all_languages(set_description)
@@ -408,9 +409,9 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
         """
         super(SubproductChoiceValue, self).save(*args, **kwargs)
         for attribute, value in self._attribute_values.iteritems():
-            value.item = value.item # TODO: A bit surprising... Item is set in
-                                    #       process_subproduct_attributes, but
-                                    #       item_id doesn't get propagated.
+            value.item = value.item  # TODO: A bit surprising... Item is set
+                                     #       in process_subproduct_attributes,
+                                     #       but item_id doesn't get set.
             value.save()
         self._attribute_values = {}
 
