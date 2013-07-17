@@ -415,6 +415,13 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
             value.save()
         self._attribute_values = {}
 
+    def __unicode__(self):
+        text = unicode(self.option)
+        vavs = self.visible_attribute_values()
+        if vavs:
+            text += ' ({})'.format('; '.join(str(v) for v in vavs))
+        return text
+
     def process_subproduct_attributes(self, subproduct_attribute_values):
         """
         Stores subproduct attributes for saving (when we are saved).
