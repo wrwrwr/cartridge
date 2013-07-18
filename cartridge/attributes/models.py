@@ -419,7 +419,7 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
         text = unicode(self.option)
         vavs = self.visible_attribute_values()
         if vavs:
-            text += ' ({})'.format('; '.join(str(v) for v in vavs))
+            text += u' ({})'.format(u'; '.join(unicode(v) for v in vavs))
         return text
 
     def process_subproduct_attributes(self, subproduct_attribute_values):
