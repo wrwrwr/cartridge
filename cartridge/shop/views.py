@@ -58,7 +58,7 @@ def product(request, slug, template="shop/product.html"):
                 quantity = add_product_form.cleaned_data["quantity"]
                 attributes = add_product_form.cleaned_data["attribute_values"]
                 subproduct_attributes = request.session.get(
-                    "subproduct_attribute_values", {}).get(product.id, {})
+                    "subproduct_attribute_values", {}).pop(product.id, {})
                 request.cart.add_item(
                     add_product_form.variation, quantity,
                     attribute_values=attributes,
