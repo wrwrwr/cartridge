@@ -18,6 +18,7 @@ from mezzanine.conf import settings
 from mezzanine.utils.importing import import_dotted_path
 from mezzanine.utils.views import render, set_cookie, paginate
 
+from cartridge.attributes.utils import get_subproducts, remove_subproducts
 from cartridge.shop import checkout
 from cartridge.shop.forms import AddProductForm, DiscountForm, CartItemFormSet
 from cartridge.shop.models import Product, ProductVariation, Order, OrderItem
@@ -59,12 +60,11 @@ def product(request, slug, template="shop/product.html"):
             if to_cart:
                 quantity = add_product_form.cleaned_data["quantity"]
                 attributes = add_product_form.cleaned_data["attribute_values"]
-                subproduct_attributes = request.session.get(
-                    "subproduct_attribute_values", {}).pop(product.id, {})
+                subproducts = get_subproducts(request, product)
                 request.cart.add_item(
                     add_product_form.variation, quantity,
-                    attribute_values=attributes,
-                    subproduct_attribute_values=subproduct_attributes)
+                    attribute_values=attributes, subproducts=subproducts)
+                remove_subproducts(request, product)
                 recalculate_discount(request)
                 info(request, _("Item added to cart"))
                 return redirect("shop_cart")

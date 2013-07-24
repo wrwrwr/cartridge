@@ -138,7 +138,7 @@ class AttributeValue(PolymorphicModel):
         # in the cart.
         return unicode(self).encode('unicode_escape')
 
-    def process_subproduct_attributes(self, subproduct_attribute_values):
+    def process_subproduct_attributes(self, subproducts):
         """
         For subproduct value assigns subproduct attribute values to the value.
         The argument may be a list of attribute values dicts (for a list of
@@ -422,12 +422,14 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
             text += u' ({})'.format(u'; '.join(unicode(v) for v in vavs))
         return text
 
-    def process_subproduct_attributes(self, subproduct_attribute_values):
+    def process_subproduct_attributes(self, subproducts):
         """
         Stores subproduct attributes for saving (when we are saved).
         Sets item of subproduct values and updates price.
+
+        ``Subproducts`` is expected be an (option id, attribute_values) tuple.
         """
-        self._attribute_values = subproduct_attribute_values
+        self._attribute_values = subproducts[1]
         for attribute, value in self._attribute_values.iteritems():
             value.item = self
             self.unit_price += value.price
@@ -568,19 +570,23 @@ class ListValue(AttributeValue):
         return self.separator.join(v.digest() for v in self.subvalues())
 
     def subvalues(self):
-        # Iterates over first unsaved, then saved subvalues.
+        """
+        Yields unsaved and then saved subvalues on the list.
+        """
         for value in self._values:
             yield value
         for value in self.values.all():
             yield value.value
 
-    def process_subproduct_attributes(self, subproduct_attribute_values):
+    def process_subproduct_attributes(self, subproducts):
         """
         Processes subproduct attributes for each subvalue.
+
+        ``Subproducts`` should be a list of subproducts with entries
+        suitable for processing by subvalues.
         """
-        for subvalue, attribute_values in zip(self.subvalues(),
-                                              subproduct_attribute_values):
-            subvalue.process_subproduct_attributes(attribute_values)
+        for subvalue, subproduct in zip(self.subvalues(), subproducts):
+            subvalue.process_subproduct_attributes(subproduct)
 
 
 class ListSubvalue(models.Model):

@@ -548,7 +548,7 @@ class Cart(models.Model):
         return iter(self._cached_items)
 
     def add_item(self, variation, quantity, attribute_values,
-                 subproduct_attribute_values={}):
+                 subproducts=None):
         """
         Increase quantity of existing item if SKU and attributes match,
         otherwise create new.
@@ -576,9 +576,9 @@ class Cart(models.Model):
             for attribute, value in attribute_values.iteritems():
                 value.item = item
                 # Subproduct attributes, their item is the subproduct value.
-                savs = subproduct_attribute_values.get(attribute.id, None)
-                if savs:
-                    value.process_subproduct_attributes(savs)
+                attribute_subproducts = subproducts.get(attribute.id, None)
+                if attribute_subproducts:
+                    value.process_subproduct_attributes(subproducts)
                 value.save()
                 try:
                     if value.item_image and value.image is not None:
