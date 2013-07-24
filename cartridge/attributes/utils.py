@@ -1,4 +1,4 @@
-def get_subproducts(request, product, attribute, default=None):
+def get_subproducts(request, product=None, attribute=None, default=None):
     """
     Returns subproduct attribute values that will be saved when the given
     parent product is added to the cart.
@@ -10,8 +10,13 @@ def get_subproducts(request, product, attribute, default=None):
     (*) values may be lists (or even lists of lists) of tuples to reflect the
     structure for ``ListAttributes``.
     """
-    return request.session.get('subproducts', {}).get(
-            product.id, {}).get(attribute.id, default)
+    subproducts = request.session.get('subproducts', {})
+    if product is None:
+        return subproducts
+    product_subproducts = subproducts.get(product.id, {})
+    if attribute is None:
+        return product_subproducts
+    return product_subproducts.get(attribute.id, default)
 
 
 def set_subproducts(request, product, attribute, subproducts):

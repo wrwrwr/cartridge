@@ -568,7 +568,7 @@ class Cart(models.Model):
                 # Subproduct attributes, their item is the subproduct value.
                 attribute_subproducts = subproducts.get(attribute.id, None)
                 if attribute_subproducts:
-                    value.process_subproduct_attributes(subproducts)
+                    value.process_subproduct_attributes(attribute_subproducts)
                 value.save()
                 try:
                     if value.item_image and value.image is not None:
