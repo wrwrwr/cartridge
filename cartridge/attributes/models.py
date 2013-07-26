@@ -446,7 +446,7 @@ class SubproductImageChoiceAttribute(SubproductChoiceAttribute):
         verbose_name_plural = _("subproduct image choice attributes")
 
 
-class SubproductImageChoiceOption(SuproductChoiceOption, ImageChoiceOption):
+class SubproductImageChoiceOption(SubproductChoiceOption):
     image = models.ImageField(_("Image"), null=True, blank=True,
         upload_to=upload_to('attributes.SubproductImageChoiceOption.image',
                             'attributes/subproduct_image_choice'),
