@@ -436,6 +436,23 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
             self.price += value.price
 
 
+class SubproductImageChoiceAttribute(SubproductChoiceAttribute):
+    """
+    Subproduct choice with an additional image for illustration.
+    """
+    class Meta:
+        proxy = True
+        verbose_name = _("subproduct image choice attribute")
+        verbose_name_plural = _("subproduct image choice attributes")
+
+
+class SubproductImageChoiceOption(SuproductChoiceOption, ImageChoiceOption):
+    image = models.ImageField(_("Image"), null=True, blank=True,
+        upload_to=upload_to('attributes.SubproductImageChoiceOption.image',
+                            'attributes/subproduct_image_choice'),
+        help_text=_("Additional image illustrating the subproduct."))
+
+
 class ImageAttribute(Attribute):
     """
     Allows users to upload an image to attach to the product.
