@@ -18,6 +18,7 @@ from .models import (
     ImageChoiceAttribute, ImageChoiceOption,
     ColorChoiceAttribute, ColorChoiceOption,
     SubproductChoiceAttribute, SubproductChoiceOption,
+    SubproductImageChoiceAttribute, SubproductImageChoiceOption,
     ImageAttribute, ListAttribute)
 from .forms import AttributeSelectionForm, ProductAttributeForm
 
@@ -142,6 +143,16 @@ class SubproductChoiceAttributeAdmin(ChoiceAttributeAdmin):
     inlines = (ChoiceOptionsGroupInline, SubproductChoiceOptionInline)
 
 
+class SubproductImageChoiceOptionInline(ChoiceOptionInline):
+    model = SubproductImageChoiceOption
+    exclude = ('name',)
+    formfield_overrides = {ImageField: {'widget': ImageWidget}}
+
+
+class SubproductImageChoiceAttributeAdmin(ChoiceAttributeAdmin):
+    inlines = (ChoiceOptionsGroupInline, SubproductImageChoiceOptionInline)
+
+
 def attribute_fieldsets(fieldsets):
     # Hide type / id fields, but keep the processing they provide.
     fields = fieldsets[0][1]['fields']
@@ -197,5 +208,7 @@ admin.site.register(SimpleChoiceAttribute, SimpleChoiceAttributeAdmin)
 admin.site.register(ImageChoiceAttribute, ImageChoiceAttributeAdmin)
 admin.site.register(ColorChoiceAttribute, ColorChoiceAttributeAdmin)
 admin.site.register(SubproductChoiceAttribute, SubproductChoiceAttributeAdmin)
+admin.site.register(SubproductImageChoiceAttribute,
+                    SubproductImageChoiceAttributeAdmin)
 admin.site.register(ImageAttribute, AttributeAdmin)
 admin.site.register(ListAttribute, ListAttributeAdmin)
