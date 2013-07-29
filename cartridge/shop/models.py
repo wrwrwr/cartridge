@@ -546,9 +546,13 @@ class Cart(models.Model):
         otherwise create new.
         """
 
-        # Apply attributes price modifications.
+        # Build subproduct attribute hierarchy and apply attribute price
+        # modifications.
         price = variation.price()
         for attribute, value in attribute_values.iteritems():
+            attribute_subproducts = subproducts.get(attribute.id, None)
+            if attribute_subproducts:
+                value.process_subproduct_attributes(attribute_subproducts)
             price += value.price
 
         kwargs = {"sku": variation.sku, "unit_price": price}
@@ -565,10 +569,6 @@ class Cart(models.Model):
             # Link values to the cart item and save them.
             for attribute, value in attribute_values.iteritems():
                 value.item = item
-                # Subproduct attributes, their item is the subproduct value.
-                attribute_subproducts = subproducts.get(attribute.id, None)
-                if attribute_subproducts:
-                    value.process_subproduct_attributes(attribute_subproducts)
                 value.save()
                 try:
                     if value.item_image and value.image is not None:

@@ -20,6 +20,9 @@ from cartridge.shop.models import Product, SelectedProduct
 from .managers import PolymorphicManager
 
 
+# TODO: Get rid of the digests -- code full value comparisons.
+
+
 # Which attributes may be assigned to products, limits and orders choices in
 # product attribute inline.
 # TODO: Should be a non-editable setting.
@@ -422,6 +425,15 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
         if vavs:
             text += u' ({})'.format(u'; '.join(unicode(v) for v in vavs))
         return text
+
+    def digest(self):
+        """
+        Products with differing subproduct attributes differ.
+        """
+        return '{} ({})'.format(
+            super(SubproductChoiceValue, self).digest(),
+            ', '.join(v.digest() for a, v
+                      in self._attribute_values.iteritems()))
 
     def process_subproduct_attributes(self, subproducts):
         """
