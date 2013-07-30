@@ -461,6 +461,7 @@ class SubproductImageChoiceAttribute(SubproductChoiceAttribute):
 
 class SubproductImageChoiceOption(SubproductChoiceOption):
     image = models.ImageField(_("Image"), null=True, blank=True,
+        max_length=200,
         upload_to=upload_to('attributes.SubproductImageChoiceOption.image',
                             'attributes/subproduct_image_choice'),
         help_text=_("Additional image illustrating the subproduct."))
