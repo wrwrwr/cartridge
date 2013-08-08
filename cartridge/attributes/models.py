@@ -192,17 +192,26 @@ class CharactersAttribute(StringAttribute):
         verbose_name_plural = _("characters attributes")
 
     def make_value(self, value, product):
-        characters = value
-        if self.free_characters:
-            characters = re.sub(self.free_characters, '', characters)
-        price = (len(characters) - 1) * product.price()
-        return CharactersValue(attribute=self, price=price, string=value,
+        return CharactersValue(attribute=self, string=value,
+                               product_price=product.price(),
                                free_characters=self.free_characters)
 
 
 class CharactersValue(StringValue):
     free_characters = models.CharField(max_length=50)
     price = fields.MoneyField()
+
+    def __init__(self, *args, **kwargs):
+        product_price = kwargs.pop('product_price', None)
+        super(CharactersValue, self).__init__(*args, **kwargs)
+        if product_price is not None:
+            self.calculate_price(product_price)
+
+    def calculate_price(self, product_price):
+        characters = self.string
+        if self.free_characters:
+            characters = re.sub(self.free_characters, '', characters)
+        self.price = (len(characters) - 1) * product_price
 
 
 class ChoiceAttribute(Attribute):
@@ -468,7 +477,13 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
         self._attribute_values = subproducts[1]
         for attribute, value in self._attribute_values.iteritems():
             value.item = self
-            self.unit_price += value.price
+            try:
+                # Value's price may depend on product's price and it's
+                # calculated in our constructor (whereas the subvalue
+                # may have been created earlier).
+                value.calculate_price(self.unit_price)
+            except AttributeError:
+                pass
             self.price += value.price
 
 
@@ -675,7 +690,7 @@ def attributes_hash(attribute_values):
 
 def subproduct_sale_price(variation, sale=None):
     """
-    Subproducts may use their own sales or parent sale.
+    Subproducts may use their own sales or a parent sale.
 
     If the parent sale is a percent discount the subproduct's price is lowered
     by the percent, if it's a fixed discounted price, subproduct's price is
