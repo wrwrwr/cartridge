@@ -1,4 +1,3 @@
-from decimal import Decimal
 import hashlib
 import re
 
@@ -437,7 +436,6 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
                 self.description = unicode(variation)
             for_all_languages(set_description)
             self.quantity = quantity
-
 
     def save(self, *args, **kwargs):
         """
