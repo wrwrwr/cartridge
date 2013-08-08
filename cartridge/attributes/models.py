@@ -1,3 +1,4 @@
+from decimal import Decimal
 import hashlib
 import re
 
@@ -15,7 +16,7 @@ from mezzanine.utils.models import upload_to
 from mezzanine.utils.translation import for_all_languages
 
 from cartridge.shop import fields
-from cartridge.shop.models import Product, SelectedProduct
+from cartridge.shop.models import Product, SelectedProduct, Sale
 
 from .managers import PolymorphicManager
 
@@ -344,7 +345,7 @@ class SubproductChoiceAttribute(ChoiceAttribute):
     use_parent_sale = models.BooleanField(_("Use parent sale"),
         default=False,
         help_text=_("Use sale of the product the attribute is assigned "
-                    "to, instead of the subproduct's sale."))
+                    "to instead of the subproduct's sale."))
 
     class Meta:
         verbose_name = _("subproduct choice attribute")
@@ -403,7 +404,7 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
         """
         option = kwargs.get('option', None)
         quantity = kwargs.pop('quantity', 1)
-        sale = kwargs.get('sale', None)
+        sale = kwargs.pop('sale', None)
         super(SubproductChoiceValue, self).__init__(*args, **kwargs)
         if isinstance(option, SubproductChoiceOption):
             variation = option.subproduct.variations.all()[0]
@@ -671,6 +672,6 @@ def subproduct_sale_price(variation, sale=None):
         if sale.discount_deduct is not None:
             return unit_price
         if sale.discount_percent is not None:
-            return unit_price / Decimal('100') * sale.discount_percent
+            return unit_price * (1 - sale.discount_percent / 100)
         elif sale.discount_exact is not None:
             return 0
