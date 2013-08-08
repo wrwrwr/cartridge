@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cartridge attributes\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-08-08 15:37+0200\n"
+"POT-Creation-Date: 2013-08-08 15:48+0200\n"
 "PO-Revision-Date: 2013-02-07 21:40+0100\n"
 "Last-Translator: Wojtek Ruszczewski <django@wr.waw.pl>\n"
 "Language-Team: None\n"
@@ -155,7 +155,7 @@ msgstr "atrybut wyboru obrazu"
 msgid "image choice attributes"
 msgstr "atrybuty wyboru obrazu"
 
-#: models.py:318 models.py:474
+#: models.py:318 models.py:486
 msgid "Image"
 msgstr "Obraz"
 
@@ -163,27 +163,43 @@ msgstr "Obraz"
 msgid "Image presenting the option."
 msgstr "Obraz prezentujący opcję."
 
-#: models.py:330
+#: models.py:324
+msgid "image choice option"
+msgstr "opcja z obrazem"
+
+#: models.py:325
+msgid "image choice options"
+msgstr "opcje z obrazem"
+
+#: models.py:334
 msgid "color choice attribute"
 msgstr "atrybut wyboru koloru"
 
-#: models.py:331
+#: models.py:335
 msgid "color choice attributes"
 msgstr "atrybuty wyboru koloru"
 
-#: models.py:335
+#: models.py:339
 msgid "Color"
 msgstr "Kolor"
 
-#: models.py:336
+#: models.py:340
 msgid "Choosable color (in #RRGGBB notation)."
 msgstr "Kolor do wyboru (w notacji #RRGGBB)."
 
-#: models.py:345
+#: models.py:343
+msgid "color choice option"
+msgstr "opcja z kolorem"
+
+#: models.py:344
+msgid "color choice options"
+msgstr "opcje z kolorem"
+
+#: models.py:353
 msgid "Use parent sale"
 msgstr "Wyprzedaż nadproduktu"
 
-#: models.py:347
+#: models.py:355
 msgid ""
 "Use sale of the product the attribute is assigned to instead of the "
 "subproduct's sale."
@@ -191,15 +207,15 @@ msgstr ""
 "Zamiast wyprzedaży podproduktu zastosuj wyprzedaż produktu, do którego "
 "przypisany jest atrybut."
 
-#: models.py:351
+#: models.py:359
 msgid "subproduct choice attribute"
 msgstr "atrybut wyboru podproduktu"
 
-#: models.py:352
+#: models.py:360
 msgid "subproduct choice attributes"
 msgstr "atrybuty wyboru podproduktu"
 
-#: models.py:373
+#: models.py:381
 msgid ""
 "Another product, being a part or add-on for the main product (the product "
 "the attribute is assigned to)."
@@ -207,23 +223,39 @@ msgstr ""
 "Inny produkt, część lub dodatek do głównego produktu (produktu, do którego "
 "jest przypisany atrybut)."
 
-#: models.py:469
+#: models.py:385
+msgid "subproduct choice option"
+msgstr "opcja z podproduktem"
+
+#: models.py:386
+msgid "subproduct choice options"
+msgstr "opcje z podproduktem"
+
+#: models.py:481
 msgid "subproduct image choice attribute"
 msgstr "atrybut wyboru podproduktu z obrazem"
 
-#: models.py:470
+#: models.py:482
 msgid "subproduct image choice attributes"
 msgstr "atrybuty wyboru podproduktu z obrazem"
 
-#: models.py:478
+#: models.py:490
 msgid "Additional image illustrating the subproduct."
 msgstr "Dodatkowy obraz ilustrujący podprodukt."
 
-#: models.py:485
+#: models.py:493
+msgid "subproduct image choice option"
+msgstr "opcja z podproduktem i obrazem"
+
+#: models.py:494
+msgid "subproduct image choice options"
+msgstr "opcje z podproduktem i obrazem"
+
+#: models.py:501
 msgid "Maximum file size"
 msgstr "Maksymalna wielkość pliku"
 
-#: models.py:486
+#: models.py:502
 msgid ""
 "Maximum size of file users are allowed to upload, in megabytes. Zero means "
 "no limit."
@@ -231,31 +263,31 @@ msgstr ""
 "Maksymalna wielkośc plików, jakie użytkownicy mogą wgrywać, w megabajtach. "
 "Zero oznacza brak limitu."
 
-#: models.py:488
+#: models.py:504
 msgid "Use as item image"
 msgstr "Wyświetlaj jako obraz produktu"
 
-#: models.py:489
+#: models.py:505
 msgid "Show the uploaded image instead of item's own image in cart."
 msgstr "Pokaż wgrany obraz zamiast obrazu produktu w koszyku."
 
-#: models.py:493
+#: models.py:509
 msgid "image attribute"
 msgstr "atrybut obrazu"
 
-#: models.py:494
+#: models.py:510
 msgid "image attributes"
 msgstr "atrybuty obrazu"
 
-#: models.py:502
+#: models.py:518
 msgid "Uploaded image can't be larger than {} MB."
 msgstr "Wgrany plik nie może być większy niż {} MB."
 
-#: models.py:533
+#: models.py:549
 msgid "Values separator"
 msgstr "Separator wartości"
 
-#: models.py:535
+#: models.py:551
 msgid ""
 "Character or string used to separate values when parsing posted string. Must "
 "be guaranteed not to appear in string representation of any single value."
@@ -264,14 +296,14 @@ msgstr ""
 "przesłanego napisu. Nie może pojawiać się w tekstowej reprezentacji "
 "pojedynczej wartości."
 
-#: models.py:540
+#: models.py:556
 msgid "list attribute"
 msgstr "atrybut listowy"
 
-#: models.py:541
+#: models.py:557
 msgid "list attributes"
 msgstr "atrybuty listowe"
 
-#: models.py:590
+#: models.py:606
 msgid "none"
 msgstr "brak"
