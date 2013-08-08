@@ -320,6 +320,10 @@ class ImageChoiceOption(ChoiceOption):
                             'attributes/image_choice'),
         help_text=_("Image presenting the option."))
 
+    class Meta:
+        verbose_name = _("image choice option")
+        verbose_name_plural = _("image choice options")
+
 
 class ColorChoiceAttribute(ChoiceAttribute):
     """
@@ -334,6 +338,10 @@ class ColorChoiceAttribute(ChoiceAttribute):
 class ColorChoiceOption(ChoiceOption):
     color = models.CharField(_("Color"), max_length=20,
         help_text=_("Choosable color (in #RRGGBB notation)."))
+
+    class Meta:
+        verbose_name = _("color choice option")
+        verbose_name_plural = _("color choice options")
 
 
 class SubproductChoiceAttribute(ChoiceAttribute):
@@ -372,6 +380,10 @@ class SubproductChoiceOption(ChoiceOption):
     subproduct = models.ForeignKey(Product,
         help_text=_("Another product, being a part or add-on for the main "
                     "product (the product the attribute is assigned to)."))
+
+    class Meta:
+        verbose_name = _("subproduct choice option")
+        verbose_name_plural = _("subproduct choice options")
 
     @property
     def name(self):
@@ -476,6 +488,10 @@ class SubproductImageChoiceOption(SubproductChoiceOption):
         upload_to=upload_to('attributes.SubproductImageChoiceOption.image',
                             'attributes/subproduct_image_choice'),
         help_text=_("Additional image illustrating the subproduct."))
+
+    class Meta:
+        verbose_name = _("subproduct image choice option")
+        verbose_name_plural = _("subproduct image choice options")
 
 
 class ImageAttribute(Attribute):
