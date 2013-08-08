@@ -341,8 +341,12 @@ class SubproductChoiceAttribute(ChoiceAttribute):
     way of realizing product sets. Inbuilt form only supports
     subproducts without attributes.
     """
+    use_parent_sale = models.BooleanField(_("Use parent sale"),
+        default=False,
+        help_text=_("Use sale of the product the attribute is assigned "
+                    "to, instead of the subproduct's sale."))
+
     class Meta:
-        proxy = True
         verbose_name = _("subproduct choice attribute")
         verbose_name_plural = _("subproduct choice attributes")
 
@@ -351,7 +355,11 @@ class SubproductChoiceAttribute(ChoiceAttribute):
             option = self.options.get(pk=value)
         else:
             option = None
-        return SubproductChoiceValue(attribute=self, option=option)
+        if self.use_parent_sale and product.on_sale():
+            sale = Sale.objects.get(id=product.sale_id)
+        else:
+            sale = None
+        return SubproductChoiceValue(attribute=self, option=option, sale=sale)
 
 
 class SubproductChoiceOption(ChoiceOption):
@@ -395,17 +403,19 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
         """
         option = kwargs.get('option', None)
         quantity = kwargs.pop('quantity', 1)
+        sale = kwargs.get('sale', None)
         super(SubproductChoiceValue, self).__init__(*args, **kwargs)
         if isinstance(option, SubproductChoiceOption):
             variation = option.subproduct.variations.all()[0]
             self.sku = variation.sku
-            self.unit_price = variation.price()
+            self.unit_price = subproduct_sale_price(variation, sale)
             self.price = self.unit_price
 
             def set_description():
                 self.description = unicode(variation)
             for_all_languages(set_description)
             self.quantity = quantity
+
 
     def save(self, *args, **kwargs):
         """
@@ -644,3 +654,23 @@ def attributes_hash(attribute_values):
     for attribute, value in attribute_values.iteritems():
         digest.update('{}={}'.format(attribute.digest(), value.digest()))
     return digest.hexdigest()
+
+
+def subproduct_sale_price(variation, sale=None):
+    """
+    Subproducts may use their own sales or parent sale.
+
+    If the parent sale is a percent discount the subproduct's price is lowered
+    by the percent, if it's a fixed discounted price, subproduct's price is
+    zeroed, and a fixed rebate is ignored (only applied to parent).
+    """
+    if sale is None:
+        return variation.price()
+    else:
+        unit_price = variation.unit_price
+        if sale.discount_deduct is not None:
+            return unit_price
+        if sale.discount_percent is not None:
+            return unit_price / Decimal('100') * sale.discount_percent
+        elif sale.discount_exact is not None:
+            return 0
