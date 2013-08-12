@@ -35,7 +35,9 @@ ATTRIBUTE_TYPES = Q(app_label='attributes', model__in=PRODUCT_ATTRIBUTES_ORDER)
 
 
 class PolymorphicModel(models.Model):
-    # Simplistic implementation of dynamic model typecasting.
+    """
+    Simplistic implementation of dynamic model typecasting.
+    """
     content_type = models.ForeignKey(ContentType, editable=False)
 
     objects = PolymorphicManager()
@@ -54,8 +56,12 @@ class PolymorphicModel(models.Model):
 
 
 class Attribute(PolymorphicModel):
-    # Needs to implement make_value that creates a value object from
-    # cleaned form data.
+    """
+    Product property settable by user.
+
+    Needs to implement ``make_value`` that creates a value object from
+    cleaned form data.
+    """
     name = models.CharField(_("Name"), max_length=255,
         help_text=_("Attribute kind such as color, size etc."))
     required = models.BooleanField(_("Required"), default=True,
@@ -70,13 +76,19 @@ class Attribute(PolymorphicModel):
         return unicode(self.name)
 
     def field_name(self):
-        # Field names can't contain Unicode, punycode would be another
-        # possible choice.
+        """
+        Input name / id usde in product forms.
+
+        Field names can't contain Unicode, punycode would be another
+        possible choice.
+        """
         return '{}_{}'.format(self.__class__.__name__.lower(), self.id)
 
     def digest(self):
-        # Digests are used to generate attribute hashes, to easily check
-        # if attribute sets match.
+        """
+        Digests are used to generate attribute hashes, to easily check
+        if attribute sets match.
+        """
         return self.field_name()
 
     def products(self):
@@ -91,7 +103,12 @@ class Attribute(PolymorphicModel):
 
 
 class ProductAttribute(Orderable):
-    # Attribute assigned to a product.
+    """
+    Attribute assigned to a product.
+
+    There is a great range of possible attribute / property kinds, so
+    a generic relation is used on this end.
+    """
     product = models.ForeignKey(Product, related_name='attributes')
     attribute_type = models.ForeignKey(ContentType,
                                        limit_choices_to=ATTRIBUTE_TYPES)
@@ -108,12 +125,19 @@ class ProductAttribute(Orderable):
 
 
 class AttributeValue(PolymorphicModel):
-    # Attribute values can't relate to attributes or options, as they
-    # may persist past their deletion, so only attribute name is saved.
-    # The base class stores content type, so we can get hold of
-    # the leaf models using relation from items.
-    # If bool(value) is False the value is considered undefined and not saved,
-    # unicode(value) should return a string suitable for cart description.
+    """
+    A value set or chosen by user for an attribute.
+
+    Attribute values can't relate to attributes or options, as they may
+    persist past their deletion, so only attribute name is saved.
+
+    The base class stores the value content type, so we can get hold of
+    the concrete model using a generic relation from an cart or order item.
+
+    If ``bool(value)`` is ``False`` the value is considered undefined and is
+    not saved, ``unicode(value)`` should return a string suitable for cart
+    description.
+    """
     attribute = models.CharField(max_length=255)
     visible = models.BooleanField()
     item_type = models.ForeignKey(ContentType,
@@ -158,6 +182,12 @@ class AttributeValue(PolymorphicModel):
 
 
 class StringAttribute(Attribute):
+    """
+    Text input possibly with a limited length.
+
+    Good for labels, signatures and wishes printed or added to a product
+    or if you'd like to let users add a product-specific comment.
+    """
     max_length = models.PositiveIntegerField(_("Max length"),
         null=True, blank=True,
         help_text=_("Maximum number of characters a client can enter. "
@@ -186,7 +216,9 @@ class StringValue(AttributeValue):
 
 
 class CharactersAttribute(StringAttribute):
-    # Product unit price based on length.
+    """
+    String attribute with price based on text length.
+    """
     free_characters = models.CharField(_("Free characters"), max_length=50,
         blank=True,
         help_text=_("Characters excluded from the price calculation "
@@ -220,6 +252,13 @@ class CharactersValue(StringValue):
 
 
 class ChoiceAttribute(Attribute):
+    """
+    Choice of one of specified options, a select input in the
+    basic incarnation.
+
+    Options may be grouped and each selection may be tied to a price
+    modification.
+    """
     def field(self):
         choices = BLANK_CHOICE_DASH[:]
         for group in self.groups.all():
@@ -360,9 +399,8 @@ class ColorChoiceOption(ChoiceOption):
 
 class SubproductChoiceAttribute(ChoiceAttribute):
     """
-    Product as an attribute of another product. Intended as a
-    way of realizing product sets. Inbuilt form only supports
-    subproducts without attributes.
+    Product as an attribute of another product. Intended as a way of realizing
+    product sets. Inbuilt form only supports subproducts without attributes.
     """
     use_parent_sale = models.BooleanField(_("Use parent sale"),
         default=False,
@@ -519,6 +557,9 @@ class SubproductImageChoiceOption(SubproductChoiceOption):
 class ImageAttribute(Attribute):
     """
     Allows users to upload an image to attach to the product.
+
+    The image is stored and may be used to "generate" the product --
+    think about t-shirts, cups or album covers with user-images.
     """
     max_size = models.IntegerField(_("Maximum file size"), default=1,
         help_text=_("Maximum size of file users are allowed to upload, "
@@ -562,7 +603,12 @@ class ImageValue(AttributeValue):
 
 
 class ListAttribute(Attribute):
-    # Multiple values for a single attribute.
+    """
+    Lets you assign multiple values for a single attribute.
+
+    Currently there is no widget / form implementation for this attribute,
+    so you'll need to provide your own.
+    """
     attribute_type = models.ForeignKey(ContentType,
                                        limit_choices_to=ATTRIBUTE_TYPES,
                                        related_name='list_attributes')
