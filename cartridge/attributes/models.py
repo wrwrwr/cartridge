@@ -36,7 +36,7 @@ ATTRIBUTE_TYPES = Q(app_label='attributes', model__in=PRODUCT_ATTRIBUTES_ORDER)
 
 class PolymorphicModel(models.Model):
     """
-    Simplistic implementation of dynamic model typecasting.
+    A simplistic implementation of dynamic model typecasting.
     """
     content_type = models.ForeignKey(ContentType, editable=False)
 
@@ -57,7 +57,7 @@ class PolymorphicModel(models.Model):
 
 class Attribute(PolymorphicModel):
     """
-    Product property settable by user.
+    A product property settable by user.
 
     Needs to implement ``make_value`` that creates a value object from
     cleaned form data.
@@ -77,7 +77,7 @@ class Attribute(PolymorphicModel):
 
     def field_name(self):
         """
-        Input name / id usde in product forms.
+        Input name / id used in product forms.
 
         Field names can't contain Unicode, punycode would be another
         possible choice.
@@ -104,7 +104,7 @@ class Attribute(PolymorphicModel):
 
 class ProductAttribute(Orderable):
     """
-    Attribute assigned to a product.
+    An attribute assigned to a product.
 
     There is a great range of possible attribute / property kinds, so
     a generic relation is used on this end.
@@ -656,13 +656,17 @@ class ListAttribute(Attribute):
 
 
 class ListValue(AttributeValue):
-    # Combines a set of other attribute values into a list behaving as
-    # a single value.
+    """
+    Combines a set of other attribute values into a list behaving as
+    a single value.
+    """
     separator = models.CharField(max_length=10)
 
     def __init__(self, *args, **kwargs):
-        # Temporarily stores values on an instance variable, so we
-        # can save the list and its elements together.
+        """
+        Temporarily stores values on an instance variable, so we
+        can save the list and its elements together.
+        """
         self._values = kwargs.pop('values', [])
         super(ListValue, self).__init__(*args, **kwargs)
 
@@ -675,7 +679,9 @@ class ListValue(AttributeValue):
             for v in self.subvalues())
 
     def save(self, *args, **kwargs):
-        # Saves list elements, after saving the list model.
+        """
+        Saves list elements, after saving the list model.
+        """
         super(ListValue, self).save(*args, **kwargs)
         for value in self._values:
             if value:
@@ -716,7 +722,9 @@ class ListValue(AttributeValue):
 
 
 class ListSubvalue(models.Model):
-    # One of values on the list.
+    """
+    One of values on the list.
+    """
     list_value = models.ForeignKey(ListValue, related_name='values')
     value_type = models.ForeignKey(ContentType, null=True)
     value_id = models.IntegerField(null=True)
