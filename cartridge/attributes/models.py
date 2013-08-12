@@ -122,7 +122,9 @@ class AttributeValue(PolymorphicModel):
     item = generic.GenericForeignKey('item_type', 'item_id')
 
     def __init__(self, *args, **kwargs):
-        # Copies all translations of attribute name.
+        """
+        Copies all translations of attribute name and attribute's visiblity.
+        """
         attribute = kwargs.get('attribute', None)
         super(AttributeValue, self).__init__(*args, **kwargs)
         if isinstance(attribute, Attribute):
@@ -132,14 +134,18 @@ class AttributeValue(PolymorphicModel):
             self.visible = attribute.visible
 
     def __getattr__(self, name):
-        # Default to zero price (some subclasses have a price field).
+        """
+        Default to zero price (some subclasses have a price field).
+        """
         if name == 'price':
             return 0
         raise AttributeError
 
     def digest(self):
-        # Used to check if a product with the same attributes / values is
-        # in the cart.
+        """
+        Used to check if a product with the same attributes / values is
+        in the cart.
+        """
         return unicode(self).encode('unicode_escape')
 
     def process_subproduct_attributes(self, subproducts):
@@ -422,6 +428,7 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
         Does all that ``cart.add_item`` does, except for saving attribute
         values.
         """
+        self._subvalues = []
         option = kwargs.get('option', None)
         quantity = kwargs.pop('quantity', 1)
         sale = kwargs.pop('sale', None)
@@ -442,16 +449,17 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
         Saves attribute values pointing at this subproduct.
         """
         super(SubproductChoiceValue, self).save(*args, **kwargs)
-        for attribute, value in self._attribute_values.iteritems():
+        for value in self._subvalues:
             value.item = value.item  # TODO: A bit surprising... Item is set
                                      #       in process_subproduct_attributes,
                                      #       but item_id doesn't get set.
             value.save()
-        self._attribute_values = {}
+        self._subvalues = []
 
     def __unicode__(self):
         text = unicode(self.option)
-        vavs = self.visible_attribute_values()
+        vavs = list(self.visible_attribute_values()) + [
+            v for v in self._subvalues if v.visible]
         if vavs:
             text += u' ({})'.format(u'; '.join(unicode(v) for v in vavs))
         return text
@@ -460,10 +468,11 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
         """
         Products with differing subproduct attributes differ.
         """
-        return '{} ({})'.format(
-            super(SubproductChoiceValue, self).digest(),
-            ', '.join(v.digest() for a, v
-                      in self._attribute_values.iteritems()))
+        digest = super(SubproductChoiceValue, self).digest()
+        avs = list(self.attribute_values()) + self._subvalues
+        if avs:
+            digest += ' ({})'.format(', '.join(v.digest() for v in avs))
+        return digest
 
     def process_subproduct_attributes(self, subproducts):
         """
@@ -472,8 +481,8 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
 
         ``Subproducts`` is expected be an (option id, attribute_values) tuple.
         """
-        self._attribute_values = subproducts[1]
-        for attribute, value in self._attribute_values.iteritems():
+        self._subvalues = subproducts[1].values()
+        for value in self._subvalues:
             value.item = self
             try:
                 # Value's price may depend on product's price and it's
