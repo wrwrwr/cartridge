@@ -172,11 +172,17 @@ class AttributeValue(PolymorphicModel):
         """
         return unicode(self).encode('unicode_escape')
 
-    def process_subproduct_attributes(self, subproducts):
+    def preprocess_subvalues(self, subvalues, getter=lambda x: x):
         """
-        For subproduct value assigns subproduct attribute values to the value.
-        The argument may be a list of attribute values dicts (for a list of
-        subproducts) or just a single dict.
+        Assigns subvalues to a subproduct value, lets them update price
+        and store files.
+
+        The argument may be a single attribute values list (subvalues of a
+        subproduct value) or a list of lists (for a list of subproducts).
+
+        Because it may be easier to process a whole subproducts structure
+        rather than to prestrip it from option ids and attribute keys an
+        accessor may be passed that gets value from a structure's leaf.
         """
         raise AttributeError("Only to be used with subproduct values.")
 
@@ -489,8 +495,8 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
         super(SubproductChoiceValue, self).save(*args, **kwargs)
         for value in self._subvalues:
             value.item = value.item  # TODO: A bit surprising... Item is set
-                                     #       in process_subproduct_attributes,
-                                     #       but item_id doesn't get set.
+                                     #       in preprocess_subvalues, but
+                                     #       item_id doesn't get set.
             value.save()
         self._subvalues = []
 
@@ -512,14 +518,16 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
             digest += ' ({})'.format(', '.join(v.digest() for v in avs))
         return digest
 
-    def process_subproduct_attributes(self, subproducts):
+    def preprocess_subvalues(self, subvalues, getter=lambda x: x):
         """
-        Stores subproduct attributes for saving (when we are saved).
-        Sets item of subproduct values and updates price.
+        Links subvalues to this value, lets them update price (in case it
+        depends on item) and store uploaded media (what can only be done
+        during the subproduct post request).
 
-        ``Subproducts`` is expected be an (option id, attribute_values) tuple.
+        For convenience subvalues may actually be an (option_id,
+        attribute values dict) tuple, rather than plain values list.
         """
-        self._subvalues = subproducts[1].values()
+        self._subvalues = getter(subvalues)
         for value in self._subvalues:
             value.item = self
             try:
@@ -530,6 +538,14 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
             except AttributeError:
                 pass
             self.price += value.price
+            try:
+                # ImageValue needs to save its file when it's posted, but
+                # the model is saved during another request, together with the
+                # parent product. The line below is one way of triggering the
+                # file save without saving the model.
+                value.image.field.pre_save(value, False)
+            except AttributeError:
+                pass
 
 
 class SubproductImageChoiceAttribute(SubproductChoiceAttribute):
@@ -710,15 +726,12 @@ class ListValue(AttributeValue):
         for value in self.values.all():
             yield value.value
 
-    def process_subproduct_attributes(self, subproducts):
+    def preprocess_subvalues(self, subvalues, getter=lambda x: x):
         """
-        Processes subproduct attributes for each subvalue.
-
-        ``Subproducts`` should be a list of subproducts with entries
-        suitable for processing by subvalues.
+        Processes subproduct atttribute values for each list value.
         """
-        for subvalue, subproduct in zip(self.subvalues(), subproducts):
-            subvalue.process_subproduct_attributes(subproduct)
+        for value, subsubvalues in zip(self.subvalues(), subvalues):
+            value.preprocess_subvalues(subsubvalues, getter)
 
 
 class ListSubvalue(models.Model):

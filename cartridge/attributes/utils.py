@@ -1,3 +1,13 @@
+def get_subvalues(subproduct):
+    """
+    Given a subproducts' structure leaf returns a list of attribute values
+    from that leaf.
+
+    Leafs are currently (option id, attribute values dict) tuples.
+    """
+    return subproduct[1].values()
+
+
 def get_subproducts(request, product=None, attribute=None, default=None):
     """
     Returns subproduct attribute values that will be saved when the given
