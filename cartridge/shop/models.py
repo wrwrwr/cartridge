@@ -19,6 +19,7 @@ from mezzanine.generic.fields import RatingField
 from mezzanine.pages.models import Page
 from mezzanine.utils.models import AdminThumbMixin, upload_to
 
+from cartridge.attributes.utils import get_subvalues
 from cartridge.shop import fields, managers
 
 try:
@@ -552,7 +553,8 @@ class Cart(models.Model):
         for attribute, value in attribute_values.iteritems():
             attribute_subproducts = subproducts.get(attribute.id, None)
             if attribute_subproducts:
-                value.process_subproduct_attributes(attribute_subproducts)
+                value.preprocess_subvalues(attribute_subproducts,
+                                           get_subvalues)
             price += value.price
 
         kwargs = {"sku": variation.sku, "unit_price": price}
