@@ -1,0 +1,4 @@
+{{ option }}
+{% if subvalues %}
+({% for subvalue in subvalues %}{{ subvalue }}{% if not forloop.last %}; {% endif %}{% endfor %})
+{% endif %}

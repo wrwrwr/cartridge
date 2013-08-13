@@ -501,12 +501,12 @@ class SubproductChoiceValue(ChoiceValue, SelectedProduct):
         self._subvalues = []
 
     def __unicode__(self):
-        text = unicode(self.option)
         vavs = list(self.visible_attribute_values()) + [
             v for v in self._subvalues if v.visible]
-        if vavs:
-            text += u' ({})'.format(u'; '.join(unicode(v) for v in vavs))
-        return text
+        context = {'item': self, 'option': unicode(self.option),
+                   'subvalues': vavs}
+        return render_to_string(
+            'attributes/includes/subproduct_value.html', context)
 
     def digest(self):
         """
