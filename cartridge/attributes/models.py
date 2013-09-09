@@ -74,6 +74,10 @@ class PolymorphicModel(models.Model):
                casting explicitly, but that's not very convenient.
         """
         PolymorphicModel.type_cast = False
+        for k in self.__dict__.keys():
+            # SingleRelatedObjectDescriptor caches referenced objects.
+            if k.endswith('_cache'):
+                del self.__dict__[k]
         super(PolymorphicModel, self).delete(*args, **kwargs)
         PolymorphicModel.type_cast = True
 
