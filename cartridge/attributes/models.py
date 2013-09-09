@@ -37,22 +37,54 @@ ATTRIBUTE_TYPES = Q(app_label='attributes', model__in=PRODUCT_ATTRIBUTES_ORDER)
 class PolymorphicModel(models.Model):
     """
     A simplistic implementation of dynamic model typecasting.
+
+    Note: There are significantly better implementations, e.g.:
+        https://github.com/charettes/django-polymodels
+    (more efficient and supports various Django versions).
     """
     content_type = models.ForeignKey(ContentType, editable=False)
 
     objects = PolymorphicManager()
 
+    type_cast = True
+
     class Meta:
         abstract = True
 
     def save(self, *args, **kwargs):
+        """
+        Establishes our content type on first save.
+        """
         if not hasattr(self, 'content_type'):
             self.content_type = ContentType.objects.get_for_model(
                 self.__class__, for_concrete_model=False)
         return super(PolymorphicModel, self).save(*args, **kwargs)
 
+    def delete(self, *args, **kwargs):
+        """
+        Avoid type casting during delete operations to allow collector
+        to find parent models.
+
+        FIXME: This is a hack -- disables typecasting globally during a delete.
+               The collector finds the parent object by an apparently
+               undistinguishable query, then the new instance is converted to a
+               subtype -- which prevents parent from being disposed of.
+
+               Seemingly the only proper approach would be to request type
+               casting explicitly, but that's not very convenient.
+        """
+        PolymorphicModel.type_cast = False
+        super(PolymorphicModel, self).delete(*args, **kwargs)
+        PolymorphicModel.type_cast = True
+
     def as_content_type(self):
-        return self.content_type.get_object_for_this_type(pk=self.pk)
+        """
+        Returns a submodel of a class determined by ``content_type``.
+        """
+        if self.type_cast:
+            return self.content_type.get_object_for_this_type(pk=self.pk)
+        else:
+            return self
 
 
 class Attribute(PolymorphicModel):
