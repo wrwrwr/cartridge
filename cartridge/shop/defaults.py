@@ -252,8 +252,8 @@ register_setting(
     description="Sequence of value/name pairs for order statuses.",
     editable=False,
     default=(
-        (1, _("Unprocessed")),
-        (2, _("Processed")),
+        ("unprocessed", _("Unprocessed")),
+        ("processed", _("Processed")),
     ),
 )
 
