@@ -739,7 +739,7 @@ class Discount(models.Model):
     def update_session(self, request):
         """
         Stores common discount variables in session, to be saved with order.
-        Free shipping is common to many, discounts, so we handle it here
+        Free shipping is common to many discounts, so we handle it here
         conditionally.
         """
         total = self.get_total(request.user, request.cart)
