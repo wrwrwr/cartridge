@@ -181,6 +181,10 @@ def checkout_steps(request):
         url = "%s?next=%s" % (settings.LOGIN_URL, reverse("shop_checkout"))
         return redirect(url)
 
+    # User could have logged in before being returned here (after leaving
+    # cart), a previously unknown loyalty discount can be now applicable.
+    recalculate_discount(request)
+
     # Determine the Form class to use during the checkout process
     form_class = get_callable(settings.SHOP_CHECKOUT_FORM_CLASS)
 

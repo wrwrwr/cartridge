@@ -168,6 +168,15 @@ register_setting(
 )
 
 register_setting(
+    name="SHOP_LOYALTY_DISCOUNT_ORDER_STATUSES",
+    description="Determines which orders are to be taken into account when "
+                "checking discount applicability. "
+                "Subset of ``SHOP_ORDER_STATUS_CHOICES``.",
+    editable=False,
+    default=("processed",),
+)
+
+register_setting(
     name="SHOP_HANDLER_BILLING_SHIPPING",
     label=_("Billing & Shipping Handler"),
     description="Dotted package path and class name of the function "
@@ -243,8 +252,8 @@ register_setting(
     description="Sequence of value/name pairs for order statuses.",
     editable=False,
     default=(
-        (1, _("Unprocessed")),
-        (2, _("Processed")),
+        ("unprocessed", _("Unprocessed")),
+        ("processed", _("Processed")),
     ),
 )
 
