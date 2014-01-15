@@ -217,6 +217,8 @@ class LoyaltyDiscountManager(DiscountManager):
         fullfilled and returns the one that gives the best cost reduction.
         """
         from cartridge.shop.models import Order
+        if user.is_anonymous():
+            return None, 0
         orders = Order.objects.filter(user_id=user.id,
             status__in=settings.SHOP_LOYALTY_DISCOUNT_ORDER_STATUSES)
         orders_total = orders.aggregate(Sum("item_total"))['item_total__sum']

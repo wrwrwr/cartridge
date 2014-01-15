@@ -192,6 +192,10 @@ def checkout_steps(request):
     if settings.SHOP_CHECKOUT_ACCOUNT_REQUIRED and not authenticated:
         return redirect_to_login(reverse("shop_checkout"))
 
+    # User could have logged in before being returned here (after leaving
+    # cart), a previously unknown loyalty discount can be now applicable.
+    recalculate_discount(request)
+
     # Determine the Form class to use during the checkout process
     form_class = get_callable(settings.SHOP_CHECKOUT_FORM_CLASS)
 
