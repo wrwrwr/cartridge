@@ -7,6 +7,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Q
 from django.db.models.fields import BLANK_CHOICE_DASH
+from django.db.models.loading import get_models
+from django.db.models.signals import pre_delete
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext, ugettext_lazy as _
 
@@ -816,3 +818,24 @@ def subproduct_sale_price(variation, sale=None):
             return unit_price * (1 - sale.discount_percent / 100)
         elif sale.discount_exact is not None:
             return 0
+
+
+def attribute_pre_delete(sender, instance, **kwargs):
+    """
+    Deletes products' links when an attribute is deleted.
+
+    Note that the signal dispatcher uses weak references, so we either
+    need to tell it not to or avoid making this function local.
+    """
+    attribute_type = ContentType.objects.get_for_model(
+        sender, for_concrete_model=False)
+    ProductAttribute.objects.filter(
+        attribute_type=attribute_type, attribute_id=instance.id).delete()
+
+
+for model in get_models():
+    # TODO: This should be ensured to only run after all
+    #       subclasses of `Attribute` are declared.
+    if issubclass(model, Attribute):
+        pre_delete.connect(
+            attribute_pre_delete, sender=model)
