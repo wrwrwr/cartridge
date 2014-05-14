@@ -875,9 +875,6 @@ class DiscountCode(Discount):
         verbose_name = _("Discount code")
         verbose_name_plural = _("Discount codes")
 
-    def get_total(self, user, cart):
-        return cart.calculate_discount(self)
-
     def update_session(self, request):
         request.session["discount_code"] = self.code
         super(DiscountCode, self).update_session(request)
@@ -953,9 +950,6 @@ class LoyaltyDiscount(Discount):
         verbose_name = _("Loyalty discount")
         verbose_name_plural = _("Loyalty discounts")
 
-    def get_total(self, user, cart):
-        return cart.calculate_discount(self)
-
 
 class FacebookDiscount(Discount):
     """
@@ -983,9 +977,6 @@ class FacebookDiscount(Discount):
     class Meta:
         verbose_name = _("Facebook discount")
         verbose_name_plural = _("Facebook discounts")
-
-    def get_total(self, user, cart):
-        return cart.calculate_discount(self)
 
 
 from cartridge.attributes.models import (attributes_hash, AttributeValue)
