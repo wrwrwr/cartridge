@@ -19,7 +19,7 @@ from mezzanine.utils.views import render, set_cookie, paginate
 from cartridge.shop import checkout
 from cartridge.shop.forms import AddProductForm, DiscountForm, CartItemFormSet
 from cartridge.shop.models import Product, ProductVariation, Order, OrderItem
-from cartridge.shop.models import DiscountCode
+from cartridge.shop.models import DiscountCode, Voucher
 from cartridge.shop.utils import recalculate_discount, sign
 
 
@@ -162,7 +162,8 @@ def cart(request, template="shop/cart.html"):
     context = {"cart_formset": cart_formset}
     settings.use_editable()
     if (settings.SHOP_DISCOUNT_FIELD_IN_CART and
-        DiscountCode.objects.active().count() > 0):
+        (DiscountCode.objects.active().count() > 0 or
+         Voucher.objects.active().count() > 0)):
         context["discount_form"] = discount_form
     return render(request, template, context)
 

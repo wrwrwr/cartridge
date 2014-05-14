@@ -6,6 +6,7 @@ from locale import localeconv
 from re import match
 
 from django import forms
+from django.db.models import Q
 from django.forms.models import BaseInlineFormSet, ModelFormMetaclass
 from django.forms.models import inlineformset_factory
 from django.utils.datastructures import SortedDict
@@ -18,7 +19,8 @@ from mezzanine.core.templatetags.mezzanine_tags import thumbnail
 
 from cartridge.shop import checkout
 from cartridge.shop.models import Product, ProductOption, ProductVariation
-from cartridge.shop.models import Cart, CartItem, Order, DiscountCode
+from cartridge.shop.models import (Cart, CartItem, Order,
+                                   DiscountCode, Voucher, VoucherCode)
 from cartridge.shop.utils import make_choices, set_locale, set_shipping
 
 
@@ -255,8 +257,17 @@ class DiscountForm(forms.ModelForm):
                 discount = DiscountCode.objects.get_valid(code=code, cart=cart)
                 self._discount = discount
             except DiscountCode.DoesNotExist:
-                error = _("The discount code entered is invalid.")
-                raise forms.ValidationError(error)
+                try:
+                    voucher_valid = (
+                        Q(voucher__active=True) &
+                        (Q(voucher__min_purchase__isnull=True) |
+                         Q(voucher__min_purchase__lte=cart.total_price())))
+                    voucher_code = VoucherCode.objects.filter(
+                        voucher_valid).get(code=code, used=False)
+                    self._discount = voucher_code
+                except VoucherCode.DoesNotExist:
+                    error = _("The discount code entered is invalid.")
+                    raise forms.ValidationError(error)
         return code
 
     def set_discount(self):
@@ -329,8 +340,9 @@ class OrderForm(FormsetForm, DiscountForm):
 
         # Hide Discount Code field if no codes are active.
         settings.use_editable()
-        no_discounts = DiscountCode.objects.active().count() == 0
-        if no_discounts or not settings.SHOP_DISCOUNT_FIELD_IN_CHECKOUT:
+        discounts = (DiscountCode.objects.active().count() > 0 or
+                     Voucher.objects.active().count() > 0)
+        if not settings.SHOP_DISCOUNT_FIELD_IN_CHECKOUT or not discounts:
             self.fields["discount_code"].widget = forms.HiddenInput()
 
         # Determine which sets of fields to hide for each checkout step.
