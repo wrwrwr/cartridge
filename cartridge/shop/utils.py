@@ -70,6 +70,8 @@ def recalculate_discount(request):
         del request.session["discount_total"]
     except KeyError:
         pass
+    if request.session.get("disable_discounts"):
+        return
     discount_code = request.session.get("discount_code", "")
     if discount_code != "":
         discount_form = DiscountForm(request, {"discount_code": discount_code})
